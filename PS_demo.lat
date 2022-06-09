@@ -1,0 +1,197 @@
+# Beam envelope simulation.
+
+sim_type = "MomentMatrix";
+
+# Global parameters.
+
+# Mpultipole level: 0 only include focusing and defocusing effects,
+#                   1 include dipole terms,
+#                   2 include quadrupole terms.
+MpoleLeveL = "2";
+
+# Dipole strength adjusted to beam energy.
+HdipoleFitMode = "1";
+
+AMU = 931494320.0; # Atomic mass unit [eV/c^2].
+
+IonEs = 931494320.0; # Nucleon mass [eV/u].
+IonEk = 200000000.0; # Kinetic energy [eV/u].
+
+# Define Initial Conditions for the Charge States.
+# Units are: [mm, rad, mm, rad, rad, MeV/u]. Note, units for mis-alignments are: [m] and [rad].
+
+#IonChargeStates = [35.0/86.0];
+IonChargeStates = [0.3571013259515177, 0.3571013259515177, 0.3571013259515177]; # Brho = 6.0
+NCharge = [1.0, 0.0, 0.0];
+
+BC0 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0];
+BC1 = [0.0, 0.0, 0.0, 0.0, 0.0, 1e-05, 1.0];
+BC2 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0];
+
+# Define beam envelope parameters.
+
+S0 = [
+    0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 8.41188992870327e-06, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.25, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 8.41188992870327e-06, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 7e-6, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.05, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+
+S1 = [
+    1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 1e-06, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 1e-06, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+S2 = [
+    1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 1e-06, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 1e-06, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+
+S: source, matrix_variable = "S", vector_variable = "BC";
+
+n = 1.0;
+
+drift_0: drift, L = 0.0;
+FS_PTG:PTA_D1000: marker;
+drift_1: drift, L = 0.9881635;
+FS_F1S1:Q_D1013: quadrupole, B2 = -13.4232944208, L = 0.623673, aper = 0.025;
+drift_2: drift, L = 0.3641635;
+FS_F1S1:Q_D1024: quadrupole, B2 = 7.16271014843, L = 0.798, aper = 0.025;
+drift_3: drift, L = 0.302;
+FS_F1S1:Q_D1035: quadrupole, B2 = 0.0, L = 0.798, aper = 0.025;
+drift_4: drift, L = 0.2754685;
+FS_F1S1:S_D1045: drift, B3 = 0.0, L = 0.601063, aper = 0.07, dstkick = 1.0, step = 10.0;
+drift_5: drift, L = 0.649469;
+vrotate_6: orbtrim, xyrotate = 0.0;
+FS_F1S1:DV_D1064_0: sbend, L = 0.698131666667, phi = -10.0, phi1 = 0.0, phi2 = 0.0;
+FS_F1S1:DV_D1064_1: sbend, L = 0.698131666667, phi = -10.0, phi1 = 0.0, phi2 = 0.0;
+FS_F1S1:DV_D1064_2: sbend, L = 0.698131666667, phi = -10.0, phi1 = 0.0, phi2 = 0.0;
+vrotate_7: orbtrim, xyrotate = -0.0;
+drift_8: drift, L = 0.2202165;
+FS_F1S1:VD_D1077: marker;
+drift_9: drift, L = 1.1903925;
+FS_F1S1:S_D1092: drift, B3 = 0.0, L = 0.530781, aper = 0.07, dstkick = 1.0, step = 10.0;
+drift_10: drift, L = 0.33461;
+vrotate_11: orbtrim, xyrotate = 0.0;
+FS_F1S1:DV_D1108_0: sbend, L = 0.698131666667, phi = 10.0, phi1 = 0.0, phi2 = 0.0;
+FS_F1S1:DV_D1108_1: sbend, L = 0.698131666667, phi = 10.0, phi1 = 0.0, phi2 = 0.0;
+FS_F1S1:DV_D1108_2: sbend, L = 0.698131666667, phi = 10.0, phi1 = 0.0, phi2 = 0.0;
+vrotate_12: orbtrim, xyrotate = -0.0;
+drift_13: drift, L = 1.3885555;
+FS_F1S1:Q_D1137: quadrupole, B2 = 5.58218894911, L = 0.820888, aper = 0.025;
+drift_14: drift, L = 0.266812;
+FS_F1S1:Q_D1148: quadrupole, B2 = -6.66960622429, L = 0.820888, aper = 0.025;
+drift_15: drift, L = 1.466412;
+FS_F1S1:Q_D1170: quadrupole, B2 = 3.91496625481, L = 0.820888, aper = 0.025;
+drift_16: drift, L = 0.607486;
+FS_F1S1:PM_D1181: marker;
+drift_17: drift, L = 0.1125;
+FS_F1S1:VD_D1182: marker;
+drift_18: drift, L = 0.1125;
+FS_F1S1:SLV_D1183: marker;
+drift_19: drift, L = 0.125;
+FS_F1S2:WED_D1184: marker;
+drift_20: drift, L = 0.095;
+FS_F1S2:PM_D1185: marker;
+drift_21: drift, L = 0.6746755;
+FS_F1S2:Q_D1195: quadrupole, B2 = 8.13538942193, L = 0.705757, aper = 0.025;
+drift_22: drift, L = 0.332473;
+FS_F1S2:Q_D1207: quadrupole, B2 = -8.92640079376, L = 0.873737, aper = 0.025;
+drift_23: drift, L = 0.332473;
+FS_F1S2:Q_D1218: quadrupole, B2 = 5.25263841892, L = 0.705757, aper = 0.025;
+drift_24: drift, L = 0.769675;
+vrotate_25: orbtrim, xyrotate = 0.0;
+FS_F1S2:DV_D1246_0: sbend, L = 1.163553, phi = 16.6666666667, phi1 = 0.0, phi2 = 0.0;
+FS_F1S2:DV_D1246_1: sbend, L = 1.163553, phi = 16.6666666667, phi1 = 0.0, phi2 = 0.0;
+FS_F1S2:DV_D1246_2: sbend, L = 1.163553, phi = 16.6666666667, phi1 = 0.0, phi2 = 0.0;
+vrotate_26: orbtrim, xyrotate = -0.0;
+drift_27: drift, L = 2.064227;
+FS_F1S2:Q_D1288: quadrupole, B2 = 3.02162136217, L = 0.705757, aper = 0.025;
+drift_28: drift, L = 0.332473;
+FS_F1S2:Q_D1299: quadrupole, B2 = -6.81758232864, L = 0.873737, aper = 0.025;
+drift_29: drift, L = 0.332473;
+FS_F1S2:Q_D1311: quadrupole, B2 = 8.53060247317, L = 0.705757, aper = 0.025;
+drift_30: drift, L = 0.8658715;
+FS_F1S2:VD_D1323: marker;
+drift_31: drift, L = 1.1908715;
+FS_F1S2:Q_D1338: quadrupole, B2 = 8.44616005962, L = 0.705757, aper = 0.025;
+drift_32: drift, L = 0.332473;
+FS_F1S2:Q_D1349: quadrupole, B2 = -8.47686801354, L = 0.873737, aper = 0.025;
+drift_33: drift, L = 0.332473;
+FS_F1S2:Q_D1361: quadrupole, B2 = 9.14208509971, L = 0.705757, aper = 0.025;
+drift_34: drift, L = 0.5249015;
+FS_F1S2:GV_D1369: marker;
+drift_35: drift, L = 1.5393245;
+vrotate_36: orbtrim, xyrotate = 0.0;
+FS_F1S2:DV_D1402_0: sbend, L = 1.163553, phi = -16.6666666667, phi1 = 0.0, phi2 = 0.0;
+FS_F1S2:DV_D1402_1: sbend, L = 1.163553, phi = -16.6666666667, phi1 = 0.0, phi2 = 0.0;
+FS_F1S2:DV_D1402_2: sbend, L = 1.163553, phi = -16.6666666667, phi1 = 0.0, phi2 = 0.0;
+vrotate_37: orbtrim, xyrotate = -0.0;
+
+drift_38: drift, L = 0.7431125;
+FS_F1S2:Q_D1430: quadrupole, B2 = 10, L = 0.629436, aper = 0.025;
+drift_39: drift, L = 0.3940125;
+FS_F1S2:Q_D1441: quadrupole, B2 = -10, L = 0.819979, aper = 0.025;
+drift_40: drift, L = 0.3940125;
+FS_F1S2:Q_D1453: quadrupole, B2 = 10, L = 0.629436, aper = 0.025;
+drift_41: drift, L = 0.262613;
+
+triplet: LINE=(drift_38, FS_F1S2:Q_D1430,
+               drift_39, FS_F1S2:Q_D1441,
+               drift_40, FS_F1S2:Q_D1453, drift_41);
+
+
+dr1: drift, L = 0.8;
+qd1: quadrupole, B2 =  10, L = 0.4107, aper = 0.025;
+dr2: drift, L = 0.18441;
+qd2: quadrupole, B2 = -10, L = 0.4107, aper = 0.025;
+dr3: drift, L = 0.5;
+qd3: quadrupole, B2 =  10, L = 0.4107, aper = 0.025;
+dr4: drift, L = 0.18441;
+qd4: quadrupole, B2 = -10, L = 0.4107, aper = 0.025;
+dr5: drift, L = 0.569729-0.0087475;
+
+doublets: LINE=(dr1, qd1, dr2, qd2, dr3, qd3, dr4, qd4, dr5);
+
+FS_F1S2:PM_D1458: marker;
+drift_42: drift, L = 0.44;
+FS_F1S2:PM_D1463: marker;
+drift_43: drift, L = 0.0575;
+FS_F1S2:SLV_D1463: marker;
+drift_44: drift, L = 0.075;
+
+FS_F1S2:VD_D1464: marker;
+
+PS: LINE = (S, n*drift_0, FS_PTG:PTA_D1000, n*drift_1, n*FS_F1S1:Q_D1013, n*drift_2,
+n*FS_F1S1:Q_D1024, n*drift_3, n*FS_F1S1:Q_D1035, n*drift_4, n*FS_F1S1:S_D1045,
+n*drift_5, vrotate_6, FS_F1S1:DV_D1064_0, (3*n-2)*FS_F1S1:DV_D1064_1, FS_F1S1:DV_D1064_2, vrotate_7,
+n*drift_8, FS_F1S1:VD_D1077, n*drift_9, n*FS_F1S1:S_D1092, n*drift_10, vrotate_11, FS_F1S1:DV_D1108_0,
+(3*n-2)*FS_F1S1:DV_D1108_1, FS_F1S1:DV_D1108_2, vrotate_12,
+n*drift_13, n*FS_F1S1:Q_D1137, n*drift_14, n*FS_F1S1:Q_D1148, n*drift_15,
+n*FS_F1S1:Q_D1170, n*drift_16, FS_F1S1:PM_D1181, n*drift_17, FS_F1S1:VD_D1182,
+n*drift_18, FS_F1S1:SLV_D1183, n*drift_19, FS_F1S2:WED_D1184, n*drift_20,
+FS_F1S2:PM_D1185, n*drift_21, n*FS_F1S2:Q_D1195, n*drift_22, n*FS_F1S2:Q_D1207,
+n*drift_23, n*FS_F1S2:Q_D1218, n*drift_24, vrotate_25, FS_F1S2:DV_D1246_0,
+(3*n-2)*FS_F1S2:DV_D1246_1, FS_F1S2:DV_D1246_2, vrotate_26,
+n*drift_27, n*FS_F1S2:Q_D1288, n*drift_28, n*FS_F1S2:Q_D1299, n*drift_29,
+n*FS_F1S2:Q_D1311, n*drift_30, FS_F1S2:VD_D1323, n*drift_31, n*FS_F1S2:Q_D1338,
+n*drift_32, n*FS_F1S2:Q_D1349, n*drift_33, n*FS_F1S2:Q_D1361, n*drift_34,
+FS_F1S2:GV_D1369, n*drift_35, vrotate_36, FS_F1S2:DV_D1402_0, (3*n-2)*FS_F1S2:DV_D1402_1,
+FS_F1S2:DV_D1402_2, vrotate_37,
+
+doublets,
+#triplet,
+
+FS_F1S2:PM_D1458, n*drift_42, FS_F1S2:PM_D1463, n*drift_43,
+FS_F1S2:SLV_D1463, n*drift_44, FS_F1S2:VD_D1464);
+
+USE: PS;

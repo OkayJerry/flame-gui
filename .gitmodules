@@ -1,0 +1,6 @@
+[submodule "FLAME"]
+	path = FLAME
+	url = https://github.com/frib-high-level-controls/FLAME
+[submodule "flame-utils"]
+	path = flame-utils
+	url = https://github.com/frib-high-level-controls/flame-utils
