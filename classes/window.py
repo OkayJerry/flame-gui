@@ -29,8 +29,8 @@ class MenuBar(QtWidgets.QMenuBar):
 
 
     def open(self):
-        graph = self.main_window.workspace.graph
-        lat_tree = self.main_window.workspace.lat_tree
+        graph = self.main_window.workspace.primary.graph
+        lat_tree = self.main_window.workspace.primary.lat_tree
 
         self.filename = QtWidgets.QFileDialog.getOpenFileName(self.main_window,'Open File')
         self.filename = self.filename[0] # previously tuple
@@ -38,7 +38,8 @@ class MenuBar(QtWidgets.QMenuBar):
         graph.set_model(self.filename)
         r,s = graph.model.run(monitor='all') # replace variables with something more descriptive
         data = graph.model.collect_data(r,'pos','xrms','yrms')
-        graph.plot(data['xrms'],data['xrms'])
+        graph.plot_loc()
+        graph.plot_line(data['pos'],data['xrms'])
 
         lat_tree.model = graph.model
         lat_tree.populate()
