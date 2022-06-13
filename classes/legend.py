@@ -3,10 +3,11 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 
 class LegendItem(QTreeWidgetItem):
-    def __init__(self,unit,pseudo):
+    def __init__(self,unit=None,pseudo=None):
         super().__init__()
-        unit = None
-        pseudo = None
+        self.unit = unit
+        self.pseudo = pseudo
+
 
 class Legend(QTreeWidget):
     def __init__(self,graph,parent=None):
@@ -275,9 +276,9 @@ class Legend(QTreeWidget):
 
         param = item.text(col)
         r,s = self.graph.model.run(monitor='all') # replace variables with something more descriptive
-        data = self.graph.model.collect_data(r,'pos','xrms','yrms')
+        data = self.graph.model.collect_data(r,'pos',item.pseudo)
         self.graph.plot_loc()
-        self.graph.plot_line(data['pos'],data['xrms'])
+        self.graph.plot_line(data['pos'],data[item.pseudo])
 
 
 
