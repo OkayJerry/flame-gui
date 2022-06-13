@@ -25,7 +25,7 @@ class FmMplCanvas(FigureCanvas):
     def plot_line(self,x_data,y_data):
         line = Line2D(x_data,y_data)
         self.ax.add_line(line)
-        self.ax.relim()
+        self.ax.relim(visible_only=True)
         self.ax.autoscale_view(True,True,True)
         line.figure.canvas.draw()
         return line

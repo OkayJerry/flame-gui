@@ -36,10 +36,6 @@ class MenuBar(QtWidgets.QMenuBar):
         self.filename = self.filename[0] # previously tuple
 
         graph.set_model(self.filename)
-        r,s = graph.model.run(monitor='all') # replace variables with something more descriptive
-        data = graph.model.collect_data(r,'pos','xrms','yrms')
-        graph.plot_loc()
-        graph.plot_line(data['pos'],data['xrms'])
 
         lat_tree.model = graph.model
         lat_tree.populate()

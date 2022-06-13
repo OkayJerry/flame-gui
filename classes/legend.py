@@ -7,6 +7,7 @@ class LegendItem(QTreeWidgetItem):
         super().__init__()
         self.unit = unit
         self.pseudo = pseudo
+        self.line = None
 
 
 class Legend(QTreeWidget):
@@ -19,6 +20,7 @@ class Legend(QTreeWidget):
         self.fill()
         
     def fill(self):
+
         # Parameter            Visible
         # ├─ Reference beam
         # │   ├─ ref_beta        [ ]
@@ -269,16 +271,20 @@ class Legend(QTreeWidget):
         self.itemChanged.connect(self.handle_checkboxes)
 
     def handle_checkboxes(self,item,col):
-        if item.checkState(col) == 0:
-            check_state = False
+        if item.checkState(col) == 0 and item.line:
+            item.line.set_visible(False)
+        elif item.checkState(col) != 0 and item.line:
+            item.line.set_visible(True)
         else:
-            check_state = True
+            r,s = self.graph.model.run(monitor='all') # replace variables with something more descriptive
+            data = self.graph.model.collect_data(r,'pos',item.pseudo)
+            self.graph.plot_loc()
+            item.line = self.graph.plot_line(data['pos'],data[item.pseudo])
 
-        param = item.text(col)
-        r,s = self.graph.model.run(monitor='all') # replace variables with something more descriptive
-        data = self.graph.model.collect_data(r,'pos',item.pseudo)
-        self.graph.plot_loc()
-        self.graph.plot_line(data['pos'],data[item.pseudo])
+
+        self.graph.ax.relim(visible_only=True)
+        self.graph.ax.autoscale_view(True,True,True)
+        item.line.figure.canvas.draw()
 
 
 

@@ -4,13 +4,13 @@ from classes.canvas import *
 from classes.legend import *
 
 class PrimaryWorkspace(QtWidgets.QWidget):
-    def __init__(self,parent=None):
+    def __init__(self,graph,parent=None):
 
         super(QtWidgets.QWidget,self).__init__(parent)
 
         # components
         self.layout = QtWidgets.QVBoxLayout()
-        self.graph = FmMplCanvas()
+        self.graph = graph
         self.lat_tree = LatTree(self)
 
         self.layout.addWidget(self.graph,3)
@@ -19,12 +19,12 @@ class PrimaryWorkspace(QtWidgets.QWidget):
         self.setLayout(self.layout)
 
 class SecondaryWorkspace(QtWidgets.QWidget):
-    def __init__(self,parent=None):
+    def __init__(self,graph,parent=None):
         super(QtWidgets.QWidget,self).__init__(parent)
-
+        
         self.layout = QtWidgets.QVBoxLayout()
-        self.legend = Legend(self)
-
+        self.legend = Legend(graph,self)
+        
         self.layout.addWidget(self.legend)
         
         self.setLayout(self.layout)
@@ -35,8 +35,9 @@ class Workspace(QtWidgets.QWidget):
     def __init__(self,parent=None):
         super(QtWidgets.QWidget,self).__init__(parent)
 
-        self.primary = PrimaryWorkspace(self)
-        self.secondary = SecondaryWorkspace(self)
+        self.graph = FmMplCanvas()
+        self.primary = PrimaryWorkspace(self.graph,self)
+        self.secondary = SecondaryWorkspace(self.graph,self)
 
         # components
         self.layout = QtWidgets.QHBoxLayout()
