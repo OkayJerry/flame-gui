@@ -271,11 +271,33 @@ class Legend(QTreeWidget):
         self.itemChanged.connect(self.handle_checkboxes)
 
     def handle_checkboxes(self,item,col):
-        line = self.graph.kwrd_axes[item.pseudo]
-        if item.checkState(col) == 0:
-            line.set_visible(False)
+        axis = self.graph.kwrd_axes[item.pseudo]
+
+        vis_axes_cnt = self.graph.vis_axes_cnt
+
+        if vis_axes_cnt == 0:
+            axis.yaxis.set_ticks_position('left')
+        elif vis_axes_cnt == 1:
+            axis.yaxis.set_ticks_position('right')
         else:
-            line.set_visible(True)
+            if vis_axes_cnt % 2 == 0:
+                axis.yaxis.set_ticks_position('left')
+                axis.spines.left.set_position(('outward',40))
+            else:
+                axis.yaxis.set_ticks_position('right')
+                axis.spines.right.set_position(('outward',40))
+
+        print(vis_axes_cnt) 
+
+        
+
+        if item.checkState(col) == 0:
+            axis.set_visible(False)
+            self.graph.vis_axes_cnt -= 1
+        else:
+            axis.set_visible(True)
+            self.graph.vis_axes_cnt += 1
+
 
         self.graph.figure.tight_layout()
         self.graph.figure.canvas.draw()
