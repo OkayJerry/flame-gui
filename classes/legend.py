@@ -271,20 +271,22 @@ class Legend(QTreeWidget):
         self.itemChanged.connect(self.handle_checkboxes)
 
     def handle_checkboxes(self,item,col):
-        if item.checkState(col) == 0 and item.line:
-            item.line.set_visible(False)
-        elif item.checkState(col) != 0 and item.line:
-            item.line.set_visible(True)
+        line = self.graph.kwrd_axes[item.pseudo]
+        if item.checkState(col) == 0:
+            line.set_visible(False)
         else:
-            r,s = self.graph.model.run(monitor='all') # replace variables with something more descriptive
-            data = self.graph.model.collect_data(r,'pos',item.pseudo)
-            self.graph.plot_loc()
-            item.line = self.graph.plot_line(data['pos'],data[item.pseudo])
+            line.set_visible(True)
+
+        self.graph.figure.tight_layout()
+        self.graph.figure.canvas.draw()
+
+        # else:
+        #     r,s = self.graph.model.run(monitor='all') # replace variables with something more descriptive
+        #     data = self.graph.model.collect_data(r,'pos',item.pseudo)
+        #     self.graph.plot_loc()
+        #     item.line = self.graph.plot_line(data['pos'],data[item.pseudo])
 
 
-        self.graph.ax.relim(visible_only=True)
-        self.graph.ax.autoscale_view(True,True,True)
-        item.line.figure.canvas.draw()
-
-
-
+        # self.graph.main_axis.relim(visible_only=True)
+        # self.graph.main_axis.autoscale_view(True,True,True)
+        # item.line.figure.canvas.draw()

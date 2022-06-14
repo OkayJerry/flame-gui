@@ -81,7 +81,3 @@ class LatTree(QTreeWidget):
         if col == 0 or col == 1: # odd logic, but others didn't work?
             return
         self.editItem(item,col)
-
-        
-        
-

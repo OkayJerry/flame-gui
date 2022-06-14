@@ -40,6 +40,8 @@ class MenuBar(QtWidgets.QMenuBar):
         lat_tree.model = graph.model
         lat_tree.populate()
 
+        graph.plot()
+
     def save(self):
         model = self.main_window.workspace.graph.model
         model.generate_latfile(latfile=self.filename)
@@ -72,5 +74,3 @@ class Window(QtWidgets.QMainWindow):
 
         self.setCentralWidget(main)
         self.setMenuBar(menu_bar)
-
-
