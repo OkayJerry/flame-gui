@@ -63,7 +63,39 @@ class LatTree(QTreeWidget):
                         item.addChild(child)
                         child.setText(2,key)
                         child.setText(3,val)
+                        self._set_unit(child)
+                self._set_unit(item)
             self.addTopLevelItem(item)
+
+    def _set_unit(self,item):
+        unit_info = {
+            'theta_x': 'rad',
+            'theta_y': 'rad',
+            'tm_xkick': 'T*m',
+            'tm_ykick': 'T*m',
+            'xyrotate': 'deg',
+            'L': 'm',
+            'B': 'T',
+            'dx': 'm',
+            'dy': 'm',
+            'pitch': 'rad',
+            'yaw': 'rad',
+            'roll': 'rad',
+            'B2': 'T/m',
+            'B3': 'T/m^2',
+            'V': 'V',
+            'radius': 'm',
+            'phi': 'deg',
+            'phi1': 'deg',
+            'phi2': 'deg',
+            'fringe_x': 'rad/mm',
+            'fringe_y': 'rad/mm',
+            'f': 'Hz',
+            'Rm': 'mm'
+        }
+
+        if item.text(2) in unit_info:
+            item.setText(4,unit_info[item.text(2)])
 
 
     def update_model(self):
