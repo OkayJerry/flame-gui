@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from classes.workspace import * 
 
 class MenuBar(QtWidgets.QMenuBar):
@@ -39,6 +39,7 @@ class MenuBar(QtWidgets.QMenuBar):
 
         lat_tree.model = graph.model
         lat_tree.populate()
+        lat_tree.sortItems(1, QtCore.Qt.AscendingOrder)
 
         graph.plot()
 
@@ -74,3 +75,6 @@ class Window(QtWidgets.QMainWindow):
 
         self.setCentralWidget(main)
         self.setMenuBar(menu_bar)
+
+        # startup
+        menu_bar.open()
