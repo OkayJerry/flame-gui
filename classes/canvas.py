@@ -12,6 +12,7 @@ class FmMplCanvas(FigureCanvas):
         self.model = None
         self.filename = None
         self.kwrd_axes = {}
+        self.vis_axes_cnt = 0
 
         self.figure.tight_layout()
 
@@ -81,6 +82,9 @@ class FmMplCanvas(FigureCanvas):
             "cxpyp",
             "last_caviphi0",
             # "brho" # cannot use
+        ]
+        colors = [
+
         ]
 
         r,s = self.model.run(monitor='all')
