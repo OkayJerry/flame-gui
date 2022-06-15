@@ -39,9 +39,8 @@ class MenuBar(QtWidgets.QMenuBar):
 
         lat_tree.model = graph.model
         lat_tree.populate()
+        lat_tree.sortItems(0, QtCore.Qt.AscendingOrder)
         lat_tree.sortItems(1, QtCore.Qt.AscendingOrder)
-
-        graph.plot()
 
     def save(self):
         model = self.main_window.workspace.graph.model
