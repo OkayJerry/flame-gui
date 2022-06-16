@@ -21,11 +21,12 @@ class FmMplCanvas(FigureCanvas):
                     # [   'C0'  ,   'C1'  ,   'C2'  ,   'C3'  ] https://matplotlib.org/3.5.0/users/prev_whats_new/dflt_style_changes.html#colors-in-default-property-cycle
 
         # axes
-        base_ax = self.figure.subplots()
-        base_ax.set_visible(False)
-        self.axes.append(base_ax)
-        for _ in range(4):
-            ax = base_ax.twinx()
+        self.base_ax = self.figure.subplots()
+        self.base_ax.set_xlabel('pos [m]')
+        self.base_ax.set_visible(False)
+        self.axes.append(self.base_ax)
+        for _ in range(3):
+            ax = self.base_ax.twinx()
             ax.set_visible(False)
             self.axes.append(ax)
 
@@ -51,7 +52,7 @@ class FmMplCanvas(FigureCanvas):
         item.line = Line2D(data['pos'],data[item.kwrd])
         item.line.set_label(item.kwrd)
         if item.dashed == True:
-            item.line.set_linestyle('dashed') # ------------------------ linestyle
+            item.line.set_linestyle('dashed')
         self._plot_line(item.line,item.y_unit)
         self.handle_legend()
         self.update_axis()
@@ -82,25 +83,25 @@ class FmMplCanvas(FigureCanvas):
         topmost_ax = self.axes[0]
         for ax in self.axes:
             if ax.get_legend():
-                ax.get_legend().remove()                   #   ┌───────────┐
+                ax.get_legend().remove()
             for line in ax.lines:
                 patch = mpatches.Patch(color=line.get_color(),label=line.get_label())
                 patches.append(patch)
             if ax.get_visible():
                 topmost_ax = ax
-        topmost_ax.legend(handles=patches,loc="upper left")#, bbox_to_anchor=(1,1), bbox_transform=topmost_ax.transAxes)
+        topmost_ax.legend(handles=patches,loc="upper left")
 
     def remove_item(self,item):
         self._remove_line(item.line)
-        self.handle_legend()
         self.update_axis()
+        self.handle_legend()
         self.figure.tight_layout()
         self.figure.canvas.draw()
 
     def _remove_line(self,line):
         for ax in self.axes:                   
-            if line in ax.lines and len(ax.lines) == 1:              #   │           v
-                self.axes.append(self.axes.pop(self.axes.index(ax))) # [ax1,ax2,ax3,ax4]
+            if line in ax.lines and len(ax.lines) == 1:
+                # self.axes.append(self.axes.pop(self.axes.index(ax)))
                 ax.set_visible(False)
                 break
         line.remove()
@@ -132,6 +133,14 @@ class FmMplCanvas(FigureCanvas):
 
     def update_axis(self):
         vis_so_far = 0 
+        for ax in self.axes:
+            if ax != self.base_ax and len(self.base_ax.lines) == 0 and len(ax.lines) != 0:
+                self.base_ax.set_visible(True)
+                ax.set_visible(False)
+                for line in ax.lines:
+                    line.remove()
+                    self.base_ax.add_line(line)
+
         for ax in self.axes:
             if ax.get_visible():
                 vis_so_far += 1
