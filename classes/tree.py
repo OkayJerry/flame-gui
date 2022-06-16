@@ -8,9 +8,12 @@ class DoubleDelegate(QStyledItemDelegate):
         super().__init__(parent)
 
     def createEditor(self,parent,option,index):
-        lineEdit = QLineEdit(parent);
-        validator = QtGui.QDoubleValidator(lineEdit);
-        lineEdit.setValidator(validator);
+        lineEdit = QLineEdit(parent)
+        if index.sibling(index.row(),4).data() == None: # if corresponding unit is none
+            return lineEdit
+        # print(parent.currentItem.text(4))
+        validator = QtGui.QDoubleValidator(lineEdit)
+        lineEdit.setValidator(validator)
         return lineEdit;
 
 
@@ -98,14 +101,22 @@ class LatTree(QTreeWidget):
             item.setText(4,unit_info[item.text(2)])
 
 
+
     def update_model(self):
         selected = self.currentItem()
+        attribute = selected.text(2)
+        unit = selected.text(4)
+
         if not selected.parent():
             element = selected.text(0)
         else:
             element = selected.parent().text(0)
-        attribute = selected.text(2)
-        val = float(selected.text(3))
+
+        if unit != "":
+            val = float(selected.text(3))
+        else:
+            val = selected.text(3)
+
         self.model.reconfigure(element, {attribute: val})
 
 
