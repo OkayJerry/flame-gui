@@ -3,7 +3,9 @@ from matplotlib.backends.backend_qtagg import FigureCanvas, NavigationToolbar2QT
 from matplotlib.figure import Figure
 from flame_utils import ModelFlame, PlotLat
 from matplotlib.lines import Line2D
+import matplotlib.patches as mpatches
 from classes.utility import WorkspaceOneItem
+from PyQt5 import QtGui
 import numpy as np
 
 class FmMplCanvas(FigureCanvas):
@@ -15,7 +17,8 @@ class FmMplCanvas(FigureCanvas):
         self.vis_axes_cnt = 0
         self.items = items
         self.axes = []
-        self.colors = ['C0','C1','C2','C3'] # See: https://matplotlib.org/3.5.0/users/prev_whats_new/dflt_style_changes.html#colors-in-default-property-cycle
+        self.colors = ['#1f77b4','#ff7f0e','#2ca02c','#d62728']
+                    # [   'C0'  ,   'C1'  ,   'C2'  ,   'C3'  ] https://matplotlib.org/3.5.0/users/prev_whats_new/dflt_style_changes.html#colors-in-default-property-cycle
 
         # axes
         base_ax = self.figure.subplots()
@@ -46,9 +49,11 @@ class FmMplCanvas(FigureCanvas):
         r,s = self.model.run(monitor='all')
         data = self.model.collect_data(r,'pos',item.kwrd)
         item.line = Line2D(data['pos'],data[item.kwrd])
+        item.line.set_label(item.kwrd)
         if item.dashed == True:
             item.line.set_linestyle('dashed') # ------------------------ linestyle
         self._plot_line(item.line,item.y_unit)
+        self.handle_legend()
         self.update_axis()
         self.figure.tight_layout()
         self.figure.canvas.draw()
@@ -69,21 +74,33 @@ class FmMplCanvas(FigureCanvas):
                 ax.relim()
                 ax.autoscale_view(True,True,True)
                 break
-
-        
         
         line.figure.canvas.draw()
 
+    def handle_legend(self):
+        patches = []
+        topmost_ax = self.axes[0]
+        for ax in self.axes:
+            if ax.get_legend():
+                ax.get_legend().remove()                   #   ┌───────────┐
+            for line in ax.lines:
+                patch = mpatches.Patch(color=line.get_color(),label=line.get_label())
+                patches.append(patch)
+            if ax.get_visible():
+                topmost_ax = ax
+        topmost_ax.legend(handles=patches,loc="upper left")#, bbox_to_anchor=(1,1), bbox_transform=topmost_ax.transAxes)
+
     def remove_item(self,item):
         self._remove_line(item.line)
+        self.handle_legend()
         self.update_axis()
         self.figure.tight_layout()
         self.figure.canvas.draw()
 
     def _remove_line(self,line):
-        for ax in self.axes:
-            if line in ax.lines and len(ax.lines) == 1:
-        #         ax.lines.pop(0)
+        for ax in self.axes:                   
+            if line in ax.lines and len(ax.lines) == 1:              #   │           v
+                self.axes.append(self.axes.pop(self.axes.index(ax))) # [ax1,ax2,ax3,ax4]
                 ax.set_visible(False)
                 break
         line.remove()
@@ -94,8 +111,9 @@ class FmMplCanvas(FigureCanvas):
             for ln in ax.lines:
                 taken.append(ln.get_color())
         available = list(set(self.colors) - set(taken))
-        line.set_color(available[0])
-        print(available[0])
+        n_color = available[0]
+        line.set_color(n_color)
+
 
     def get_visible_axes_cnt(self):
         cnt = 0
@@ -134,3 +152,6 @@ class FmMplCanvas(FigureCanvas):
                     ax.yaxis.set_ticks_position('right')
                     ax.spines.right.set_position(('outward',60))
                     ax.yaxis.set_label_position('right')
+
+            ax.relim()
+            ax.autoscale_view(True,True,True)
