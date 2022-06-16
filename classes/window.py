@@ -34,6 +34,7 @@ class MenuBar(QtWidgets.QMenuBar):
 
         self.filename = QtWidgets.QFileDialog.getOpenFileName(self.main_window,'Open File')
         self.filename = self.filename[0] # previously tuple
+        self.main_window.setWindowTitle("FLAME: " + self.filename)
 
         graph.set_model(self.filename)
 
