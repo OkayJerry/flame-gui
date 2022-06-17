@@ -32,10 +32,23 @@ class MenuBar(QtWidgets.QMenuBar):
         graph = self.main_window.workspace.primary.graph
         lat_tree = self.main_window.workspace.primary.lat_tree
 
-        self.filename = QtWidgets.QFileDialog.getOpenFileName(self.main_window,'Open File')
-        self.filename = self.filename[0] # previously tuple
+        self.filename = ""
+        while self.filename == "" or ".lat" not in self.filename:
+            self.filename = QtWidgets.QFileDialog.getOpenFileName(self.main_window,'Open File')
+            self.filename = self.filename[0] # previously tuple
+            if self.filename == "" or ".lat" not in self.filename:
+                warning = QtWidgets.QMessageBox()
+                warning.setIcon(QtWidgets.QMessageBox.Critical)
+                warning.setText("Please select a .lat file")
+                warning.setWindowTitle("ERROR")
+                warning.setStandardButtons(QtWidgets.QMessageBox.Ok)
+
+                if warning.exec() == QtWidgets.QMessageBox.Ok:
+                    warning.close()
+
         self.main_window.setWindowTitle("FLAME: " + self.filename)
 
+        print(self.filename)
         graph.set_model(self.filename)
 
         lat_tree.model = graph.model
