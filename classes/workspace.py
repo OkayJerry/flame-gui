@@ -227,6 +227,33 @@ workspace_one_items = {
     }
 }
 
+class LatTreeFilterWorkspace(QtWidgets.QWidget):
+    def __init__(self,parent=None):
+        super(QtWidgets.QWidget,self).__init__(parent)
+
+        # componenets
+        self.parent = parent
+        self.layout = QtWidgets.QHBoxLayout()
+        self.combo_box = QtWidgets.QComboBox()
+        self.search_bar = QtWidgets.QLineEdit()
+    
+        self.set_combo_box()
+
+        self.layout.addWidget(self.combo_box)
+        self.layout.addWidget(self.search_bar)
+
+        self.setLayout(self.layout)
+
+    def set_combo_box(self):
+        for word in ['all','quadrupole','drift','orbtrim','marker','sbend']:
+            self.combo_box.addItem(word)
+
+        self.combo_box.currentTextChanged.connect(self.parent.lat_tree.filter)
+
+        
+
+
+
 class PrimaryWorkspace(QtWidgets.QWidget):
     def __init__(self,graph,items,parent=None):
 
@@ -236,8 +263,10 @@ class PrimaryWorkspace(QtWidgets.QWidget):
         self.layout = QtWidgets.QVBoxLayout()
         self.graph = graph
         self.lat_tree = LatTree(self)
+        self.filter_workspace = LatTreeFilterWorkspace(self)
 
         self.layout.addWidget(self.graph,3)
+        self.layout.addWidget(self.filter_workspace)
         self.layout.addWidget(self.lat_tree,2)
 
         self.setLayout(self.layout)
@@ -252,7 +281,6 @@ class SecondaryWorkspace(QtWidgets.QWidget):
         self.layout.addWidget(self.legend)
         
         self.setLayout(self.layout)
-
 
 
 class Workspace(QtWidgets.QWidget):

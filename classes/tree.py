@@ -23,8 +23,6 @@ class Item(QTreeWidgetItem):
         super().__init__()
         self.setFlags(self.flags() | QtCore.Qt.ItemIsEditable)
 
-
-
 class LatTree(QTreeWidget):
     def __init__(self,parent,model=None):
         super(QTreeWidget,self).__init__(parent)
@@ -124,3 +122,15 @@ class LatTree(QTreeWidget):
         if col == 0 or col == 1: # odd logic, but others didn't work?
             return
         self.editItem(item,col)
+
+    def filter(self,filter_text):
+        for i in range(self.topLevelItemCount()):
+            item = self.topLevelItem(i)
+            if filter_text == 'all':
+                item.setHidden(False)
+                continue
+
+            if item.text(1) != filter_text:
+                item.setHidden(True)
+            else:
+                item.setHidden(False)
