@@ -7,17 +7,17 @@ from classes.utility import WorkspaceOneItem
 workspace_one_items = {
     "ref_beta": {
         "description": "speed in the unit of light velocity in vacuum of reference charge state, Lorentz beta",
-        "unit": None,
+        "unit": "",
         "representation": "Beta"
     },
     "ref_bg": {
         "description": "multiplication of beta and gamma of reference charge state",
-        "unit": None,
+        "unit": "",
         "representation": "BG"
     },
     "ref_gamma": {
         "description": "relativistic energy of reference charge state, Lorentz gamma",
-        "unit": None,
+        "unit": "",
         "representation": "Gamma"
     },
     "ref_IonEk": {
@@ -32,7 +32,7 @@ workspace_one_items = {
     },
     "ref_IonQ": {
         "description": "macro particle number of reference charge state",
-        "unit": None,
+        "unit": "",
         "representation": "IonQ"
     },
     "ref_IonW": {
@@ -42,7 +42,7 @@ workspace_one_items = {
     },
     "ref_IonZ": {
         "description": "reference charge to mass ratio",
-        "unit": None,
+        "unit": "",
         "representation": "IonZ"
     },
     "ref_phis": {
@@ -162,7 +162,7 @@ workspace_one_items = {
     },
     "xtwiss_alpha": {
         "description": "weight average of twiss alpha x",
-        "unit": None,
+        "unit": "",
         "representation": "x"
     },
     "xtwiss_gamma": {
@@ -177,7 +177,7 @@ workspace_one_items = {
     },
     "ytwiss_alpha": {
         "description": "weight average of twiss alpha y",
-        "unit": None,
+        "unit": "",
         "representation": "y"
     },
     "ytwiss_gamma": {
@@ -192,7 +192,7 @@ workspace_one_items = {
     },
     "ztwiss_alpha": {
         "description": "weight average of twiss alpha z",
-        "unit": None,
+        "unit": "",
         "representation": "z"
     },
     "ztwiss_gamma": {
@@ -202,22 +202,22 @@ workspace_one_items = {
     },
     "couple_xy": {
         "description": "weight average of normalized x-y coupling term",
-        "unit": None,
+        "unit": "",
         "representation": "x-y"
     },
     "couple_xpy": {
         "description": "weight average of normalized xp-y coupling term",
-        "unit": None,
+        "unit": "",
         "representation": "x'-y"
     },
     "couple_xyp": {
         "description": "weight average of normalized x-yp coupling term",
-        "unit": None,
+        "unit": "",
         "representation": "x-y'"
     },
     "couple_xpyp": {
         "description": "weight average of normalized xp-yp coupling term",
-        "unit": None,
+        "unit": "",
         "representation": "x'-y'"
     },
     "last_caviphi0": {
@@ -235,12 +235,15 @@ class LatTreeFilterWorkspace(QtWidgets.QWidget):
         self.parent = parent
         self.layout = QtWidgets.QHBoxLayout()
         self.combo_box = QtWidgets.QComboBox()
-        self.search_bar = QtWidgets.QLineEdit()
+        # self.search_bar = QtWidgets.QLineEdit()
     
         self.set_combo_box()
+        self.layout.setContentsMargins(0, 0, 0, 0)
+
 
         self.layout.addWidget(self.combo_box)
-        self.layout.addWidget(self.search_bar)
+        self.layout.addSpacing(600)
+        # self.layout.addWidget(self.search_bar)
 
         self.setLayout(self.layout)
 
@@ -249,7 +252,7 @@ class LatTreeFilterWorkspace(QtWidgets.QWidget):
             self.combo_box.addItem(word)
 
         self.combo_box.currentTextChanged.connect(self.parent.lat_tree.filter)
-
+        self.combo_box.setFixedWidth(300)
         
 
 

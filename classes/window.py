@@ -48,7 +48,6 @@ class MenuBar(QtWidgets.QMenuBar):
 
         self.main_window.setWindowTitle("FLAME: " + self.filename)
 
-        print(self.filename)
         graph.set_model(self.filename)
 
         lat_tree.model = graph.model
