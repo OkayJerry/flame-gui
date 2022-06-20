@@ -129,6 +129,12 @@ class LatTree(QTreeWidget):
             if filter_text == 'all':
                 item.setHidden(False)
                 continue
+            elif filter_text == 'magnetic':
+                if item.text(1) == 'drift':
+                    item.setHidden(True)
+                else:
+                    item.setHidden(False)
+                continue
 
             if item.text(1) != filter_text:
                 item.setHidden(True)
