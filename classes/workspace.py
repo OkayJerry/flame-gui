@@ -248,7 +248,7 @@ class LatTreeFilterWorkspace(QtWidgets.QWidget):
         self.setLayout(self.layout)
 
     def set_combo_box(self):
-        for word in ['all','quadrupole','drift','orbtrim','marker','sbend']:
+        for word in ['all','magnetic','quadrupole','drift','orbtrim','marker','sbend']:
             self.combo_box.addItem(word)
 
         self.combo_box.currentTextChanged.connect(self.parent.lat_tree.filter)
