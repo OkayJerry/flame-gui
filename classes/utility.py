@@ -14,4 +14,3 @@ class WorkspaceOneItem(QTreeWidgetItem):
         self.description = None # PyQt Tool Tip
         self.text_repr = None # within QTreeWidget
         self.dashed = False
-        self.color = None
