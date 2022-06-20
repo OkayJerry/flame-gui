@@ -1,5 +1,5 @@
 # FLAME-GUI
-Graphical User Interface for Fast Linear Accelerator Model Engine (FLAME).
+Graphical User Interface for [Fast Linear Accelerator Model Engine (FLAME)](https://github.com/frib-high-level-controls/FLAME).
 
 ## How to Install (Linux Only)
 1. Install Prerequisites
@@ -55,4 +55,4 @@ python setup.py install
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 ## Credits
-[@kryv](https://github.com/kryv) - developed FLAME, guided FLAME-GUI
+[@kryv](https://github.com/kryv) - directed FLAME-GUI
