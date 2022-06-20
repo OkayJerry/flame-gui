@@ -8,159 +8,163 @@ from classes.utility import WorkspaceOneItem
 from PyQt5 import QtGui
 import numpy as np
 
+class FmMplLine(Line2D): # only purpose as for now is to differentiate lines I've added from Line2D
+    def __init__(self, xdata, ydata):
+        super().__init__(xdata, ydata)
+
 class FmMplCanvas(FigureCanvas):
     def __init__(self,items,parent=None,filename=None):
         super(FigureCanvas,self).__init__(parent)
         self.model = None
         self.filename = None
-        self.kwrd_axes = {}
-        self.vis_axes_cnt = 0
-        self.items = items
         self.axes = []
+        self.base_ax = None
         self.colors = ['#1f77b4','#ff7f0e','#2ca02c','#d62728']
                     # [   'C0'  ,   'C1'  ,   'C2'  ,   'C3'  ] https://matplotlib.org/3.5.0/users/prev_whats_new/dflt_style_changes.html#colors-in-default-property-cycle
 
-        # axes
-        self.base_ax = self.figure.subplots()
-        self.base_ax.set_xlabel('pos [m]')
-        self.base_ax.set_visible(False)
-        self.axes.append(self.base_ax)
-        for _ in range(3):
-            ax = self.base_ax.twinx()
-            ax.set_visible(False)
-            self.axes.append(ax)
-
         self.figure.tight_layout()
-
- 
 
     def set_model(self,filename):
         self.filename = filename
         self.model = ModelFlame(filename)
 
-    def plot_loc(self):
-        y_min,y_max = self.get_ylim()
-        # print(y_min,y_max)
-
-
-        lattice = PlotLat(self.model.machine, auto_scaling=False, starting_offset=0)
-        lattice.generate(ycen=-5, yscl=3, legend=False, option=False, axes=self.main_axis)
-
     def plot_item(self,item):
         r,s = self.model.run(monitor='all')
         data = self.model.collect_data(r,'pos',item.kwrd)
-        item.line = Line2D(data['pos'],data[item.kwrd])
+        item.line = FmMplLine(data['pos'],data[item.kwrd])
         item.line.set_label(item.kwrd)
         if item.dashed == True:
             item.line.set_linestyle('dashed')
-        self._plot_line(item.line,item.y_unit)
-        self.handle_legend()
-        self.update_axis()
-        self.figure.tight_layout()
-        self.figure.canvas.draw()
+        self._set_line_color(item.line)
 
-    def _plot_line(self,line,unit):
-        self.choose_color(line)
-        for ax in self.axes:
-            if not ax.get_visible():
-                ax.set_ylabel(unit)
-                ax.add_line(line)
-                ax.set_visible(True)
-                ax.relim()
-                ax.autoscale_view(True,True,True)
-                line.figure.canvas.draw()
-                break
-            elif unit == ax.get_ylabel():
-                ax.add_line(line)
-                ax.relim()
-                ax.autoscale_view(True,True,True)
-                break
+        ax = self._get_axis_with_ylabel(item.y_unit)
+        if ax != None:
+            ax.add_line(item.line)
+        else:
+            if self.base_ax == None: # initial call of plot_item from blank canvas
+                ax = self.figure.subplots()
+                self.base_ax = ax
+            else:
+                ax = self.base_ax.twinx()
+                self._set_axis_location(ax)
+            ax.add_line(item.line)
+            self.axes.append(ax)
+        ax.set_ylabel(item.y_unit) # if the axis already is that unit, the y-label will just remain the same
         
-        line.figure.canvas.draw()
+        self._remove_legend()
+        self._create_legend()
 
-    def handle_legend(self):
-        patches = []
-        topmost_ax = self.axes[0]
-        for ax in self.axes:
-            if ax.get_legend():
-                ax.get_legend().remove()
-            for line in ax.lines:
-                patch = mpatches.Patch(color=line.get_color(),label=line.get_label())
-                patches.append(patch)
-            if ax.get_visible():
-                topmost_ax = ax
-        topmost_ax.legend(handles=patches,loc="upper left")
+        self._remove_lat()
+        self._plot_lat()
 
-    def remove_item(self,item):
-        self._remove_line(item.line)
-        self.update_axis()
-        self.handle_legend()
+        ax.relim()
+        ax.autoscale_view(True,True,True)
+
         self.figure.tight_layout()
         self.figure.canvas.draw()
 
-    def _remove_line(self,line):
-        for ax in self.axes:                   
-            if line in ax.lines and len(ax.lines) == 1:
-                # self.axes.append(self.axes.pop(self.axes.index(ax)))
-                ax.set_visible(False)
-                break
-        line.remove()
-
-    def choose_color(self,line):
+    def _set_line_color(self,line):
         taken = []
         for ax in self.axes:
             for ln in ax.lines:
-                taken.append(ln.get_color())
+                if type(ln) == FmMplLine:
+                    taken.append(ln.get_color())
         available = list(set(self.colors) - set(taken))
         n_color = available[0]
         line.set_color(n_color)
 
-
-    def get_visible_axes_cnt(self):
-        cnt = 0
+    def _get_axis_with_ylabel(self,ylabel):
         for ax in self.axes:
-            if ax.get_visible():
-                cnt += 1
-        return cnt
+            if ylabel == ax.get_ylabel():
+                return ax
+        return None
 
-    def get_visible_line_cnt(self):
-        cnt = 0
+    def _set_axis_location(self,axis): # occurs prior to the appending of current axis
+        if len(self.axes) == 1:
+            axis.yaxis.set_ticks_position('right')
+            axis.spines.left.set_position(('outward',0))
+            axis.yaxis.set_label_position('right')
+        elif len(self.axes) == 2:
+            axis.yaxis.set_ticks_position('left')
+            axis.spines.left.set_position(('outward',60))
+            axis.yaxis.set_label_position("left")
+        else:
+            axis.yaxis.set_ticks_position('right')
+            axis.spines.right.set_position(('outward',60))
+            axis.yaxis.set_label_position('right')
+
+    def _create_legend(self):
+        patches = []
+        topmost_ax = self.axes[-1]
         for ax in self.axes:
-            for line in ax.lines:
-                if line.get_visible():
-                    cnt += 1
-        return cnt
+            for ln in ax.lines:
+                if type(ln) == FmMplLine:
+                    patch = mpatches.Patch(color=ln.get_color(),label=ln.get_label())
+                    patches.append(patch)
+        topmost_ax.legend(handles=patches,loc='upper left')
 
-    def update_axis(self):
-        vis_so_far = 0 
+    def _remove_legend(self):
+        if len(self.axes) > 1: # new axis just added
+            if self.axes[-2].get_legend(): # since new axis was just added, must go back 2
+                prev_legend = self.axes[-2].get_legend()
+            else: # sometimes an axis isn't added, so you just need to remove the one in the current axis
+                prev_legend = self.axes[-1].get_legend()
+            prev_legend.remove()
+
+
+    def remove_item(self,item):
+        item.line.remove()
+        self._remove_legend()
+
         for ax in self.axes:
-            if ax != self.base_ax and len(self.base_ax.lines) == 0 and len(ax.lines) != 0:
-                self.base_ax.set_visible(True)
-                ax.set_visible(False)
-                for line in ax.lines:
-                    line.remove()
-                    self.base_ax.add_line(line)
+            if len(ax.lines) == 0:
+                if ax == self.base_ax:
+                    self.base_ax = None
+                ax.remove()
+                self.axes.remove(ax)
 
-        for ax in self.axes:
-            if ax.get_visible():
-                vis_so_far += 1
+        if len(self.axes) != 0:
+            self._create_legend()
 
-                if vis_so_far == 1:
-                    ax.yaxis.set_ticks_position('left')
-                    ax.spines.left.set_position(('outward',0))
-                    ax.yaxis.set_label_position("left")
-                elif vis_so_far == 2:
-                    ax.yaxis.set_ticks_position('right')
-                    ax.spines.left.set_position(('outward',0))
-                    ax.yaxis.set_label_position('right')
-                elif vis_so_far == 3:
-                    ax.yaxis.set_ticks_position('left')
-                    ax.spines.left.set_position(('outward',60))
-                    ax.yaxis.set_label_position("left")
-                else:
-                    ax.yaxis.set_ticks_position('right')
-                    ax.spines.right.set_position(('outward',60))
-                    ax.yaxis.set_label_position('right')
+        if self.base_ax:
+            self._remove_lat()
+            self._plot_lat()
 
-            ax.relim()
-            ax.autoscale_view(True,True,True)
+        self.figure.tight_layout()
+        self.figure.canvas.draw()
+
+    def _plot_lat(self):
+        ymax,ymin = self._get_ymaxmin(self.base_ax)
+        yrange = ymax - ymin
+        frac_yrange = yrange * .1
+
+        lattice = PlotLat(self.model.machine, auto_scaling=False, starting_offset=0)
+        lattice.generate(ycen=ymin-frac_yrange, yscl=frac_yrange, legend=False, option=False, axes=self.base_ax)
+
+        self.base_ax.relim()
+        self.base_ax.autoscale_view(True,True,True)
+
+    def _remove_lat(self):
+        for ln in reversed(self.base_ax.lines): # reversed necessary
+            if type(ln) != FmMplLine:
+                ln.remove()
+        [p.remove() for p in reversed(self.base_ax.patches)] # reversed necessary
+
+        if self.base_ax:
+            self.base_ax.relim()
+            self.base_ax.autoscale_view(True,True,True)
+
+    def _get_ymaxmin(self,axis):
+        ymax = -np.inf
+        ymin = np.inf
+        for ln in axis.lines:
+            if type(ln) == FmMplLine:
+                ydata = ln.get_ydata()
+                ln_ymax = max(ydata)
+                ln_ymin = min(ydata)
+                if ln_ymax > ymax:
+                    ymax = ln_ymax
+                if ln_ymin < ymin:
+                    ymin = ln_ymin
+        return ymax,ymin
+
