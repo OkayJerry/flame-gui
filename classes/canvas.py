@@ -47,6 +47,8 @@ class FmMplCanvas(FigureCanvas):
             else:
                 ax = self.base_ax.twinx()
                 self._set_axis_location(ax)
+                base_xmargin,_ = self.base_ax.margins()
+                ax.margins(base_xmargin,0.425)
             ax.add_line(item.line)
             self.axes.append(ax)
         ax.set_ylabel(item.y_unit) # if the axis already is that unit, the y-label will just remain the same
@@ -80,7 +82,11 @@ class FmMplCanvas(FigureCanvas):
         return None
 
     def _set_axis_location(self,axis): # occurs prior to the appending of current axis
-        if len(self.axes) == 1:
+        # if len(self.axes) == 0:
+        #     axis.yaxis.set_ticks_position('left')
+        #     axis.spines.left.set_position(('outward',0))
+        #     axis.yaxis.set_label_position('left')
+        if len(self.axes) == 1: # elif len(self.axes) == 1:
             axis.yaxis.set_ticks_position('right')
             axis.spines.left.set_position(('outward',0))
             axis.yaxis.set_label_position('right')
@@ -115,6 +121,8 @@ class FmMplCanvas(FigureCanvas):
     def remove_item(self,item):
         item.line.remove()
         self._remove_legend()
+        self._remove_lat()
+
 
         for ax in self.axes:
             if len(ax.lines) == 0:
@@ -122,12 +130,18 @@ class FmMplCanvas(FigureCanvas):
                     self.base_ax = None
                 ax.remove()
                 self.axes.remove(ax)
+                if len(self.axes) != 0: # must reassign base_ax for PlotLat()
+                    print(self.axes)
+                    self.base_ax = self.axes[0]
+                    self.base_ax.margins(0.05,0.05) # default autoscale margins
+                    self.base_ax.yaxis.set_ticks_position('left')
+                    self.base_ax.spines.left.set_position(('outward',0))
+                    self.base_ax.yaxis.set_label_position('left')
 
         if len(self.axes) != 0:
             self._create_legend()
 
         if self.base_ax:
-            self._remove_lat()
             self._plot_lat()
 
         self.figure.tight_layout()
@@ -136,10 +150,17 @@ class FmMplCanvas(FigureCanvas):
     def _plot_lat(self):
         ymax,ymin = self._get_ymaxmin(self.base_ax)
         yrange = ymax - ymin
-        frac_yrange = yrange * .1
+        frac_yrange = yrange * 0.1
+
+        if ymax != ymin:
+            ycen_eq = ymin - frac_yrange - frac_yrange * 0.5
+            yscl_eq = frac_yrange
+        else:
+            ycen_eq = ymax - 1
+            yscl_eq = 1 * 0.09
 
         lattice = PlotLat(self.model.machine, auto_scaling=False, starting_offset=0)
-        lattice.generate(ycen=ymin-frac_yrange, yscl=frac_yrange, legend=False, option=False, axes=self.base_ax)
+        lattice.generate(ycen=ycen_eq, yscl=yscl_eq, legend=False, option=False, axes=self.base_ax)
 
         self.base_ax.relim()
         self.base_ax.autoscale_view(True,True,True)
@@ -167,4 +188,12 @@ class FmMplCanvas(FigureCanvas):
                 if ln_ymin < ymin:
                     ymin = ln_ymin
         return ymax,ymin
+
+    def _get_ymargin(self,axis):
+        ymax,ymin = self._get_ymaxmin(axis)
+        yrange = ymax - ymin
+        frac_yrange = yrange * .1
+        return frac_yrange
+
+
 
