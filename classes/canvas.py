@@ -69,7 +69,7 @@ class FmMplCanvas(FigureCanvas):
         taken = []
         for ax in self.axes:
             for ln in ax.lines:
-                if type(ln) == FmMplLine:
+                if type(ln) == FmMplLine: # filters out locational plot
                     taken.append(ln.get_color())
         available = list(set(self.colors) - set(taken))
         n_color = available[0]
@@ -82,11 +82,7 @@ class FmMplCanvas(FigureCanvas):
         return None
 
     def _set_axis_location(self,axis): # occurs prior to the appending of current axis
-        # if len(self.axes) == 0:
-        #     axis.yaxis.set_ticks_position('left')
-        #     axis.spines.left.set_position(('outward',0))
-        #     axis.yaxis.set_label_position('left')
-        if len(self.axes) == 1: # elif len(self.axes) == 1:
+        if len(self.axes) == 1:
             axis.yaxis.set_ticks_position('right')
             axis.spines.left.set_position(('outward',0))
             axis.yaxis.set_label_position('right')
@@ -123,22 +119,21 @@ class FmMplCanvas(FigureCanvas):
         self._remove_legend()
         self._remove_lat()
 
-
         for ax in self.axes:
             if len(ax.lines) == 0:
                 if ax == self.base_ax:
                     self.base_ax = None
                 ax.remove()
                 self.axes.remove(ax)
-                if len(self.axes) != 0: # must reassign base_ax for PlotLat()
-                    print(self.axes)
+                if len(self.axes) != 0 and self.base_ax == None: # must reassign base_ax for PlotLat()
                     self.base_ax = self.axes[0]
-                    self.base_ax.margins(0.05,0.05) # default autoscale margins
+                    # setting to defaults
+                    self.base_ax.margins(0.05,0.05)
                     self.base_ax.yaxis.set_ticks_position('left')
                     self.base_ax.spines.left.set_position(('outward',0))
                     self.base_ax.yaxis.set_label_position('left')
 
-        if len(self.axes) != 0:
+        if len(self.axes) != 0: # no axes = no legend
             self._create_legend()
 
         if self.base_ax:
@@ -152,7 +147,7 @@ class FmMplCanvas(FigureCanvas):
         yrange = ymax - ymin
         frac_yrange = yrange * 0.1
 
-        if ymax != ymin:
+        if ymax != ymin: # not a horizonal line
             ycen_eq = ymin - frac_yrange - frac_yrange * 0.5
             yscl_eq = frac_yrange
         else:
@@ -160,7 +155,7 @@ class FmMplCanvas(FigureCanvas):
             yscl_eq = 1 * 0.09
 
         lattice = PlotLat(self.model.machine, auto_scaling=False, starting_offset=0)
-        lattice.generate(ycen=ycen_eq, yscl=yscl_eq, legend=False, option=False, axes=self.base_ax)
+        lattice.generate(ycen=ycen_eq, yscl=yscl_eq, legend=False, option=False, axes=self.base_ax) # locational plot created
 
         self.base_ax.relim()
         self.base_ax.autoscale_view(True,True,True)
@@ -188,12 +183,3 @@ class FmMplCanvas(FigureCanvas):
                 if ln_ymin < ymin:
                     ymin = ln_ymin
         return ymax,ymin
-
-    def _get_ymargin(self,axis):
-        ymax,ymin = self._get_ymaxmin(axis)
-        yrange = ymax - ymin
-        frac_yrange = yrange * .1
-        return frac_yrange
-
-
-
