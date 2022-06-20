@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QTreeWidget, QHeaderView, QTreeWidgetItem, QAbstractItemView, QComboBox
+from PyQt5.QtWidgets import QTreeWidget, QHeaderView, QTreeWidgetItem, QAbstractItemView, QComboBox, QMessageBox
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 
@@ -8,8 +8,10 @@ class Legend(QTreeWidget):
 
         self.graph = graph
         self.items = items
+        self.checked_box_cnt = 0
         self.setHeaderHidden(True)
         self.setSelectionMode(QAbstractItemView.NoSelection)
+        self.ignore_next_item_change = False
         self.fill()
         
     def fill(self):
@@ -114,13 +116,29 @@ class Legend(QTreeWidget):
         for lst in items.values():
             for item in lst:
                 item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
-                item.setCheckState(0, QtCore.Qt.Unchecked)
+                item.setCheckState(0,QtCore.Qt.Unchecked)
 
         self.itemChanged.connect(self.handle_checkboxes)
 
     def handle_checkboxes(self,item,col):
         if item.checkState(col) == 0:
-            self.graph.remove_item(item)
-        else:
+                self.graph.remove_item(item)
+                self.checked_box_cnt -= 1
+        elif self.checked_box_cnt < 4:
             self.graph.plot_item(item)
+            self.checked_box_cnt += 1
+        else:
+            warning = QMessageBox()
+            warning.setIcon(QMessageBox.Critical)
+            warning.setText("You can only select four parameters at a time")
+            warning.setWindowTitle("ERROR")
+            warning.setStandardButtons(QMessageBox.Ok)
+
+            if warning.exec() == QMessageBox.Ok:
+                warning.close()
+            
+            self.blockSignals(True)
+            item.setCheckState(0,QtCore.Qt.Unchecked) 
+            self.blockSignals(False)
+            
 
