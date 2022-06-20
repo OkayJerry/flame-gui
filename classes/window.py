@@ -54,6 +54,8 @@ class MenuBar(QtWidgets.QMenuBar):
         lat_tree.populate()
         lat_tree.sortItems(0, QtCore.Qt.AscendingOrder)
         lat_tree.sortItems(1, QtCore.Qt.AscendingOrder)
+        for i in range(len(lat_tree.header())):
+            lat_tree.resizeColumnToContents(i)
 
     def save(self):
         model = self.main_window.workspace.graph.model

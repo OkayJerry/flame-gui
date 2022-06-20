@@ -31,7 +31,7 @@ class LatTree(QTreeWidget):
         # format
         self.setColumnCount(5)
         self.setHeaderLabels(['Name','Type','Attribute','Value','Unit'])
-        self.header().setSectionResizeMode(QHeaderView.Stretch)
+        # self.header().setSectionResizeMode(QHeaderView.Stretch)
 
         # edit
         self.setItemDelegateForColumn(3,DoubleDelegate(self))
