@@ -325,13 +325,6 @@ class Workspace(QtWidgets.QWidget):
             if "'" in attr["representation"]: # x', y', z' (prime)
                 item.dashed = True
 
-            if item.text_repr == 'x':
-                item.color == 'b'
-            elif item.text_repr == 'y':
-                item.color == 'r'
-            elif item.text_repr == 'z':
-                item.color == 'g'
-
             for k,v in object_dict.items():
                 if k in kwrd:
                     v.append(item)
