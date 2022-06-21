@@ -389,14 +389,18 @@ class LatElementConfig(QtWidgets.QWidget):
         self.setLayout(self.layout)
 
     def editItem(self,item):
+        name_i = self.tree.headers.index('Name')
+        type_i = self.tree.headers.index('Type')
+        attr_i = self.tree.headers.index('Attribute')
+        val_i = self.tree.headers.index('Value')
 
         if item.parent():
             topLevelItem = item.parent()
         else:
             topLevelItem = item
 
-        elem_name = topLevelItem.text(0)
-        elem_type = topLevelItem.text(1)
+        elem_name = topLevelItem.text(name_i)
+        elem_type = topLevelItem.text(type_i)
 
         self.name_line.setText(elem_name)
         self.type_line.setText(elem_type)
@@ -404,15 +408,12 @@ class LatElementConfig(QtWidgets.QWidget):
         # top level attribute only
         attr = QtWidgets.QTableWidgetItem()
         val = QtWidgets.QTableWidgetItem()
-        # unit = QtWidgets.QTableWidgetItem()
 
-        attr.setText(topLevelItem.text(2))
-        val.setText(topLevelItem.text(3))
-        # unit.setText(topLevelItem.text(4))
+        attr.setText(topLevelItem.text(attr_i))
+        val.setText(topLevelItem.text(val_i))
 
         self.attr_table.setItem(0,0,attr)
         self.attr_table.setItem(0,1,val)
-        # self.attr_table.setItem(0,2,unit)
         
         # rest of the attributes
         for i in range(topLevelItem.childCount()):
@@ -421,15 +422,12 @@ class LatElementConfig(QtWidgets.QWidget):
 
             attr = QtWidgets.QTableWidgetItem()
             val = QtWidgets.QTableWidgetItem()
-            unit = QtWidgets.QTableWidgetItem()
 
-            attr.setText(child.text(2))
-            val.setText(child.text(3))
-            unit.setText(child.text(4))
+            attr.setText(child.text(attr_i))
+            val.setText(child.text(val_i))
 
             self.attr_table.setItem(i+1,0,attr)
             self.attr_table.setItem(i+1,1,val)
-            self.attr_table.setItem(i+1,2,unit)
 
     def finishAndSave(self):
         for i in range(self.attr_table.rowCount()):
