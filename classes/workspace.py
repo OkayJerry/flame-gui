@@ -447,6 +447,7 @@ class LatElementConfig(QtWidgets.QWidget):
 
         self.tree.clear()
         self.tree.populate()
+        self.close()
 
 
 
