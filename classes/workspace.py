@@ -350,7 +350,10 @@ class LatElementConfig(QtWidgets.QWidget):
         bottom_row_layout = QtWidgets.QHBoxLayout()
 
         self.setMinimumSize(800,600)
+        self.setWindowTitle('.lat Config')
 
+        index_label = QtWidgets.QLabel()
+        self.index_line = QtWidgets.QLineEdit()
         name_label = QtWidgets.QLabel()
         self.name_line = QtWidgets.QLineEdit()
         type_label = QtWidgets.QLabel()
@@ -359,8 +362,10 @@ class LatElementConfig(QtWidgets.QWidget):
         self.add_attr_button = QtWidgets.QPushButton()
         self.commit_button = QtWidgets.QPushButton()
 
+        index_label.setText('Index:')
         name_label.setText('Name:')
         type_label.setText('Type:')
+        self.index_line.setPlaceholderText('Element Index')
         self.name_line.setPlaceholderText('Element Name')
         self.type_line.setPlaceholderText('Element Type')
 
@@ -372,6 +377,8 @@ class LatElementConfig(QtWidgets.QWidget):
         self.add_attr_button.clicked.connect(lambda: self.attr_table.insertRow(self.attr_table.rowCount()))
         self.commit_button.clicked.connect(self.finishAndSave)
 
+        top_row_layout.addWidget(index_label)
+        top_row_layout.addWidget(self.index_line)
         top_row_layout.addWidget(name_label)
         top_row_layout.addWidget(self.name_line)
         top_row_layout.addWidget(type_label)
@@ -390,6 +397,7 @@ class LatElementConfig(QtWidgets.QWidget):
         self.setLayout(self.layout)
 
     def editItem(self,item):
+        index_i = self.tree.headers.index('Index')
         name_i = self.tree.headers.index('Name')
         type_i = self.tree.headers.index('Type')
         attr_i = self.tree.headers.index('Attribute')
@@ -400,9 +408,11 @@ class LatElementConfig(QtWidgets.QWidget):
         else:
             topLevelItem = item
 
+        elem_index = topLevelItem.text(index_i)
         elem_name = topLevelItem.text(name_i)
         elem_type = topLevelItem.text(type_i)
 
+        self.index_line.setText(elem_index)
         self.name_line.setText(elem_name)
         self.type_line.setText(elem_type)
 
@@ -448,6 +458,3 @@ class LatElementConfig(QtWidgets.QWidget):
         self.tree.populate()
         self.tree.filter(self.tree_filter.currentText())
         self.close()
-
-
-
