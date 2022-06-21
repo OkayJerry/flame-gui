@@ -77,7 +77,7 @@ class Window(QtWidgets.QMainWindow):
 
         # properties
         self.setWindowTitle('FLAME')
-        self.setMinimumSize(1280,720)
+        self.setMinimumSize(1366,768)
 
         # components
         main = QtWidgets.QWidget()
