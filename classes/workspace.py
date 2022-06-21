@@ -264,8 +264,8 @@ class PrimaryWorkspace(QtWidgets.QWidget):
         self.layout = QtWidgets.QVBoxLayout()
         self.graph = graph
         self.lat_tree = LatTree(self)
-        self.config_window = LatElementConfig(self.lat_tree)
         self.filter_workspace = LatTreeFilterWorkspace(self)
+        self.config_window = LatElementConfig(self.lat_tree,self.filter_workspace.combo_box)
 
         self.lat_tree.set_config(self.config_window)
 
@@ -336,9 +336,10 @@ class Workspace(QtWidgets.QWidget):
         return object_dict
 
 class LatElementConfig(QtWidgets.QWidget):
-    def __init__(self,lat_tree):
+    def __init__(self,lat_tree,tree_filter):
         super().__init__()
         self.tree = lat_tree
+        self.tree_filter = tree_filter
         self.model = None
 
         top_row = QtWidgets.QWidget()
@@ -445,6 +446,7 @@ class LatElementConfig(QtWidgets.QWidget):
 
         self.tree.clear()
         self.tree.populate()
+        self.tree.filter(self.tree_filter.currentText())
         self.close()
 
 
