@@ -264,7 +264,10 @@ class PrimaryWorkspace(QtWidgets.QWidget):
         self.layout = QtWidgets.QVBoxLayout()
         self.graph = graph
         self.lat_tree = LatTree(self)
+        self.config_window = LatElementConfig(self.lat_tree)
         self.filter_workspace = LatTreeFilterWorkspace(self)
+
+        self.lat_tree.set_config(self.config_window)
 
         self.layout.addWidget(self.graph,3)
         self.layout.addWidget(self.filter_workspace)
@@ -331,3 +334,119 @@ class Workspace(QtWidgets.QWidget):
                     object_dict["others"].append(item)
 
         return object_dict
+
+class LatElementConfig(QtWidgets.QWidget):
+    def __init__(self,lat_tree):
+        super().__init__()
+        self.tree = lat_tree
+        self.model = None
+
+        top_row = QtWidgets.QWidget()
+        bottom_row = QtWidgets.QWidget()
+
+        self.layout = QtWidgets.QVBoxLayout()
+        top_row_layout = QtWidgets.QHBoxLayout()
+        bottom_row_layout = QtWidgets.QHBoxLayout()
+
+        self.setMinimumSize(800,600)
+
+        name_label = QtWidgets.QLabel()
+        self.name_line = QtWidgets.QLineEdit()
+        type_label = QtWidgets.QLabel()
+        self.type_line = QtWidgets.QLineEdit()
+        self.attr_table = QtWidgets.QTableWidget(1, 2)
+        self.add_attr_button = QtWidgets.QPushButton()
+        self.commit_button = QtWidgets.QPushButton()
+
+        name_label.setText('Name:')
+        type_label.setText('Type:')
+        self.name_line.setPlaceholderText('Element Name')
+        self.type_line.setPlaceholderText('Element Type')
+
+        self.attr_table.setHorizontalHeaderLabels(['Attribute','Value','Unit'])
+        self.attr_table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+
+        self.add_attr_button.setText('Add Blank Attribute')
+        self.commit_button.setText('Finish and Save')
+        self.add_attr_button.clicked.connect(lambda: self.attr_table.insertRow(self.attr_table.rowCount()))
+        self.commit_button.clicked.connect(self.finishAndSave)
+
+        top_row_layout.addWidget(name_label)
+        top_row_layout.addWidget(self.name_line)
+        top_row_layout.addWidget(type_label)
+        top_row_layout.addWidget(self.type_line)
+
+        bottom_row_layout.addWidget(self.add_attr_button)
+        bottom_row_layout.addWidget(self.commit_button)
+
+        top_row.setLayout(top_row_layout)
+        bottom_row.setLayout(bottom_row_layout)
+
+        self.layout.addWidget(top_row)
+        self.layout.addWidget(self.attr_table)
+        self.layout.addWidget(bottom_row)
+
+        self.setLayout(self.layout)
+
+    def editItem(self,item):
+
+        if item.parent():
+            topLevelItem = item.parent()
+        else:
+            topLevelItem = item
+
+        elem_name = topLevelItem.text(0)
+        elem_type = topLevelItem.text(1)
+
+        self.name_line.setText(elem_name)
+        self.type_line.setText(elem_type)
+
+        # top level attribute only
+        attr = QtWidgets.QTableWidgetItem()
+        val = QtWidgets.QTableWidgetItem()
+        # unit = QtWidgets.QTableWidgetItem()
+
+        attr.setText(topLevelItem.text(2))
+        val.setText(topLevelItem.text(3))
+        # unit.setText(topLevelItem.text(4))
+
+        self.attr_table.setItem(0,0,attr)
+        self.attr_table.setItem(0,1,val)
+        # self.attr_table.setItem(0,2,unit)
+        
+        # rest of the attributes
+        for i in range(topLevelItem.childCount()):
+            self.attr_table.insertRow(self.attr_table.rowCount())
+            child = topLevelItem.child(i)
+
+            attr = QtWidgets.QTableWidgetItem()
+            val = QtWidgets.QTableWidgetItem()
+            unit = QtWidgets.QTableWidgetItem()
+
+            attr.setText(child.text(2))
+            val.setText(child.text(3))
+            unit.setText(child.text(4))
+
+            self.attr_table.setItem(i+1,0,attr)
+            self.attr_table.setItem(i+1,1,val)
+            self.attr_table.setItem(i+1,2,unit)
+
+    def finishAndSave(self):
+        for i in range(self.attr_table.rowCount()):
+            for j in range(self.attr_table.columnCount()):
+                cell = self.attr_table.item(i,j)
+                if cell:
+                    text = cell.text()
+
+                    if j == 0: # index of attribute name
+                        attr_name = text
+                    elif j == 1: # index of attribute value
+                        attr_val = text
+
+            self.model.reconfigure(self.name_line.text(),{attr_name: attr_val})
+
+        self.tree.clear()
+        self.tree.populate()
+
+
+

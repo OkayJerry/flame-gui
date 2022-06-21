@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QTreeWidget, QHeaderView, QTreeWidgetItem, QAbstractItemView, QStyledItemDelegate, QLineEdit
+from PyQt5.QtWidgets import QTreeWidget, QHeaderView, QTreeWidgetItem, QAbstractItemView, QStyledItemDelegate, QLineEdit, QMenu, QAction
 from PyQt5 import QtCore, QtGui
 
 
@@ -17,16 +17,17 @@ class DoubleDelegate(QStyledItemDelegate):
         return lineEdit;
 
 
-
 class Item(QTreeWidgetItem):
     def __init__(self):
         super().__init__()
         self.setFlags(self.flags() | QtCore.Qt.ItemIsEditable)
 
+
 class LatTree(QTreeWidget):
     def __init__(self,parent,model=None):
         super(QTreeWidget,self).__init__(parent)
         self.model = model
+        self.config_window = None
 
         # format
         self.setColumnCount(5)
@@ -140,3 +141,37 @@ class LatTree(QTreeWidget):
                 item.setHidden(True)
             else:
                 item.setHidden(False)
+
+    def set_config(self,window):
+        self.config_window = window
+
+    def contextMenuEvent(self,event):
+        self.menu = QMenu(self)
+
+        addElem = QAction('Add Element', self)
+        editElem = QAction('Edit Selected Element', self)
+        remElem = QAction('Remove Element', self)
+
+        addElem.triggered.connect(self.addElement)
+        editElem.triggered.connect(self.editElement)
+        remElem.triggered.connect(self.removeElement)
+
+        self.menu.addAction(addElem)
+        self.menu.addAction(editElem)
+        self.menu.addAction(remElem)
+
+        self.menu.popup(QtGui.QCursor.pos())
+
+    def addElement(self):
+        item = self.currentItem()
+        self.config_window.show()
+
+    def editElement(self):
+        item = self.currentItem()
+        self.config_window.editItem(item)
+        self.config_window.show()
+        
+
+    def removeElement(self):
+        item = self.currentItem()
+        self.config_window.show()
