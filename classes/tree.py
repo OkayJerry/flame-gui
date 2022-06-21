@@ -9,7 +9,7 @@ class DoubleDelegate(QStyledItemDelegate):
 
     def createEditor(self,parent,option,index):
         lineEdit = QLineEdit(parent)
-        if index.sibling(index.row(),4).data() == None: # if corresponding unit is none
+        if index.sibling(index.row(),5).data() == None: # if corresponding unit is none
             return lineEdit
         # print(parent.currentItem.text(4))
         validator = QtGui.QDoubleValidator(lineEdit)
@@ -32,12 +32,12 @@ class LatTree(QTreeWidget):
         self.headers = ['Index','Name','Type','Attribute','Value','Unit']
 
         # format
-        self.setColumnCount(6)
+        self.setColumnCount(len(self.headers))
         self.setHeaderLabels(self.headers)
         # self.header().setSectionResizeMode(QHeaderView.Stretch)
 
         # edit
-        self.setItemDelegateForColumn(4,DoubleDelegate(self))
+        self.setItemDelegateForColumn(self.headers.index('Value'),DoubleDelegate(self))
         self.itemDoubleClicked.connect(self._handle_edits)
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.itemChanged.connect(self.update_model)
