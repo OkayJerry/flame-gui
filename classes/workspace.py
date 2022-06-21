@@ -235,15 +235,13 @@ class LatTreeFilterWorkspace(QtWidgets.QWidget):
         self.parent = parent
         self.layout = QtWidgets.QHBoxLayout()
         self.combo_box = QtWidgets.QComboBox()
-        # self.search_bar = QtWidgets.QLineEdit()
     
         self.set_combo_box()
         self.layout.setContentsMargins(0, 0, 0, 0)
 
 
         self.layout.addWidget(self.combo_box)
-        self.layout.addSpacing(600)
-        # self.layout.addWidget(self.search_bar)
+        self.layout.addStretch()
 
         self.setLayout(self.layout)
 
