@@ -29,47 +29,60 @@ class LatTree(QTreeWidget):
         self.model = model
         self.config_window = None
 
+        self.headers = ['Index','Name','Type','Attribute','Value','Unit']
+
         # format
-        self.setColumnCount(5)
-        self.setHeaderLabels(['Name','Type','Attribute','Value','Unit'])
+        self.setColumnCount(6)
+        self.setHeaderLabels(self.headers)
         # self.header().setSectionResizeMode(QHeaderView.Stretch)
 
         # edit
-        self.setItemDelegateForColumn(3,DoubleDelegate(self))
+        self.setItemDelegateForColumn(4,DoubleDelegate(self))
         self.itemDoubleClicked.connect(self._handle_edits)
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.itemChanged.connect(self.update_model)
 
 
     def populate(self):
+        index_i = self.headers.index('Index')
+        name_i = self.headers.index('Name')
+        type_i = self.headers.index('Type')
+        attr_i = self.headers.index('Attribute')
+        val_i = self.headers.index('Value')
+        unit_i = self.headers.index('Unit')
+
         self.elements = self.model.get_element(name=self.model.get_all_names())
         self.elements = self.elements[1:]
         
         for element in self.elements:
             item = Item()
+            item.setText(index_i,str(element['index']))
             for key,val in element['properties'].items():
                 val = str(val)
                 if key == 'name':
-                    item.setText(0,val)
+                    item.setText(name_i,val)
                 elif key == 'type':
-                    item.setText(1,val)
+                    item.setText(type_i,val)
                 else:
-                    if item.text(2) == '' and 'L' not in element['properties'].keys():
-                        item.setText(2,key)
-                        item.setText(3,val)
-                    elif item.text(2) == '' and key == 'L':
-                        item.setText(2,key)
-                        item.setText(3,val)
+                    if item.text(attr_i) == '' and 'L' not in element['properties'].keys():
+                        item.setText(attr_i,key)
+                        item.setText(val_i,val)
+                    elif item.text(attr_i) == '' and key == 'L':
+                        item.setText(attr_i,key)
+                        item.setText(val_i,val)
                     else: # children are just attribute-value-unit tuples
                         child = Item()
                         item.addChild(child)
-                        child.setText(2,key)
-                        child.setText(3,val)
+                        child.setText(attr_i,key)
+                        child.setText(val_i,val)
                         self._set_unit(child)
                 self._set_unit(item)
             self.addTopLevelItem(item)
 
     def _set_unit(self,item):
+        attr_i = self.headers.index('Attribute')
+        unit_i = self.headers.index('Unit')
+
         unit_info = {
             'theta_x': 'rad',
             'theta_y': 'rad',
@@ -96,48 +109,61 @@ class LatTree(QTreeWidget):
             'Rm': 'mm'
         }
 
-        if item.text(2) in unit_info:
-            item.setText(4,unit_info[item.text(2)])
+        if item.text(attr_i) in unit_info:
+            item.setText(unit_i,unit_info[item.text(attr_i)])
 
 
 
     def update_model(self):
+        name_i = self.headers.index('Name')
+        type_i = self.headers.index('Type')
+        attr_i = self.headers.index('Attribute')
+        val_i = self.headers.index('Value')
+        unit_i = self.headers.index('Unit')
+
+
         selected = self.currentItem()
-        attribute = selected.text(2)
-        unit = selected.text(4)
+        attribute = selected.text(attr_i)
+        unit = selected.text(unit_i)
 
         if not selected.parent():
-            element = selected.text(0)
+            element = selected.text(name_i)
         else:
-            element = selected.parent().text(0)
+            element = selected.parent().text(name_i)
 
         if unit != "":
-            val = float(selected.text(3))
+            val = float(selected.text(val_i))
         else:
-            val = selected.text(3)
+            val = selected.text(val_i)
 
         self.model.reconfigure(element, {attribute: val})
 
 
     def _handle_edits(self,item,col):
-        if col == 0 or col == 1: # odd logic, but others didn't work?
+        index_i = self.headers.index('Index')
+        name_i = self.headers.index('Name')
+        type_i = self.headers.index('Type')
+
+        if col == index_i or col == name_i or col == type_i: # odd logic, but others didn't work?
             return
         self.editItem(item,col)
 
     def filter(self,filter_text):
+        type_i = self.headers.index('Type')
+
         for i in range(self.topLevelItemCount()):
             item = self.topLevelItem(i)
             if filter_text == 'all':
                 item.setHidden(False)
                 continue
             elif filter_text == 'magnetic':
-                if item.text(1) == 'drift':
+                if item.text(type_i) == 'drift':
                     item.setHidden(True)
                 else:
                     item.setHidden(False)
                 continue
 
-            if item.text(1) != filter_text:
+            if item.text(type_i) != filter_text:
                 item.setHidden(True)
             else:
                 item.setHidden(False)
@@ -148,13 +174,15 @@ class LatTree(QTreeWidget):
     def contextMenuEvent(self,event):
         self.menu = QMenu(self)
 
-        addElem = QAction('Add Element', self)
-        editElem = QAction('Edit Selected Element', self)
-        remElem = QAction('Remove Element', self)
+        addElem = QAction('Add Element',self)
+        editElem = QAction('Edit Selected Element',self)
+        remElem = QAction('Remove Element',self)
+        remAttr = QAction('Remoce Attribue',self)
 
         addElem.triggered.connect(self.addElement)
         editElem.triggered.connect(self.editElement)
         remElem.triggered.connect(self.removeElement)
+        remAttr.triggered.connect(self.removeAttribute)
 
         self.menu.addAction(addElem)
         self.menu.addAction(editElem)
@@ -175,3 +203,6 @@ class LatTree(QTreeWidget):
     def removeElement(self):
         item = self.currentItem()
         self.config_window.show()
+
+    def removeAttribute(self):
+        item = self.currentItem()
