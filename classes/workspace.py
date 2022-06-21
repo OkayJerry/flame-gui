@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui
 from classes.tree import *
 from classes.canvas import *
 from classes.legend import *
@@ -341,6 +341,7 @@ class LatElementConfig(QtWidgets.QWidget):
         self.tree = lat_tree
         self.tree_filter = tree_filter
         self.model = None
+        self.editing = False
 
         top_row = QtWidgets.QWidget()
         bottom_row = QtWidgets.QWidget()
@@ -353,60 +354,62 @@ class LatElementConfig(QtWidgets.QWidget):
         self.setWindowTitle('.lat Config')
 
         index_label = QtWidgets.QLabel()
-        self.index_line = QtWidgets.QLineEdit()
         name_label = QtWidgets.QLabel()
-        self.name_line = QtWidgets.QLineEdit()
         type_label = QtWidgets.QLabel()
-        self.type_line = QtWidgets.QLineEdit()
-        self.attr_table = QtWidgets.QTableWidget(1, 2)
-        self.add_attr_button = QtWidgets.QPushButton()
-        self.commit_button = QtWidgets.QPushButton()
+        self.index_line = QtWidgets.QLineEdit()
+        self.name_line = QtWidgets.QLineEdit()
+        self.type_box = QtWidgets.QComboBox()
 
         index_label.setText('Index:')
         name_label.setText('Name:')
         type_label.setText('Type:')
         self.index_line.setPlaceholderText('Element Index')
         self.name_line.setPlaceholderText('Element Name')
-        self.type_line.setPlaceholderText('Element Type')
-
-        self.attr_table.setHorizontalHeaderLabels(['Attribute','Value','Unit'])
-        self.attr_table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
-
-        self.add_attr_button.setText('Add Blank Attribute')
-        self.commit_button.setText('Finish and Save')
-        self.add_attr_button.clicked.connect(lambda: self.attr_table.insertRow(self.attr_table.rowCount()))
-        self.commit_button.clicked.connect(self.finishAndSave)
-
+        self.index_line.setValidator(QtGui.QIntValidator(self.index_line))
         top_row_layout.addWidget(index_label)
         top_row_layout.addWidget(self.index_line)
         top_row_layout.addWidget(name_label)
         top_row_layout.addWidget(self.name_line)
         top_row_layout.addWidget(type_label)
-        top_row_layout.addWidget(self.type_line)
+
+        for t in ['quadrupole','drift','orbtrim','marker','sbend']:
+            self.type_box.addItem(t)
+        top_row_layout.addWidget(self.type_box)
+
+        self.attr_table = QtWidgets.QTableWidget(1, 2)
+        self.attr_table.setHorizontalHeaderLabels(['Attribute','Value','Unit'])
+        self.attr_table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+
+        self.add_attr_button = QtWidgets.QPushButton()
+        self.commit_button = QtWidgets.QPushButton()
+        self.add_attr_button.setText('Add Blank Attribute')
+        self.commit_button.setText('Finish and Save')
+        self.add_attr_button.clicked.connect(lambda: self.attr_table.insertRow(self.attr_table.rowCount()))
+        self.commit_button.clicked.connect(self.finishAndSave)
 
         bottom_row_layout.addWidget(self.add_attr_button)
         bottom_row_layout.addWidget(self.commit_button)
 
         top_row.setLayout(top_row_layout)
         bottom_row.setLayout(bottom_row_layout)
-
         self.layout.addWidget(top_row)
         self.layout.addWidget(self.attr_table)
         self.layout.addWidget(bottom_row)
-
         self.setLayout(self.layout)
 
-    def editItem(self,item):
+
+    def insertItem(self,index):
+        self.index_line.setText(index)
+
+
+    def editItem(self,topLevelItem):
+        self.editing = True
+
         index_i = self.tree.headers.index('Index')
         name_i = self.tree.headers.index('Name')
         type_i = self.tree.headers.index('Type')
         attr_i = self.tree.headers.index('Attribute')
         val_i = self.tree.headers.index('Value')
-
-        if item.parent():
-            topLevelItem = item.parent()
-        else:
-            topLevelItem = item
 
         elem_index = topLevelItem.text(index_i)
         elem_name = topLevelItem.text(name_i)
@@ -414,7 +417,7 @@ class LatElementConfig(QtWidgets.QWidget):
 
         self.index_line.setText(elem_index)
         self.name_line.setText(elem_name)
-        self.type_line.setText(elem_type)
+        self.type_box.setCurrentText(elem_type)
 
         # top level attribute only
         attr = QtWidgets.QTableWidgetItem()
@@ -440,7 +443,9 @@ class LatElementConfig(QtWidgets.QWidget):
             self.attr_table.setItem(i+1,0,attr)
             self.attr_table.setItem(i+1,1,val)
 
+
     def finishAndSave(self):
+        d = {}
         for i in range(self.attr_table.rowCount()):
             for j in range(self.attr_table.columnCount()):
                 cell = self.attr_table.item(i,j)
@@ -451,10 +456,25 @@ class LatElementConfig(QtWidgets.QWidget):
                         attr_name = text
                     elif j == 1: # index of attribute value
                         attr_val = text
+            d[attr_name] = attr_val
 
-            self.model.reconfigure(self.name_line.text(),{attr_name: attr_val})
+        if self.editing:
+            self.model.reconfigure(self.name_line.text(),d)
+        else:
+            d['name'] = self.name_line.text()
+            d['type'] = self.type_box.currentText()
+            self.model.insert_element(index=int(self.index_line.text()),element=d)
 
         self.tree.clear()
         self.tree.populate()
         self.tree.filter(self.tree_filter.currentText())
+
+        self.editing = False
         self.close()
+        self.clear()
+
+
+    def clear(self):
+        self.index_line.clear()
+        self.name_line.clear()
+        self.attr_table.clear()

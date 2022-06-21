@@ -174,28 +174,34 @@ class LatTree(QTreeWidget):
     def contextMenuEvent(self,event):
         self.menu = QMenu(self)
 
-        addElem = QAction('Add Element',self)
+        insElem = QAction('Insert Element',self)
         editElem = QAction('Edit Selected Element',self)
         remElem = QAction('Remove Element',self)
         remAttr = QAction('Remoce Attribue',self)
 
-        addElem.triggered.connect(self.addElement)
+        insElem.triggered.connect(self.insElement)
         editElem.triggered.connect(self.editElement)
         remElem.triggered.connect(self.removeElement)
         remAttr.triggered.connect(self.removeAttribute)
 
-        self.menu.addAction(addElem)
+        self.menu.addAction(insElem)
         self.menu.addAction(editElem)
         self.menu.addAction(remElem)
 
         self.menu.popup(QtGui.QCursor.pos())
 
-    def addElement(self):
+    def insElement(self):
+        index_i = self.headers.index('Index')
         item = self.currentItem()
+        if item.parent():
+            item = item.parent()
+        self.config_window.insertItem(item.text(index_i))
         self.config_window.show()
 
     def editElement(self):
         item = self.currentItem()
+        if item.parent():
+            item = item.parent()
         self.config_window.editItem(item)
         self.config_window.show()
         
