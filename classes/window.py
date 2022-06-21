@@ -51,6 +51,7 @@ class MenuBar(QtWidgets.QMenuBar):
         graph.set_model(self.filename)
 
         lat_tree.model = graph.model
+        lat_tree.config_window.model = graph.model
         lat_tree.populate()
         lat_tree.sortItems(0, QtCore.Qt.AscendingOrder)
         lat_tree.sortItems(1, QtCore.Qt.AscendingOrder)
@@ -68,8 +69,6 @@ class MenuBar(QtWidgets.QMenuBar):
         name = name[0] # previously tuple
         model.generate_latfile(latfile=name)
 
-
-        
         
 class Window(QtWidgets.QMainWindow):
     def __init__(self):
