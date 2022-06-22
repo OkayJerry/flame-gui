@@ -264,7 +264,7 @@ class LatElementConfig(QWidget):
         self.tree = lat_tree
         self.tree_filter = tree_filter
         self.model = None
-        self.editing = False
+        self.edit_mode = False
 
         top_row = QWidget()
         bottom_row = QWidget()
@@ -302,15 +302,20 @@ class LatElementConfig(QWidget):
         self.attr_table = QTableWidget(1, 2)
         self.attr_table.setHorizontalHeaderLabels(['Attribute','Value','Unit'])
         self.attr_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.attr_table.setSelectionBehavior(QAbstractItemView.SelectRows)
 
         self.add_attr_button = QPushButton()
+        self.rem_attr_button = QPushButton()
         self.commit_button = QPushButton()
         self.add_attr_button.setText('Add Blank Attribute')
+        self.rem_attr_button.setText('Remove Selected Attribute')
         self.commit_button.setText('Finish and Save')
         self.add_attr_button.clicked.connect(lambda: self.attr_table.insertRow(self.attr_table.rowCount()))
+        self.rem_attr_button.clicked.connect(self.remove_attribute)
         self.commit_button.clicked.connect(self.finishAndSave)
 
         bottom_row_layout.addWidget(self.add_attr_button)
+        bottom_row_layout.addWidget(self.rem_attr_button)
         bottom_row_layout.addWidget(self.commit_button)
 
         top_row.setLayout(top_row_layout)
@@ -321,12 +326,18 @@ class LatElementConfig(QWidget):
         self.setLayout(self.layout)
 
 
+    def remove_attribute(self):
+        indices = self.attr_table.selectionModel().selectedRows() 
+        for index in sorted(indices):
+            self.attr_table.removeRow(index.row()) 
+
+
     def insertItem(self,index):
         self.index_line.setText(index)
 
 
     def editItem(self,topLevelItem):
-        self.editing = True
+        self.edit_mode = True
 
         index_i = self.tree.headers.index('Index')
         name_i = self.tree.headers.index('Name')
@@ -386,18 +397,22 @@ class LatElementConfig(QWidget):
                         attr_val = text
             d[attr_name] = attr_val
 
-        if self.editing:
-            self.model.reconfigure(self.name_line.text(),d)
-        else:
-            d['name'] = self.name_line.text()
-            d['type'] = self.type_box.currentText()
-            self.model.insert_element(index=int(self.index_line.text()),element=d)
+
+        d['name'] = self.name_line.text()
+        d['type'] = self.type_box.currentText()
+        i = int(self.index_line.text())
+
+        if self.edit_mode:
+            self.model.pop_element(index=i)
+
+        self.model.insert_element(index=i, element=d)
+        
 
         self.tree.clear()
         self.tree.populate()
         self.tree.type_filter(self.tree_filter.currentText())
 
-        self.editing = False
+        self.edit_mode = False
         self.close()
         self.clear()
 
