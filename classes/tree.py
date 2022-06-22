@@ -273,6 +273,8 @@ class LatElementConfig(QWidget):
         top_row_layout = QHBoxLayout()
         bottom_row_layout = QHBoxLayout()
 
+        bottom_row_layout.setContentsMargins(0,0,0,0)
+
         self.setMinimumSize(800,600)
         self.setWindowTitle('.lat Config')
 
