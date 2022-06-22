@@ -237,7 +237,7 @@ class PrimaryWorkspace(QtWidgets.QWidget):
         self.layout = QtWidgets.QVBoxLayout()
         self.graph = graph
         self.lat_tree = LatTree(self)
-        self.filter_workspace = LatTreeFilterWorkspace(self)
+        self.filter_workspace = LatTreeFilters(self)
         self.config_window = LatElementConfig(self.lat_tree,self.filter_workspace.combo_box)
 
         self.lat_tree.set_config(self.config_window)

@@ -11,7 +11,6 @@ class DoubleDelegate(QStyledItemDelegate):
         lineEdit = QLineEdit(parent)
         if index.sibling(index.row(),5).data() == None: # if corresponding unit is none
             return lineEdit
-        # print(parent.currentItem.text(4))
         validator = QtGui.QDoubleValidator(lineEdit)
         lineEdit.setValidator(validator)
         return lineEdit;
@@ -148,7 +147,7 @@ class LatTree(QTreeWidget):
             return
         self.editItem(item,col)
 
-    def filter(self,filter_text):
+    def type_filter(self,filter_text):
         type_i = self.headers.index('Type')
 
         for i in range(self.topLevelItemCount()):
@@ -167,6 +166,10 @@ class LatTree(QTreeWidget):
                 item.setHidden(True)
             else:
                 item.setHidden(False)
+
+
+
+
 
     def set_config(self,window):
         self.config_window = window
@@ -215,7 +218,7 @@ class LatTree(QTreeWidget):
 
 
 
-class LatTreeFilterWorkspace(QWidget):
+class LatTreeFilters(QWidget):
     def __init__(self,parent=None):
         super(QWidget,self).__init__(parent)
 
@@ -223,22 +226,33 @@ class LatTreeFilterWorkspace(QWidget):
         self.parent = parent
         self.layout = QHBoxLayout()
         self.combo_box = QComboBox()
+        self.search_bar = QLineEdit()
     
-        self.set_combo_box()
+        for word in ['all','magnetic','quadrupole','drift','orbtrim','marker','sbend']:
+            self.combo_box.addItem(word)
+        self.combo_box.currentTextChanged.connect(self.parent.lat_tree.type_filter)
+        self.combo_box.setFixedWidth(300)
+
+        self.search_bar.setPlaceholderText('Search Element Name')
+        self.search_bar.textChanged.connect(self.name_filter)
+
         self.layout.setContentsMargins(0, 0, 0, 0)
-
-
         self.layout.addWidget(self.combo_box)
-        self.layout.addStretch()
+        self.layout.addWidget(self.search_bar)
 
         self.setLayout(self.layout)
 
-    def set_combo_box(self):
-        for word in ['all','magnetic','quadrupole','drift','orbtrim','marker','sbend']:
-            self.combo_box.addItem(word)
+    def name_filter(self,filter_text):
+        tree = self.parent.lat_tree
+        name_i = tree.headers.index('Name')
+        tree.type_filter(self.combo_box.currentText())
 
-        self.combo_box.currentTextChanged.connect(self.parent.lat_tree.filter)
-        self.combo_box.setFixedWidth(300)
+        for i in range(tree.topLevelItemCount()):
+            item = tree.topLevelItem(i)
+            if item.isHidden() == False:
+                if filter_text.lower() not in item.text(name_i).lower():
+                    item.setHidden(True)
+
 
 
 
@@ -379,7 +393,7 @@ class LatElementConfig(QWidget):
 
         self.tree.clear()
         self.tree.populate()
-        self.tree.filter(self.tree_filter.currentText())
+        self.tree.type_filter(self.tree_filter.currentText())
 
         self.editing = False
         self.close()
