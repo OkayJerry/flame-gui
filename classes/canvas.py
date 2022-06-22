@@ -16,6 +16,7 @@ class FmMplCanvas(FigureCanvas):
     def __init__(self,items,parent=None,filename=None):
         super(FigureCanvas,self).__init__(parent)
         self.model = None
+        self.legend = None
         self.filename = None
         self.axes = []
         self.base_ax = None
@@ -27,6 +28,27 @@ class FmMplCanvas(FigureCanvas):
     def set_model(self,filename):
         self.filename = filename
         self.model = ModelFlame(filename)
+
+    def update_lines(self):
+        active_items = self.legend.getCheckedItems()
+        r,s = self.model.run(monitor='all')
+        for item in active_items:
+            data = self.model.collect_data(r,'pos',item.kwrd)
+            item.line.set_data(data['pos'],data[item.kwrd])
+
+        self._remove_lat()
+        self._plot_lat()
+
+        for ax in self.axes:
+            ax.relim()
+            ax.autoscale_view()
+
+        self.figure.tight_layout()
+        self.figure.canvas.draw()
+            
+
+        
+
 
     def plot_item(self,item):
         r,s = self.model.run(monitor='all')

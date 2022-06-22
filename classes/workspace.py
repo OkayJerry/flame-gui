@@ -254,6 +254,7 @@ class SecondaryWorkspace(QtWidgets.QWidget):
         
         self.layout = QtWidgets.QVBoxLayout()
         self.legend = Legend(graph,items,self)
+        graph.legend = self.legend
         
         self.layout.addWidget(self.legend)
         

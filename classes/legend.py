@@ -140,5 +140,14 @@ class Legend(QTreeWidget):
             self.blockSignals(True)
             item.setCheckState(0,QtCore.Qt.Unchecked) 
             self.blockSignals(False)
+
+    def getCheckedItems(self):
+        checked_items = []
+        for lst in self.items.values():
+            for item in lst:
+                if item.checkState(0) == QtCore.Qt.Checked:
+                    checked_items.append(item)
+        return checked_items
+
             
 
