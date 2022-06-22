@@ -62,6 +62,7 @@ class MenuBar(QtWidgets.QMenuBar):
         self.bmstate_window.update(graph)
 
         lat_tree.model = graph.model
+        lat_tree.graph = graph
         lat_tree.config_window.model = graph.model
         lat_tree.populate()
         for i in range(len(lat_tree.header())):
