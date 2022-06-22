@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QTreeWidget, QHeaderView, QTreeWidgetItem, QAbstractItemView, QStyledItemDelegate, QLineEdit, QMenu, QAction
-from PyQt5 import QtCore, QtGui
+from PyQt5.QtWidgets import QTreeWidget, QHeaderView, QTreeWidgetItem, QAbstractItemView, QStyledItemDelegate, QLineEdit, QMenu, QAction, QWidget, QHBoxLayout, QVBoxLayout, QComboBox, QLabel, QTableWidget, QTableWidgetItem, QHeaderView, QPushButton
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 
@@ -212,3 +212,189 @@ class LatTree(QTreeWidget):
 
     def removeAttribute(self):
         item = self.currentItem()
+
+
+
+class LatTreeFilterWorkspace(QWidget):
+    def __init__(self,parent=None):
+        super(QWidget,self).__init__(parent)
+
+        # componenets
+        self.parent = parent
+        self.layout = QHBoxLayout()
+        self.combo_box = QComboBox()
+    
+        self.set_combo_box()
+        self.layout.setContentsMargins(0, 0, 0, 0)
+
+
+        self.layout.addWidget(self.combo_box)
+        self.layout.addStretch()
+
+        self.setLayout(self.layout)
+
+    def set_combo_box(self):
+        for word in ['all','magnetic','quadrupole','drift','orbtrim','marker','sbend']:
+            self.combo_box.addItem(word)
+
+        self.combo_box.currentTextChanged.connect(self.parent.lat_tree.filter)
+        self.combo_box.setFixedWidth(300)
+
+
+
+class LatElementConfig(QWidget):
+    def __init__(self,lat_tree,tree_filter):
+        super().__init__()
+        self.tree = lat_tree
+        self.tree_filter = tree_filter
+        self.model = None
+        self.editing = False
+
+        top_row = QWidget()
+        bottom_row = QWidget()
+
+        self.layout = QVBoxLayout()
+        top_row_layout = QHBoxLayout()
+        bottom_row_layout = QHBoxLayout()
+
+        self.setMinimumSize(800,600)
+        self.setWindowTitle('.lat Config')
+
+        index_label = QLabel()
+        name_label = QLabel()
+        type_label = QLabel()
+        self.index_line = QLineEdit()
+        self.name_line = QLineEdit()
+        self.type_box = QComboBox()
+
+        index_label.setText('Index:')
+        name_label.setText('Name:')
+        type_label.setText('Type:')
+        self.index_line.setPlaceholderText('Element Index')
+        self.name_line.setPlaceholderText('Element Name')
+        self.index_line.setValidator(QtGui.QIntValidator(self.index_line))
+        top_row_layout.addWidget(index_label)
+        top_row_layout.addWidget(self.index_line)
+        top_row_layout.addWidget(name_label)
+        top_row_layout.addWidget(self.name_line)
+        top_row_layout.addWidget(type_label)
+
+        for t in ['quadrupole','drift','orbtrim','marker','sbend']:
+            self.type_box.addItem(t)
+        top_row_layout.addWidget(self.type_box)
+
+        self.attr_table = QTableWidget(1, 2)
+        self.attr_table.setHorizontalHeaderLabels(['Attribute','Value','Unit'])
+        self.attr_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+        self.add_attr_button = QPushButton()
+        self.commit_button = QPushButton()
+        self.add_attr_button.setText('Add Blank Attribute')
+        self.commit_button.setText('Finish and Save')
+        self.add_attr_button.clicked.connect(lambda: self.attr_table.insertRow(self.attr_table.rowCount()))
+        self.commit_button.clicked.connect(self.finishAndSave)
+
+        bottom_row_layout.addWidget(self.add_attr_button)
+        bottom_row_layout.addWidget(self.commit_button)
+
+        top_row.setLayout(top_row_layout)
+        bottom_row.setLayout(bottom_row_layout)
+        self.layout.addWidget(top_row)
+        self.layout.addWidget(self.attr_table)
+        self.layout.addWidget(bottom_row)
+        self.setLayout(self.layout)
+
+
+    def insertItem(self,index):
+        self.index_line.setText(index)
+
+
+    def editItem(self,topLevelItem):
+        self.editing = True
+
+        index_i = self.tree.headers.index('Index')
+        name_i = self.tree.headers.index('Name')
+        type_i = self.tree.headers.index('Type')
+        attr_i = self.tree.headers.index('Attribute')
+        val_i = self.tree.headers.index('Value')
+
+        elem_index = topLevelItem.text(index_i)
+        elem_name = topLevelItem.text(name_i)
+        elem_type = topLevelItem.text(type_i)
+
+        self.index_line.setText(elem_index)
+        self.name_line.setText(elem_name)
+        self.type_box.setCurrentText(elem_type)
+
+        # disabling changes
+        self.index_line.setEnabled(False)
+        self.name_line.setEnabled(False)
+        self.type_box.setEnabled(False)
+
+        # top level attribute only
+        attr = QTableWidgetItem()
+        val = QTableWidgetItem()
+
+        attr.setText(topLevelItem.text(attr_i))
+        val.setText(topLevelItem.text(val_i))
+
+        self.attr_table.setItem(0,0,attr)
+        self.attr_table.setItem(0,1,val)
+        
+        # rest of the attributes
+        for i in range(topLevelItem.childCount()):
+            self.attr_table.insertRow(self.attr_table.rowCount())
+            child = topLevelItem.child(i)
+
+            attr = QTableWidgetItem()
+            val = QTableWidgetItem()
+
+            attr.setText(child.text(attr_i))
+            val.setText(child.text(val_i))
+
+            self.attr_table.setItem(i+1,0,attr)
+            self.attr_table.setItem(i+1,1,val)
+
+
+    def finishAndSave(self):
+        d = {}
+        for i in range(self.attr_table.rowCount()):
+            for j in range(self.attr_table.columnCount()):
+                cell = self.attr_table.item(i,j)
+                if cell:
+                    text = cell.text()
+
+                    if j == 0: # index of attribute name
+                        attr_name = text
+                    elif j == 1: # index of attribute value
+                        attr_val = text
+            d[attr_name] = attr_val
+
+        if self.editing:
+            self.model.reconfigure(self.name_line.text(),d)
+        else:
+            d['name'] = self.name_line.text()
+            d['type'] = self.type_box.currentText()
+            self.model.insert_element(index=int(self.index_line.text()),element=d)
+
+        self.tree.clear()
+        self.tree.populate()
+        self.tree.filter(self.tree_filter.currentText())
+
+        self.editing = False
+        self.close()
+        self.clear()
+
+
+    def clear(self):
+        self.index_line.setEnabled(True)
+        self.name_line.setEnabled(True)
+        self.type_box.setEnabled(True)
+        self.index_line.clear()
+        self.name_line.clear()
+        self.attr_table.clear()
+
+    
+    def closeEvent(self,event): # overriding window close
+        self.clear()
+        event.accept()
