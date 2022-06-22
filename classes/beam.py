@@ -4,6 +4,7 @@ import numpy as np
 class BeamStateWindow(QtWidgets.QWidget):
     def __init__(self,model=None):
         super().__init__()
+        self.graph = None
         self.model = model
         
         self.setWindowTitle('Beam State Editor')
@@ -46,22 +47,23 @@ class BeamStateWindow(QtWidgets.QWidget):
         
         self.setLayout(layout)
 
-    def update(self,model):
-        self.model = model
+    def update(self,graph):
+        self.graph = graph
+        self.model = graph.model
         kwrd1 = self.kwrd1_box.currentText()
         kwrd2 = self.kwrd2_box.currentText()
 
         if kwrd1 == 'beam size [mm]':
-            kwrd1_val = model.bmstate.xrms
+            kwrd1_val = self.model.bmstate.xrms
         else:
-            kwrd1_val = model.bmstate.xtwsb
+            kwrd1_val = self.model.bmstate.xtwsb
 
         if kwrd2 == 'geom. emittance [mm-mrad]':
-            kwrd2_val = model.bmstate.xeps
+            kwrd2_val = self.model.bmstate.xeps
         else:
-            kwrd2_val = model.bmstate.xepsn
+            kwrd2_val = self.model.bmstate.xepsn
 
-        self.alpha_spin.setValue(model.bmstate.xtwsa)
+        self.alpha_spin.setValue(self.model.bmstate.xtwsa)
         self.kwrd1_spin.setValue(kwrd1_val)
         self.kwrd2_spin.setValue(kwrd2_val)
 
@@ -82,6 +84,7 @@ class BeamStateWindow(QtWidgets.QWidget):
             else:
                 self.model.bmstate.set_twiss(var, beta=kwrd1_val, alpha=alpha_val, nemittance=kwrd2_val)
 
+        self.graph.update_lines()
         self.close()
 
 
