@@ -1,13 +1,16 @@
 from PyQt5 import QtWidgets, QtCore
 from classes.workspace import * 
+from classes.beam import *
 
 class MenuBar(QtWidgets.QMenuBar):
     def __init__(self,main_window):
         super(QtWidgets.QMenuBar,self).__init__(main_window)
         self.main_window = main_window
         self.filename = None
+        self.bmstate_window = BeamStateWindow()
 
         file_menu = self.addMenu('File')
+        edit_menu = self.addMenu('Edit')
 
         # actions
         open_action = QtWidgets.QAction('&Open...',main_window)
@@ -15,17 +18,23 @@ class MenuBar(QtWidgets.QMenuBar):
         save_as_action = QtWidgets.QAction('&Save As...',main_window)
         exit_action = QtWidgets.QAction('&Exit',main_window)
 
+        bmstate_action = QtWidgets.QAction('&Beam State',main_window)
+
         # set trigger
         open_action.triggered.connect(self.open)
         save_action.triggered.connect(self.save)
         save_as_action.triggered.connect(self.save_as)
         exit_action.triggered.connect(QtWidgets.qApp.quit)
 
+        bmstate_action.triggered.connect(lambda: self.bmstate_window.show())
+
         # link
         file_menu.addAction(open_action)
         file_menu.addAction(save_action)
         file_menu.addAction(save_as_action)
         file_menu.addAction(exit_action)
+
+        edit_menu.addAction(bmstate_action)
 
 
     def open(self):
@@ -49,6 +58,8 @@ class MenuBar(QtWidgets.QMenuBar):
         self.main_window.setWindowTitle("FLAME: " + self.filename)
 
         graph.set_model(self.filename)
+
+        self.bmstate_window.update(graph.model)
 
         lat_tree.model = graph.model
         lat_tree.config_window.model = graph.model
