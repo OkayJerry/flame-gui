@@ -419,6 +419,11 @@ class LatElementConfig(QtWidgets.QWidget):
         self.name_line.setText(elem_name)
         self.type_box.setCurrentText(elem_type)
 
+        # disabling changes
+        self.index_line.setEnabled(False)
+        self.name_line.setEnabled(False)
+        self.type_box.setEnabled(False)
+
         # top level attribute only
         attr = QtWidgets.QTableWidgetItem()
         val = QtWidgets.QTableWidgetItem()
@@ -475,6 +480,14 @@ class LatElementConfig(QtWidgets.QWidget):
 
 
     def clear(self):
+        self.index_line.setEnabled(True)
+        self.name_line.setEnabled(True)
+        self.type_box.setEnabled(True)
         self.index_line.clear()
         self.name_line.clear()
         self.attr_table.clear()
+
+    
+    def closeEvent(self,event): # overriding window close
+        self.clear()
+        event.accept()
