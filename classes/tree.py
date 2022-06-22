@@ -180,12 +180,12 @@ class LatTree(QTreeWidget):
         insElem = QAction('Insert Element',self)
         editElem = QAction('Edit Selected Element',self)
         remElem = QAction('Remove Element',self)
-        remAttr = QAction('Remoce Attribue',self)
+        # remAttr = QAction('Remoce Attribue',self)
 
         insElem.triggered.connect(self.insElement)
         editElem.triggered.connect(self.editElement)
         remElem.triggered.connect(self.removeElement)
-        remAttr.triggered.connect(self.removeAttribute)
+        # remAttr.triggered.connect(self.removeAttribute)
 
         self.menu.addAction(insElem)
         self.menu.addAction(editElem)
@@ -210,11 +210,13 @@ class LatTree(QTreeWidget):
         
 
     def removeElement(self):
+        index_i = self.headers.index('Index')
         item = self.currentItem()
-        self.config_window.show()
+        self.model.pop_element(int(item.text(index_i)))
+        self.clear()
+        self.populate()
 
-    def removeAttribute(self):
-        item = self.currentItem()
+    # def removeAttribute(self):
 
 
 
@@ -250,7 +252,7 @@ class LatTreeFilters(QWidget):
         for i in range(tree.topLevelItemCount()):
             item = tree.topLevelItem(i)
             if item.isHidden() == False:
-                if filter_text.lower() not in item.text(name_i).lower():
+                if filter_text not in item.text(name_i):
                     item.setHidden(True)
 
 
