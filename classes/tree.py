@@ -25,6 +25,7 @@ class Item(QTreeWidgetItem):
 class LatTree(QTreeWidget):
     def __init__(self,parent,model=None):
         super(QTreeWidget,self).__init__(parent)
+        self.graph = None
         self.model = model
         self.config_window = None
 
@@ -136,6 +137,7 @@ class LatTree(QTreeWidget):
             val = selected.text(val_i)
 
         self.model.reconfigure(element, {attribute: val})
+        self.graph.update_lines()
 
 
     def _handle_edits(self,item,col):
