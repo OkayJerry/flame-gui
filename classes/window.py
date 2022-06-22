@@ -59,7 +59,7 @@ class MenuBar(QtWidgets.QMenuBar):
 
         graph.set_model(self.filename)
 
-        self.bmstate_window.update(graph.model)
+        self.bmstate_window.update(graph)
 
         lat_tree.model = graph.model
         lat_tree.config_window.model = graph.model
