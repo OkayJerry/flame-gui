@@ -2,7 +2,7 @@ from PyQt5 import QtWidgets, QtGui
 from classes.tree import *
 from classes.canvas import *
 from classes.legend import *
-from classes.utility import WorkspaceOneItem
+from classes.utility import ItemWrapper
 
 workspace_one_items = {
     "ref_beta": {
@@ -60,11 +60,6 @@ workspace_one_items = {
         "unit": "Tm",
         "representation": "Brho"
     },
-    # "Brho": {
-    #     "description": "magnetic rigidity of reference charge state",
-    #     "unit": "Tm",
-    #     "representation": "Brho"
-    # },
     "xcen": {
         "description": "weight average of all charge states for x",
         "unit": "mm",
@@ -228,55 +223,49 @@ workspace_one_items = {
 }
 
 
-class PrimaryWorkspace(QtWidgets.QWidget):
-    def __init__(self,graph,items,parent=None):
-
-        super(QtWidgets.QWidget,self).__init__(parent)
-
-        # components
-        self.layout = QtWidgets.QVBoxLayout()
-        self.graph = graph
-        self.lat_tree = LatTree(self)
-        self.filter_workspace = LatTreeFilters(self)
-        self.config_window = LatElementConfig(self.lat_tree,self.filter_workspace.combo_box)
-
-        self.lat_tree.set_config(self.config_window)
-
-        self.layout.addWidget(self.graph,3)
-        self.layout.addWidget(self.filter_workspace)
-        self.layout.addWidget(self.lat_tree,2)
-
-        self.setLayout(self.layout)
-
-class SecondaryWorkspace(QtWidgets.QWidget):
-    def __init__(self,graph,items,parent=None):
-        super(QtWidgets.QWidget,self).__init__(parent)
-        
-        self.layout = QtWidgets.QVBoxLayout()
-        self.legend = Legend(graph,items,self)
-        graph.legend = self.legend
-        
-        self.layout.addWidget(self.legend)
-        
-        self.setLayout(self.layout)
-
-
 class Workspace(QtWidgets.QWidget):
     def __init__(self,parent=None):
         super(QtWidgets.QWidget,self).__init__(parent)
 
-        self.objects = self._create_objects()
-        self.graph = FmMplCanvas(self.objects)
-        self.primary = PrimaryWorkspace(self.graph,self.objects,self)
-        self.secondary = SecondaryWorkspace(self.graph,self.objects,self)
+        self.items = self._createItems()
 
+        # setting up sub-workspaces
+        ws1 = QtWidgets.QWidget(self)
+        ws2 = QtWidgets.QWidget(self)
+
+        ws1.setLayout(QtWidgets.QVBoxLayout())
+        ws2.setLayout(QtWidgets.QVBoxLayout())
+
+        # objects
+        self.graph = FmMplCanvas()
+        self.filters = LatTreeFilters()
+        self.latEditor = LatTree()
+        self.config_window = LatElementConfig()
+
+        self.paramTree = Legend()
+
+        # linking objects
+        self.graph.link(self.paramTree)
+        self.filters.link(self.latEditor)
+        self.latEditor.link(self.graph,self.config_window)
+        self.config_window.link(self.graph,self.filters,self.latEditor)
+
+        self.paramTree.link(self.items,self.graph)
+
+        # handling layouts
+        ws1.layout().addWidget(self.graph,3)
+        ws1.layout().addWidget(self.filters)
+        ws1.layout().addWidget(self.latEditor,2)
+
+        ws2.layout().addWidget(self.paramTree)
+        
         # components
-        self.layout = QtWidgets.QHBoxLayout()
-        self.layout.addWidget(self.primary,3)
-        self.layout.addWidget(self.secondary,1)
-        self.setLayout(self.layout)
+        layout = QtWidgets.QHBoxLayout()
+        layout.addWidget(ws1,3)
+        layout.addWidget(ws2,1)
+        self.setLayout(layout)
 
-    def _create_objects(self):
+    def _createItems(self):
         object_dict = {
             "ref": [],
             "cen": [],
@@ -290,7 +279,7 @@ class Workspace(QtWidgets.QWidget):
         }
 
         for kwrd,attr in workspace_one_items.items():
-            item = WorkspaceOneItem()
+            item = ItemWrapper()
             item.kwrd = kwrd
             item.x_unit = "pos"
             item.y_unit = attr["unit"]

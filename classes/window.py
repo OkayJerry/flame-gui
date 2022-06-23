@@ -8,6 +8,7 @@ class MenuBar(QtWidgets.QMenuBar):
         self.main_window = main_window
         self.filename = None
         self.bmstate_window = BeamStateWindow()
+        self.bmstate_window.link(main_window.workspace.graph)
 
         file_menu = self.addMenu('File')
         edit_menu = self.addMenu('Edit')
@@ -44,8 +45,8 @@ class MenuBar(QtWidgets.QMenuBar):
 
 
     def open(self):
-        graph = self.main_window.workspace.primary.graph
-        lat_tree = self.main_window.workspace.primary.lat_tree
+        graph = self.main_window.workspace.graph
+        latEditor = self.main_window.workspace.latEditor
 
         self.filename = QtWidgets.QFileDialog.getOpenFileName(self.main_window,'Open File')
         self.filename = self.filename[0] # previously tuple
@@ -66,14 +67,10 @@ class MenuBar(QtWidgets.QMenuBar):
 
         self.bmstate_window.update(graph)
 
-        lat_tree.model = graph.model
-        lat_tree.graph = graph
-        lat_tree.config_window.model = graph.model
-        lat_tree.config_window.graph = graph
-        lat_tree.populate()
+        latEditor.populate()
 
-        for i in range(len(lat_tree.header())):
-            lat_tree.resizeColumnToContents(i)
+        for i in range(len(latEditor.header())):
+            latEditor.resizeColumnToContents(i)
 
     def save(self):
         model = self.main_window.workspace.graph.model
@@ -90,6 +87,7 @@ class MenuBar(QtWidgets.QMenuBar):
 class Window(QtWidgets.QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
+        self.fileIsOpen = False
 
         # properties
         self.setWindowTitle('FLAME')
@@ -97,8 +95,8 @@ class Window(QtWidgets.QMainWindow):
 
         # components
         main = QtWidgets.QWidget()
-        menu_bar = MenuBar(self)
         self.workspace = Workspace(main)
+        menu_bar = MenuBar(self)
         layout = QtWidgets.QHBoxLayout(main)
 
         layout.addWidget(self.workspace)

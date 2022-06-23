@@ -3,17 +3,23 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 
 class Legend(QTreeWidget):
-    def __init__(self,graph,items,parent=None):
+    def __init__(self,parent=None): # ,graph,items,parent=None):
         super(QTreeWidget,self).__init__(parent)
 
-        self.graph = graph
-        self.items = items
+        # self.graph = graph
+        # self.items = items
         self.checked_box_cnt = 0
         self.setHeaderHidden(True)
         self.setSelectionMode(QAbstractItemView.NoSelection)
         self.ignore_next_item_change = False
-        self.fill()
         
+
+    def link(self,items,graph):
+        self.items = items
+        self.graph = graph
+
+        self.fill()
+
     def fill(self):
 
         # Parameter            Visible
@@ -42,9 +48,7 @@ class Legend(QTreeWidget):
         #         ├─ xyp         [ ]
         #         └─ xpyp        [ ]
 
-        items = self.items
-
-        for lst in items.values():
+        for lst in self.items.values():
             for item in lst:
                 item.setText(0,item.text_repr)
                 item.setToolTip(0, item.description)
@@ -77,43 +81,43 @@ class Legend(QTreeWidget):
 
         # creating view
         self.addTopLevelItem(reference)
-        for item in items["ref"]:
+        for item in self.items["ref"]:
             reference.addChild(item)
 
         self.addTopLevelItem(actual)
         actual.addChild(cen)
-        for item in items["cen"]:
+        for item in self.items["cen"]:
             cen.addChild(item)
 
         actual.addChild(rms)
-        for item in items["rms"]:
+        for item in self.items["rms"]:
             rms.addChild(item)
 
         actual.addChild(emt)
-        for item in items["emittance"]:
+        for item in self.items["emittance"]:
             emt.addChild(item)
 
         actual.addChild(tws)
         tws.addChild(tws_x)
-        for item in items["twiss_alpha"]:
+        for item in self.items["twiss_alpha"]:
             tws_x.addChild(item)
         tws.addChild(tws_y)
-        for item in items["twiss_beta"]:
+        for item in self.items["twiss_beta"]:
             tws_y.addChild(item)
         tws.addChild(tws_z)
-        for item in items["twiss_gamma"]:
+        for item in self.items["twiss_gamma"]:
             tws_z.addChild(item)
 
         actual.addChild(cpl)
-        for item in items["couple"]:
+        for item in self.items["couple"]:
             cpl.addChild(item)
 
         actual.addChild(others)
-        for item in items["others"]:
+        for item in self.items["others"]:
             others.addChild(item)
 
         # enabling checkbox
-        for lst in items.values():
+        for lst in self.items.values():
             for item in lst:
                 item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
                 item.setCheckState(0,QtCore.Qt.Unchecked)

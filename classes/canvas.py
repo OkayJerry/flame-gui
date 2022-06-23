@@ -4,7 +4,6 @@ from matplotlib.figure import Figure
 from flame_utils import ModelFlame, PlotLat
 from matplotlib.lines import Line2D
 import matplotlib.patches as mpatches
-from classes.utility import WorkspaceOneItem
 from PyQt5 import QtGui
 import numpy as np
 
@@ -13,10 +12,9 @@ class FmMplLine(Line2D): # only purpose as for now is to differentiate lines I'v
         super().__init__(xdata, ydata)
 
 class FmMplCanvas(FigureCanvas):
-    def __init__(self,items,parent=None,filename=None):
+    def __init__(self,parent=None,filename=None):
         super(FigureCanvas,self).__init__(parent)
         self.model = None
-        self.legend = None
         self.filename = None
         self.axes = []
         self.base_ax = None
@@ -25,12 +23,16 @@ class FmMplCanvas(FigureCanvas):
 
         self.figure.tight_layout()
 
+
+    def link(self,paramTree):
+        self.paramTree = paramTree
+
     def set_model(self,filename):
         self.filename = filename
         self.model = ModelFlame(filename)
 
     def update_lines(self):
-        active_items = self.legend.getCheckedItems()
+        active_items = self.paramTree.getCheckedItems()
         r,s = self.model.run(monitor='all')
         for item in active_items:
             data = self.model.collect_data(r,'pos',item.kwrd)
