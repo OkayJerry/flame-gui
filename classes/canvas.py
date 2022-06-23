@@ -160,37 +160,37 @@ class FmMplCanvas(FigureCanvas):
         if len(self.axes) != 0: # no axes = no legend
             self._create_legend()
 
-        if self.base_ax:
-            self._plot_lat()
+        self._plot_lat()
 
         self.figure.tight_layout()
         self.figure.canvas.draw()
 
     def _plot_lat(self):
-        ymax,ymin = self._get_ymaxmin(self.base_ax)
-        yrange = ymax - ymin
-        frac_yrange = yrange * 0.1
+        if self.base_ax:
+            ymax,ymin = self._get_ymaxmin(self.base_ax)
+            yrange = ymax - ymin
+            frac_yrange = yrange * 0.1
 
-        if ymax != ymin: # not a horizonal line
-            ycen_eq = ymin - frac_yrange - frac_yrange * 0.5
-            yscl_eq = frac_yrange
-        else:
-            ycen_eq = ymax - 1
-            yscl_eq = 1 * 0.09
+            if ymax != ymin: # not a horizonal line
+                ycen_eq = ymin - frac_yrange - frac_yrange * 0.5
+                yscl_eq = frac_yrange
+            else:
+                ycen_eq = ymax - 1
+                yscl_eq = 1 * 0.09
 
-        lattice = PlotLat(self.model.machine, auto_scaling=False, starting_offset=0)
-        lattice.generate(ycen=ycen_eq, yscl=yscl_eq, legend=False, option=False, axes=self.base_ax) # locational plot created
+            lattice = PlotLat(self.model.machine, auto_scaling=False, starting_offset=0)
+            lattice.generate(ycen=ycen_eq, yscl=yscl_eq, legend=False, option=False, axes=self.base_ax) # locational plot created
 
-        self.base_ax.relim()
-        self.base_ax.autoscale_view(True,True,True)
+            self.base_ax.relim()
+            self.base_ax.autoscale_view(True,True,True)
 
     def _remove_lat(self):
-        for ln in reversed(self.base_ax.lines): # reversed necessary
-            if type(ln) != FmMplLine:
-                ln.remove()
-        [p.remove() for p in reversed(self.base_ax.patches)] # reversed necessary
-
         if self.base_ax:
+            for ln in reversed(self.base_ax.lines): # reversed necessary
+                if type(ln) != FmMplLine:
+                    ln.remove()
+            [p.remove() for p in reversed(self.base_ax.patches)] # reversed necessary
+
             self.base_ax.relim()
             self.base_ax.autoscale_view(True,True,True)
 
