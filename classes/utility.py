@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QTreeWidgetItem
-class WorkspaceOneItem(QTreeWidgetItem):
+class ItemWrapper(QTreeWidgetItem):
     def __init__(self):
         super().__init__()
         # objects

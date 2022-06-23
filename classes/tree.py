@@ -23,18 +23,13 @@ class Item(QTreeWidgetItem):
 
 
 class LatTree(QTreeWidget):
-    def __init__(self,parent,model=None):
+    def __init__(self,parent=None):
         super(QTreeWidget,self).__init__(parent)
-        self.graph = None
-        self.model = model
-        self.config_window = None
-
         self.headers = ['Index','Name','Type','Attribute','Value','Unit']
 
         # format
         self.setColumnCount(len(self.headers))
         self.setHeaderLabels(self.headers)
-        # self.header().setSectionResizeMode(QHeaderView.Stretch)
 
         # edit
         self.setItemDelegateForColumn(self.headers.index('Value'),DoubleDelegate(self))
@@ -42,6 +37,10 @@ class LatTree(QTreeWidget):
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.itemChanged.connect(self.update_model)
 
+
+    def link(self,graph,latConfig):
+        self.graph = graph
+        self.config_window = latConfig
 
     def populate(self):
         index_i = self.headers.index('Index')
@@ -51,10 +50,10 @@ class LatTree(QTreeWidget):
         val_i = self.headers.index('Value')
         unit_i = self.headers.index('Unit')
 
-        self.elements = self.model.get_element(name=self.model.get_all_names())
-        self.elements = self.elements[1:]
+        elements = self.graph.model.get_element(name=self.graph.model.get_all_names())
+        elements = elements[1:]
         
-        for element in self.elements:
+        for element in elements:
             item = Item()
             item.setText(index_i,str(element['index']))
             for key,val in element['properties'].items():
@@ -136,7 +135,7 @@ class LatTree(QTreeWidget):
         else:
             val = selected.text(val_i)
 
-        self.model.reconfigure(element, {attribute: val})
+        self.graph.model.reconfigure(element, {attribute: val})
         self.graph.update_lines()
 
 
@@ -168,10 +167,6 @@ class LatTree(QTreeWidget):
                 item.setHidden(True)
             else:
                 item.setHidden(False)
-
-
-
-
 
     def set_config(self,window):
         self.config_window = window
@@ -214,12 +209,10 @@ class LatTree(QTreeWidget):
     def removeElement(self):
         index_i = self.headers.index('Index')
         item = self.currentItem()
-        self.model.pop_element(int(item.text(index_i)))
+        self.graph.model.pop_element(int(item.text(index_i)))
         self.clear()
         self.populate()
         self.graph.update_lines()
-
-    # def removeAttribute(self):
 
 
 
@@ -235,7 +228,6 @@ class LatTreeFilters(QWidget):
     
         for word in ['all','magnetic','quadrupole','drift','orbtrim','marker','sbend']:
             self.combo_box.addItem(word)
-        self.combo_box.currentTextChanged.connect(self.parent.lat_tree.type_filter)
         self.combo_box.setFixedWidth(300)
 
         self.search_bar.setPlaceholderText('Search Element Name')
@@ -247,27 +239,26 @@ class LatTreeFilters(QWidget):
 
         self.setLayout(self.layout)
 
-    def name_filter(self,filter_text):
-        tree = self.parent.lat_tree
-        name_i = tree.headers.index('Name')
-        tree.type_filter(self.combo_box.currentText())
+    def link(self,latEditor):
+        self.latEditor = latEditor
 
-        for i in range(tree.topLevelItemCount()):
-            item = tree.topLevelItem(i)
+        self.combo_box.currentTextChanged.connect(self.latEditor.type_filter)
+
+
+    def name_filter(self,filter_text):
+        name_i = self.latEditor.headers.index('Name')
+        self.latEditor.type_filter(self.combo_box.currentText())
+
+        for i in range(self.latEditor.topLevelItemCount()):
+            item = self.latEditor.topLevelItem(i)
             if item.isHidden() == False:
                 if filter_text not in item.text(name_i):
                     item.setHidden(True)
 
 
-
-
 class LatElementConfig(QWidget):
-    def __init__(self,lat_tree,tree_filter):
+    def __init__(self):
         super().__init__()
-        self.tree = lat_tree
-        self.tree_filter = tree_filter
-        self.model = None
-        self.graph = None
         self.edit_mode = False
 
         top_row = QWidget()
@@ -330,6 +321,11 @@ class LatElementConfig(QWidget):
         self.layout.addWidget(self.attr_table)
         self.layout.addWidget(bottom_row)
         self.setLayout(self.layout)
+
+    def link(self,graph,filters,latEditor):
+        self.graph = graph
+        self.tree_filter = filters.combo_box
+        self.tree = latEditor
 
 
     def remove_attribute(self):
@@ -409,9 +405,9 @@ class LatElementConfig(QWidget):
         i = int(self.index_line.text())
 
         if self.edit_mode:
-            self.model.pop_element(index=i)
+            self.graph.model.pop_element(index=i)
 
-        self.model.insert_element(index=i, element=d)
+        self.graph.model.insert_element(index=i, element=d)
         
 
         self.tree.clear()
