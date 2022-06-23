@@ -18,6 +18,8 @@ class MenuBar(QtWidgets.QMenuBar):
         save_as_action = QtWidgets.QAction('&Save As...',main_window)
         exit_action = QtWidgets.QAction('&Exit',main_window)
 
+        undo_action = QtWidgets.QAction('&Undo',main_window)
+        redo_action = QtWidgets.QAction('&Redo',main_window)
         bmstate_action = QtWidgets.QAction('&Beam State',main_window)
 
         # set trigger
@@ -26,6 +28,8 @@ class MenuBar(QtWidgets.QMenuBar):
         save_as_action.triggered.connect(self.save_as)
         exit_action.triggered.connect(QtWidgets.qApp.quit)
 
+        # undo_action.triggered.connect()
+        # redo_action.triggered.connect()
         bmstate_action.triggered.connect(lambda: self.bmstate_window.show())
 
         # link
@@ -34,6 +38,8 @@ class MenuBar(QtWidgets.QMenuBar):
         file_menu.addAction(save_as_action)
         file_menu.addAction(exit_action)
 
+        edit_menu.addAction(undo_action)
+        edit_menu.addAction(redo_action)
         edit_menu.addAction(bmstate_action)
 
 
@@ -41,19 +47,18 @@ class MenuBar(QtWidgets.QMenuBar):
         graph = self.main_window.workspace.primary.graph
         lat_tree = self.main_window.workspace.primary.lat_tree
 
-        self.filename = ""
-        while self.filename == "" or ".lat" not in self.filename:
-            self.filename = QtWidgets.QFileDialog.getOpenFileName(self.main_window,'Open File')
-            self.filename = self.filename[0] # previously tuple
-            if self.filename == "" or ".lat" not in self.filename:
-                warning = QtWidgets.QMessageBox()
-                warning.setIcon(QtWidgets.QMessageBox.Critical)
-                warning.setText("Please select a .lat file")
-                warning.setWindowTitle("ERROR")
-                warning.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        self.filename = QtWidgets.QFileDialog.getOpenFileName(self.main_window,'Open File')
+        self.filename = self.filename[0] # previously tuple
+        if ".lat" not in self.filename:
+            warning = QtWidgets.QMessageBox()
+            warning.setIcon(QtWidgets.QMessageBox.Critical)
+            warning.setText("Please select a .lat file")
+            warning.setWindowTitle("ERROR")
+            warning.setStandardButtons(QtWidgets.QMessageBox.Ok)
 
-                if warning.exec() == QtWidgets.QMessageBox.Ok:
-                    warning.close()
+            if warning.exec() == QtWidgets.QMessageBox.Ok:
+                warning.close()
+                return
 
         self.main_window.setWindowTitle("FLAME: " + self.filename)
 
