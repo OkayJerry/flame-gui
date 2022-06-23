@@ -15,6 +15,8 @@ class FmMplCanvas(FigureCanvas):
     def __init__(self,parent=None,filename=None):
         super(FigureCanvas,self).__init__(parent)
         self.model = None
+        self.model_history = []
+        self.undo_history = []
         self.filename = None
         self.axes = []
         self.base_ax = None
@@ -24,8 +26,9 @@ class FmMplCanvas(FigureCanvas):
         self.figure.tight_layout()
 
 
-    def link(self,paramTree):
+    def link(self,paramTree,mainWindow):
         self.paramTree = paramTree
+        self.mainWindow = mainWindow
 
     def set_model(self,filename):
         self.filename = filename
@@ -46,10 +49,7 @@ class FmMplCanvas(FigureCanvas):
             ax.autoscale_view()
 
         self.figure.tight_layout()
-        self.figure.canvas.draw()
-            
-
-        
+        self.figure.canvas.draw() 
 
 
     def plot_item(self,item):
@@ -207,3 +207,8 @@ class FmMplCanvas(FigureCanvas):
                 if ln_ymin < ymin:
                     ymin = ln_ymin
         return ymax,ymin
+
+    def copy_model_to_history(self):
+        self.model_history.append(ModelFlame(machine=self.model.clone_machine()))
+        self.undo_history.clear()
+        self.mainWindow.menu_bar.handleUndoRedoEnabling()

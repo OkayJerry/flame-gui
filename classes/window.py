@@ -6,10 +6,14 @@ class MenuBar(QtWidgets.QMenuBar):
     def __init__(self,main_window):
         super(QtWidgets.QMenuBar,self).__init__(main_window)
         self.main_window = main_window
+        self.model_history = []
+        self.undo_history = []
         self.filename = None
+
         self.bmstate_window = BeamStateWindow()
         self.bmstate_window.link(main_window.workspace.graph)
 
+        # menus
         file_menu = self.addMenu('File')
         edit_menu = self.addMenu('Edit')
 
@@ -19,8 +23,8 @@ class MenuBar(QtWidgets.QMenuBar):
         save_as_action = QtWidgets.QAction('&Save As...',main_window)
         exit_action = QtWidgets.QAction('&Exit',main_window)
 
-        undo_action = QtWidgets.QAction('&Undo',main_window)
-        redo_action = QtWidgets.QAction('&Redo',main_window)
+        self.undo_action = QtWidgets.QAction('&Undo',main_window)
+        self.redo_action = QtWidgets.QAction('&Redo',main_window)
         bmstate_action = QtWidgets.QAction('&Beam State',main_window)
 
         # set trigger
@@ -29,8 +33,8 @@ class MenuBar(QtWidgets.QMenuBar):
         save_as_action.triggered.connect(self.save_as)
         exit_action.triggered.connect(QtWidgets.qApp.quit)
 
-        # undo_action.triggered.connect()
-        # redo_action.triggered.connect()
+        self.undo_action.triggered.connect(self.undo_models)
+        self.redo_action.triggered.connect(self.redo_models)
         bmstate_action.triggered.connect(lambda: self.bmstate_window.show())
 
         # link
@@ -39,9 +43,12 @@ class MenuBar(QtWidgets.QMenuBar):
         file_menu.addAction(save_as_action)
         file_menu.addAction(exit_action)
 
-        edit_menu.addAction(undo_action)
-        edit_menu.addAction(redo_action)
+        edit_menu.addAction(self.undo_action)
+        edit_menu.addAction(self.redo_action)
         edit_menu.addAction(bmstate_action)
+
+
+        self.handleUndoRedoEnabling()
 
 
     def open(self):
@@ -53,7 +60,7 @@ class MenuBar(QtWidgets.QMenuBar):
         if ".lat" not in self.filename:
             warning = QtWidgets.QMessageBox()
             warning.setIcon(QtWidgets.QMessageBox.Critical)
-            warning.setText("Please select a .lat file")
+            warning.setText("Didn't select a .lat file")
             warning.setWindowTitle("ERROR")
             warning.setStandardButtons(QtWidgets.QMessageBox.Ok)
 
@@ -64,9 +71,7 @@ class MenuBar(QtWidgets.QMenuBar):
         self.main_window.setWindowTitle("FLAME: " + self.filename)
 
         graph.set_model(self.filename)
-
         self.bmstate_window.update(graph)
-
         latEditor.populate()
 
         for i in range(len(latEditor.header())):
@@ -83,11 +88,49 @@ class MenuBar(QtWidgets.QMenuBar):
         name = name[0] # previously tuple
         model.generate_latfile(latfile=name)
 
+    def undo_models(self):
+        crnt = self.main_window.workspace.graph.model
+        model_history = self.main_window.workspace.graph.model_history
+        undo_history = self.main_window.workspace.graph.undo_history
+
+        undo_history.append(crnt)
+        prev = model_history.pop(-1)
+        self.main_window.workspace.graph.model = prev
+        self.main_window.workspace.refresh()
+
+        self.handleUndoRedoEnabling()
+
+    def redo_models(self):
+        crnt = self.main_window.workspace.graph.model
+        model_history = self.main_window.workspace.graph.model_history
+        undo_history = self.main_window.workspace.graph.undo_history
+
+        model_history.append(crnt)
+        subsequent = undo_history.pop(-1)
+        self.main_window.workspace.graph.model = subsequent
+        self.main_window.workspace.refresh()
+
+        self.handleUndoRedoEnabling()
+
+    def handleUndoRedoEnabling(self):
+        model_history = self.main_window.workspace.graph.model_history
+        undo_history = self.main_window.workspace.graph.undo_history
+
+        if model_history:
+            self.undo_action.setEnabled(True) 
+        else:
+            self.undo_action.setEnabled(False)
+
+        if undo_history:
+            self.redo_action.setEnabled(True)
+        else:
+            self.redo_action.setEnabled(False)
+        
         
 class Window(QtWidgets.QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
-        self.fileIsOpen = False
+        self.fileIsOpen = False # ----------------> to be implemented
 
         # properties
         self.setWindowTitle('FLAME')
@@ -95,14 +138,14 @@ class Window(QtWidgets.QMainWindow):
 
         # components
         main = QtWidgets.QWidget()
-        self.workspace = Workspace(main)
-        menu_bar = MenuBar(self)
+        self.workspace = Workspace(self)
+        self.menu_bar = MenuBar(self)
         layout = QtWidgets.QHBoxLayout(main)
 
         layout.addWidget(self.workspace)
 
         self.setCentralWidget(main)
-        self.setMenuBar(menu_bar)
+        self.setMenuBar(self.menu_bar)
 
         # startup
-        menu_bar.open()
+        self.menu_bar.open()

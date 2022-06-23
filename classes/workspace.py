@@ -227,6 +227,7 @@ class Workspace(QtWidgets.QWidget):
     def __init__(self,parent=None):
         super(QtWidgets.QWidget,self).__init__(parent)
 
+        self.main_window = parent
         self.items = self._createItems()
 
         # setting up sub-workspaces
@@ -245,7 +246,7 @@ class Workspace(QtWidgets.QWidget):
         self.paramTree = Legend()
 
         # linking objects
-        self.graph.link(self.paramTree)
+        self.graph.link(self.paramTree,self.main_window)
         self.filters.link(self.latEditor)
         self.latEditor.link(self.graph,self.config_window)
         self.config_window.link(self.graph,self.filters,self.latEditor)
@@ -264,6 +265,13 @@ class Workspace(QtWidgets.QWidget):
         layout.addWidget(ws1,3)
         layout.addWidget(ws2,1)
         self.setLayout(layout)
+
+
+    def refresh(self):
+        self.latEditor.clear()
+        self.latEditor.populate()
+        self.latEditor.type_filter(self.filters.combo_box.currentText())
+        self.graph.update_lines()
 
     def _createItems(self):
         object_dict = {

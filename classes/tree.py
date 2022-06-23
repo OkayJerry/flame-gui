@@ -147,6 +147,7 @@ class LatTree(QTreeWidget):
         if col == index_i or col == name_i or col == type_i: # odd logic, but others didn't work?
             return
         self.editItem(item,col)
+        self.graph.copy_model_to_history()
 
     def type_filter(self,filter_text):
         type_i = self.headers.index('Type')
@@ -417,7 +418,6 @@ class LatElementConfig(QWidget):
         if self.edit_mode:
             self.graph.model.pop_element(index=i)
 
-        print(d)
         self.graph.model.insert_element(index=i, element=d)
         
 
@@ -425,6 +425,7 @@ class LatElementConfig(QWidget):
         self.latEditor.populate()
         self.latEditor.type_filter(self.latComboBoxFilter.currentText())
         self.graph.update_lines()
+        self.graph.copy_model_to_history()
 
         self.edit_mode = False
         self.close()
