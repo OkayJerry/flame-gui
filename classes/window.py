@@ -25,7 +25,7 @@ class MenuBar(QtWidgets.QMenuBar):
 
         self.undo_action = QtWidgets.QAction('&Undo',main_window)
         self.redo_action = QtWidgets.QAction('&Redo',main_window)
-        bmstate_action = QtWidgets.QAction('&Beam State',main_window)
+        self.bmstate_action = QtWidgets.QAction('&Beam State',main_window)
 
         # set trigger
         open_action.triggered.connect(self.open)
@@ -35,7 +35,7 @@ class MenuBar(QtWidgets.QMenuBar):
 
         self.undo_action.triggered.connect(self.undo_models)
         self.redo_action.triggered.connect(self.redo_models)
-        bmstate_action.triggered.connect(lambda: self.bmstate_window.show())
+        self.bmstate_action.triggered.connect(lambda: self.bmstate_window.show())
 
         # link
         file_menu.addAction(open_action)
@@ -45,7 +45,7 @@ class MenuBar(QtWidgets.QMenuBar):
 
         edit_menu.addAction(self.undo_action)
         edit_menu.addAction(self.redo_action)
-        edit_menu.addAction(bmstate_action)
+        edit_menu.addAction(self.bmstate_action)
 
 
         self.handleUndoRedoEnabling()
@@ -55,9 +55,13 @@ class MenuBar(QtWidgets.QMenuBar):
         graph = self.main_window.workspace.graph
         latEditor = self.main_window.workspace.latEditor
 
+        self.bmstate_action.setEnabled(True)
+
+
         self.filename = QtWidgets.QFileDialog.getOpenFileName(self.main_window,'Open File')
         self.filename = self.filename[0] # previously tuple
         if ".lat" not in self.filename:
+            self.bmstate_action.setEnabled(False)
             warning = QtWidgets.QMessageBox()
             warning.setIcon(QtWidgets.QMessageBox.Critical)
             warning.setText("Didn't select a .lat file")
