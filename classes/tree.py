@@ -324,8 +324,8 @@ class LatElementConfig(QWidget):
 
     def link(self,graph,filters,latEditor):
         self.graph = graph
-        self.tree_filter = filters.combo_box
-        self.tree = latEditor
+        self.latComboBoxFilter = filters.combo_box
+        self.latEditor = latEditor
 
 
     def remove_attribute(self):
@@ -341,11 +341,11 @@ class LatElementConfig(QWidget):
     def editItem(self,topLevelItem):
         self.edit_mode = True
 
-        index_i = self.tree.headers.index('Index')
-        name_i = self.tree.headers.index('Name')
-        type_i = self.tree.headers.index('Type')
-        attr_i = self.tree.headers.index('Attribute')
-        val_i = self.tree.headers.index('Value')
+        index_i = self.latEditor.headers.index('Index')
+        name_i = self.latEditor.headers.index('Name')
+        type_i = self.latEditor.headers.index('Type')
+        attr_i = self.latEditor.headers.index('Attribute')
+        val_i = self.latEditor.headers.index('Value')
 
         elem_index = topLevelItem.text(index_i)
         elem_name = topLevelItem.text(name_i)
@@ -386,6 +386,13 @@ class LatElementConfig(QWidget):
 
 
     def finishAndSave(self):
+        units = [
+            'theta_x', 'theta_y', 'tm_xkick', 'tm_ykick', 'xyrotate',
+            'L', 'B', 'dx', 'dy', 'pitch', 'yaw', 'roll', 'B2', 'B3',
+            'V', 'radius', 'phi', 'phi1', 'phi2', 'fringe_x',
+            'fringe_y', 'f', 'Rm'
+        ]
+
         d = {}
         for i in range(self.attr_table.rowCount()):
             for j in range(self.attr_table.columnCount()):
@@ -396,7 +403,10 @@ class LatElementConfig(QWidget):
                     if j == 0: # index of attribute name
                         attr_name = text
                     elif j == 1: # index of attribute value
-                        attr_val = text
+                        if attr_name in units:
+                            attr_val = float(text)
+                        else:
+                            attr_val = text
             d[attr_name] = attr_val
 
 
@@ -407,12 +417,13 @@ class LatElementConfig(QWidget):
         if self.edit_mode:
             self.graph.model.pop_element(index=i)
 
+        print(d)
         self.graph.model.insert_element(index=i, element=d)
         
 
-        self.tree.clear()
-        self.tree.populate()
-        self.tree.type_filter(self.tree_filter.currentText())
+        self.latEditor.clear()
+        self.latEditor.populate()
+        self.latEditor.type_filter(self.latComboBoxFilter.currentText())
         self.graph.update_lines()
 
         self.edit_mode = False
