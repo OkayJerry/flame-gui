@@ -217,6 +217,7 @@ class LatTree(QTreeWidget):
         self.model.pop_element(int(item.text(index_i)))
         self.clear()
         self.populate()
+        self.graph.update_lines()
 
     # def removeAttribute(self):
 
@@ -266,6 +267,7 @@ class LatElementConfig(QWidget):
         self.tree = lat_tree
         self.tree_filter = tree_filter
         self.model = None
+        self.graph = None
         self.edit_mode = False
 
         top_row = QWidget()
@@ -415,6 +417,7 @@ class LatElementConfig(QWidget):
         self.tree.clear()
         self.tree.populate()
         self.tree.type_filter(self.tree_filter.currentText())
+        self.graph.update_lines()
 
         self.edit_mode = False
         self.close()

@@ -64,7 +64,9 @@ class MenuBar(QtWidgets.QMenuBar):
         lat_tree.model = graph.model
         lat_tree.graph = graph
         lat_tree.config_window.model = graph.model
+        lat_tree.config_window.graph = graph
         lat_tree.populate()
+
         for i in range(len(lat_tree.header())):
             lat_tree.resizeColumnToContents(i)
 
