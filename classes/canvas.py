@@ -119,6 +119,27 @@ class FmMplCanvas(FigureCanvas):
             axis.spines.right.set_position(('outward',60))
             axis.yaxis.set_label_position('right')
 
+    def _update_axis_location(self):
+        for i in range(len(self.axes)):
+            axis = self.axes[i]
+            print(i,axis.get_ylabel())
+            if i == 0:
+                axis.yaxis.set_ticks_position('left')
+                axis.spines.left.set_position(('outward',0))
+                axis.yaxis.set_label_position('left')
+            elif i == 1:
+                axis.yaxis.set_ticks_position('right')
+                axis.spines.right.set_position(('outward',0))
+                axis.yaxis.set_label_position('right')
+            elif i == 2:
+                axis.yaxis.set_ticks_position('left')
+                axis.spines.left.set_position(('outward',60))
+                axis.yaxis.set_label_position("left")
+            else:
+                axis.yaxis.set_ticks_position('right')
+                axis.spines.right.set_position(('outward',60))
+                axis.yaxis.set_label_position('right')
+
     def _create_legend(self):
         patches = []
         topmost_ax = self.axes[-1]
@@ -157,10 +178,16 @@ class FmMplCanvas(FigureCanvas):
                     self.base_ax.spines.left.set_position(('outward',0))
                     self.base_ax.yaxis.set_label_position('left')
 
+
         if len(self.axes) != 0: # no axes = no legend
             self._create_legend()
 
         self._plot_lat()
+
+        self._update_axis_location()
+        for ax in self.axes:
+            ax.relim()
+            ax.autoscale_view(True,True,True)
 
         self.figure.tight_layout()
         self.figure.canvas.draw()
