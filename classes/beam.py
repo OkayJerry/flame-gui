@@ -17,8 +17,8 @@ class BeamStateWindow(QtWidgets.QWidget):
         self.commit_button = QtWidgets.QPushButton()
 
         self.alpha_label.setText('Alpha:')
-        self.commit_button.setText('Finish and Save')
-        self.commit_button.clicked.connect(self.finishAndSave)
+        self.commit_button.setText('Apply')
+        self.commit_button.clicked.connect(self.apply)
         
         for var in ['x', 'y', 'z']:
             self.var_box.addItem(var)
@@ -65,7 +65,7 @@ class BeamStateWindow(QtWidgets.QWidget):
         self.kwrd1_spin.setValue(kwrd1_val)
         self.kwrd2_spin.setValue(kwrd2_val)
 
-    def finishAndSave(self):
+    def apply(self):
         var = self.var_box.currentText()
         alpha_val = self.alpha_spin.value()
         kwrd1_val = self.kwrd1_spin.value()
@@ -84,7 +84,6 @@ class BeamStateWindow(QtWidgets.QWidget):
 
         self.graph.update_lines()
         self.graph.copy_model_to_history()
-        self.close()
 
         
 
