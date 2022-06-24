@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtCore
 from classes.workspace import * 
 from classes.beam import *
+from classes.phase import PhaseSpaceWindow
 
 class MenuBar(QtWidgets.QMenuBar):
     def __init__(self,main_window):
@@ -11,11 +12,15 @@ class MenuBar(QtWidgets.QMenuBar):
         self.filename = None
 
         self.bmstate_window = BeamStateWindow()
+        self.phase_window = PhaseSpaceWindow()
+
         self.bmstate_window.link(main_window.workspace.graph)
+        self.phase_window.link(main_window.workspace.graph)
 
         # menus
         file_menu = self.addMenu('File')
         edit_menu = self.addMenu('Edit')
+        view_menu = self.addMenu('View')
 
         # actions
         open_action = QtWidgets.QAction('&Open...',main_window)
@@ -26,6 +31,8 @@ class MenuBar(QtWidgets.QMenuBar):
         self.undo_action = QtWidgets.QAction('&Undo',main_window)
         self.redo_action = QtWidgets.QAction('&Redo',main_window)
         self.bmstate_action = QtWidgets.QAction('&Beam State',main_window)
+
+        phase_action = QtWidgets.QAction('&Phase Space',main_window)
 
         # set shortcuts
         open_action.setShortcut(QtGui.QKeySequence.Open)
@@ -46,6 +53,8 @@ class MenuBar(QtWidgets.QMenuBar):
         self.redo_action.triggered.connect(self.redo_models)
         self.bmstate_action.triggered.connect(lambda: self.bmstate_window.show())
 
+        phase_action.triggered.connect(self.phase_window.open)
+
         # link
         file_menu.addAction(open_action)
         file_menu.addAction(save_action)
@@ -55,6 +64,8 @@ class MenuBar(QtWidgets.QMenuBar):
         edit_menu.addAction(self.undo_action)
         edit_menu.addAction(self.redo_action)
         edit_menu.addAction(self.bmstate_action)
+
+        view_menu.addAction(phase_action)
 
 
         self.handleUndoRedoEnabling()
