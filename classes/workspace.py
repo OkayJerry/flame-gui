@@ -1,4 +1,5 @@
 from PyQt5 import QtWidgets, QtGui
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from classes.tree import *
 from classes.canvas import *
 from classes.legend import *
@@ -239,6 +240,7 @@ class Workspace(QtWidgets.QWidget):
 
         # objects
         self.graph = FmMplCanvas()
+        self.toolbar = NavigationToolbar(self.graph,ws1)
         self.filters = LatTreeFilters()
         self.latEditor = LatTree()
         self.config_window = LatElementConfig()
@@ -247,6 +249,7 @@ class Workspace(QtWidgets.QWidget):
 
         # linking objects
         self.graph.link(self.paramTree,self.main_window)
+        self.toolbar.actions()[0].triggered.connect(lambda: self.graph.figure.tight_layout()) # home button pressed
         self.filters.link(self.latEditor)
         self.latEditor.link(self.graph,self.config_window)
         self.config_window.link(self.graph,self.filters,self.latEditor)
@@ -254,6 +257,7 @@ class Workspace(QtWidgets.QWidget):
         self.paramTree.link(self.items,self.graph)
 
         # handling layouts
+        ws1.layout().addWidget(self.toolbar)
         ws1.layout().addWidget(self.graph,3)
         ws1.layout().addWidget(self.filters)
         ws1.layout().addWidget(self.latEditor,2)
@@ -265,6 +269,7 @@ class Workspace(QtWidgets.QWidget):
         layout.addWidget(ws1,3)
         layout.addWidget(ws2,1)
         self.setLayout(layout)
+
 
 
     def refresh(self):
