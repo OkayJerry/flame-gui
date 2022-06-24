@@ -293,7 +293,10 @@ class LatElementConfig(QWidget):
         top_row_layout.addWidget(self.name_line)
         top_row_layout.addWidget(type_label)
 
-        for t in ['quadrupole','drift','orbtrim','marker','sbend']:
+        types = ['marker', 'stripper', 'tmatrix', 'orbtrim', 'drift',
+            'solenoid', 'quadrupole', 'sextupole', 'equad', 'sbend',
+            'edipole', 'rfcavity']
+        for t in types:
             self.type_box.addItem(t)
         top_row_layout.addWidget(self.type_box)
 
@@ -382,7 +385,6 @@ class LatElementConfig(QWidget):
 
             self.attr_table.setItem(i+1,0,attr)
             self.attr_table.setItem(i+1,1,val)
-            print(i, self.attr_table.item(i+1,0).text(), self.attr_table.item(i+1,1).text())
 
         # adding blank row at bottom
         self.attr_table.insertRow(self.attr_table.rowCount())
