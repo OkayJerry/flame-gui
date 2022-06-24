@@ -122,7 +122,6 @@ class FmMplCanvas(FigureCanvas):
     def _update_axis_location(self):
         for i in range(len(self.axes)):
             axis = self.axes[i]
-            print(i,axis.get_ylabel())
             if i == 0:
                 axis.yaxis.set_ticks_position('left')
                 axis.spines.left.set_position(('outward',0))
