@@ -27,6 +27,15 @@ class MenuBar(QtWidgets.QMenuBar):
         self.redo_action = QtWidgets.QAction('&Redo',main_window)
         self.bmstate_action = QtWidgets.QAction('&Beam State',main_window)
 
+        # set shortcuts
+        open_action.setShortcut(QtGui.QKeySequence.Open)
+        save_action.setShortcut(QtGui.QKeySequence.Save)
+        save_as_action.setShortcut(QtGui.QKeySequence.SaveAs)
+        exit_action.setShortcut(QtGui.QKeySequence.Quit)
+
+        self.undo_action.setShortcut(QtGui.QKeySequence.Undo)
+        self.redo_action.setShortcut(QtGui.QKeySequence.Redo)
+
         # set trigger
         open_action.triggered.connect(self.open)
         save_action.triggered.connect(self.save)
@@ -49,19 +58,17 @@ class MenuBar(QtWidgets.QMenuBar):
 
 
         self.handleUndoRedoEnabling()
+        self.bmstate_action.setEnabled(False)
 
 
     def open(self):
         graph = self.main_window.workspace.graph
         latEditor = self.main_window.workspace.latEditor
 
-        self.bmstate_action.setEnabled(True)
-
 
         self.filename = QtWidgets.QFileDialog.getOpenFileName(self.main_window,'Open File')
         self.filename = self.filename[0] # previously tuple
         if ".lat" not in self.filename:
-            self.bmstate_action.setEnabled(False)
             warning = QtWidgets.QMessageBox()
             warning.setIcon(QtWidgets.QMessageBox.Critical)
             warning.setText("Didn't select a .lat file")
@@ -80,6 +87,9 @@ class MenuBar(QtWidgets.QMenuBar):
 
         for i in range(len(latEditor.header())):
             latEditor.resizeColumnToContents(i)
+
+        self.main_window.fileIsOpen = True
+        self.main_window.handleFileOpen()
 
     def save(self):
         model = self.main_window.workspace.graph.model
@@ -134,7 +144,7 @@ class MenuBar(QtWidgets.QMenuBar):
 class Window(QtWidgets.QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
-        self.fileIsOpen = False # ----------------> to be implemented
+        self.fileIsOpen = False
 
         # properties
         self.setWindowTitle('FLAME')
@@ -153,3 +163,7 @@ class Window(QtWidgets.QMainWindow):
 
         # startup
         self.menu_bar.open()
+
+    def handleFileOpen(self):
+        if self.fileIsOpen:
+            self.menu_bar.bmstate_action.setEnabled(True)
