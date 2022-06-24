@@ -391,6 +391,8 @@ class LatElementConfig(QWidget):
 
 
     def apply(self):
+        self.graph.copy_model_to_history()
+
         units = [
             'theta_x', 'theta_y', 'tm_xkick', 'tm_ykick', 'xyrotate',
             'L', 'B', 'dx', 'dy', 'pitch', 'yaw', 'roll', 'B2', 'B3',
@@ -429,7 +431,6 @@ class LatElementConfig(QWidget):
         self.latEditor.populate()
         self.latEditor.type_filter(self.latComboBoxFilter.currentText())
         self.graph.update_lines()
-        self.graph.copy_model_to_history()
 
         self.edit_mode = False
 
