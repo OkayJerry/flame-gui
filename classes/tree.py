@@ -301,18 +301,15 @@ class LatElementConfig(QWidget):
         self.attr_table.setHorizontalHeaderLabels(['Attribute','Value','Unit'])
         self.attr_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.attr_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.attr_table.itemChanged.connect(self.handleBlankRow)
 
-        self.add_attr_button = QPushButton()
         self.rem_attr_button = QPushButton()
         self.commit_button = QPushButton()
-        self.add_attr_button.setText('Add Blank Attribute')
         self.rem_attr_button.setText('Remove Selected Attribute')
-        self.commit_button.setText('Finish and Save')
-        self.add_attr_button.clicked.connect(lambda: self.attr_table.insertRow(self.attr_table.rowCount()))
+        self.commit_button.setText('Apply')
         self.rem_attr_button.clicked.connect(self.remove_attribute)
-        self.commit_button.clicked.connect(self.finishAndSave)
+        self.commit_button.clicked.connect(self.apply)
 
-        bottom_row_layout.addWidget(self.add_attr_button)
         bottom_row_layout.addWidget(self.rem_attr_button)
         bottom_row_layout.addWidget(self.commit_button)
 
@@ -340,6 +337,7 @@ class LatElementConfig(QWidget):
 
 
     def editItem(self,topLevelItem):
+        self.attr_table.blockSignals(True)
         self.edit_mode = True
 
         index_i = self.latEditor.headers.index('Index')
@@ -384,9 +382,15 @@ class LatElementConfig(QWidget):
 
             self.attr_table.setItem(i+1,0,attr)
             self.attr_table.setItem(i+1,1,val)
+            print(i, self.attr_table.item(i+1,0).text(), self.attr_table.item(i+1,1).text())
+
+        # adding blank row at bottom
+        self.attr_table.insertRow(self.attr_table.rowCount())
+
+        self.attr_table.blockSignals(False)
 
 
-    def finishAndSave(self):
+    def apply(self):
         units = [
             'theta_x', 'theta_y', 'tm_xkick', 'tm_ykick', 'xyrotate',
             'L', 'B', 'dx', 'dy', 'pitch', 'yaw', 'roll', 'B2', 'B3',
@@ -428,8 +432,6 @@ class LatElementConfig(QWidget):
         self.graph.copy_model_to_history()
 
         self.edit_mode = False
-        self.close()
-        self.clear()
 
 
     def clear(self):
@@ -438,9 +440,19 @@ class LatElementConfig(QWidget):
         self.type_box.setEnabled(True)
         self.index_line.clear()
         self.name_line.clear()
-        self.attr_table.clear()
+        while self.attr_table.rowCount() > 1:
+            self.attr_table.removeRow(0)
+
 
     
     def closeEvent(self,event): # overriding window close
         self.clear()
         event.accept()
+
+    def handleBlankRow(self):
+        row = self.attr_table.rowCount()-1
+        col = self.attr_table.columnCount()-1
+        bottom_item_col1 = self.attr_table.item(row,col-1)
+        bottom_item_col2 = self.attr_table.item(row,col)
+        if bottom_item_col1 != None and bottom_item_col2 != None:
+            self.attr_table.insertRow(row+1)
