@@ -1,5 +1,4 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
-import numpy as np
 
 class BeamStateWindow(QtWidgets.QWidget):
     def __init__(self):
