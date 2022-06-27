@@ -14,8 +14,6 @@ class MenuBar(QtWidgets.QMenuBar):
         self.bmstate_window = BeamStateWindow()
         self.phase_window = PhaseSpaceWindow()
 
-        self.bmstate_window.link(main_window.workspace.graph)
-        self.phase_window.link(main_window.workspace.graph)
 
         # menus
         file_menu = self.addMenu('File')
@@ -173,6 +171,9 @@ class Window(QtWidgets.QMainWindow):
         self.setMenuBar(self.menu_bar)
 
         # startup
+        self.menu_bar.bmstate_window.link(self.workspace.graph, self.workspace)
+        self.menu_bar.phase_window.link(self.workspace.graph)
+        self.workspace.link(self.menu_bar.phase_window)
         self.menu_bar.open()
 
     def handleFileOpen(self):

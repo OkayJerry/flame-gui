@@ -26,6 +26,7 @@ class LatTree(QTreeWidget):
     def __init__(self,parent=None):
         super(QTreeWidget,self).__init__(parent)
         self.headers = ['Index','Name','Type','Attribute','Value','Unit']
+        self.workspace = parent
 
         # format
         self.setColumnCount(len(self.headers))
@@ -136,7 +137,8 @@ class LatTree(QTreeWidget):
             val = selected.text(val_i)
 
         self.graph.model.reconfigure(element, {attribute: val})
-        self.graph.update_lines()
+        # self.graph.update_lines()
+        self.workspace.refresh()
 
 
     def _handle_edits(self,item,col):
@@ -211,9 +213,10 @@ class LatTree(QTreeWidget):
         index_i = self.headers.index('Index')
         item = self.currentItem()
         self.graph.model.pop_element(int(item.text(index_i)))
-        self.clear()
-        self.populate()
-        self.graph.update_lines()
+        # self.clear()
+        # self.populate()
+        # self.graph.update_lines()
+        self.workspace.refresh()
 
 
 
@@ -258,9 +261,10 @@ class LatTreeFilters(QWidget):
 
 
 class LatElementConfig(QWidget):
-    def __init__(self):
+    def __init__(self,parent=None):
         super().__init__()
         self.edit_mode = False
+        self.workspace = parent
 
         top_row = QWidget()
         bottom_row = QWidget()
@@ -428,11 +432,7 @@ class LatElementConfig(QWidget):
 
         self.graph.model.insert_element(index=i, element=d)
         
-
-        self.latEditor.clear()
-        self.latEditor.populate()
-        self.latEditor.type_filter(self.latComboBoxFilter.currentText())
-        self.graph.update_lines()
+        self.workspace.refresh()
 
         self.edit_mode = False
 
