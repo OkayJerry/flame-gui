@@ -7,13 +7,13 @@ class DoubleDelegate(QStyledItemDelegate):
         super().__init__(parent)
 
     def createEditor(self, parent, option, index):
-        lineEdit = QLineEdit(parent)
+        line_edit = QLineEdit(parent)
         if index.sibling(index.row(), 5).data(
         ) is None:  # if corresponding unit is none
-            return lineEdit
-        validator = QtGui.QDoubleValidator(lineEdit)
-        lineEdit.setValidator(validator)
-        return lineEdit
+            return line_edit
+        validator = QtGui.QDoubleValidator(line_edit)
+        line_edit.setValidator(validator)
+        return line_edit
 
 
 class Item(QTreeWidgetItem):
@@ -38,11 +38,11 @@ class LatTree(QTreeWidget):
             DoubleDelegate(self))
         self.itemDoubleClicked.connect(self._handle_edits)
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.itemChanged.connect(self.update_model)
+        self.itemChanged.connect(self.updateModel)
 
-    def link(self, graph, latConfig):
+    def link(self, graph, lat_config):
         self.graph = graph
-        self.config_window = latConfig
+        self.config_window = lat_config
 
     def populate(self):
         index_i = self.headers.index('Index')
@@ -78,11 +78,11 @@ class LatTree(QTreeWidget):
                         item.addChild(child)
                         child.setText(attr_i, key)
                         child.setText(val_i, val)
-                        self._set_unit(child)
-                self._set_unit(item)
+                        self._setUnit(child)
+                self._setUnit(item)
             self.addTopLevelItem(item)
 
-    def _set_unit(self, item):
+    def _setUnit(self, item):
         attr_i = self.headers.index('Attribute')
         unit_i = self.headers.index('Unit')
 
@@ -115,7 +115,7 @@ class LatTree(QTreeWidget):
         if item.text(attr_i) in unit_info:
             item.setText(unit_i, unit_info[item.text(attr_i)])
 
-    def update_model(self):
+    def updateModel(self):
         name_i = self.headers.index('Name')
         type_i = self.headers.index('Type')
         attr_i = self.headers.index('Attribute')
@@ -147,9 +147,9 @@ class LatTree(QTreeWidget):
         if col == index_i or col == name_i or col == type_i:  # odd logic, but others didn't work?
             return
         self.editItem(item, col)
-        self.graph.copy_model_to_history()
+        self.graph.copyModelToHistory()
 
-    def type_filter(self, filter_text):
+    def typeFilter(self, filter_text):
         type_i = self.headers.index('Type')
 
         for i in range(self.topLevelItemCount()):
@@ -169,25 +169,23 @@ class LatTree(QTreeWidget):
             else:
                 item.setHidden(False)
 
-    def set_config(self, window):
+    def setConfig(self, window):
         self.config_window = window
 
     def contextMenuEvent(self, event):
         self.menu = QMenu(self)
 
-        insElem = QAction('Insert Element', self)
-        editElem = QAction('Edit Selected Element', self)
-        remElem = QAction('Remove Element', self)
-        # remAttr = QAction('Remoce Attribue',self)
+        ins_elem = QAction('Insert Element', self)
+        edit_elem = QAction('Edit Selected Element', self)
+        rem_elem = QAction('Remove Element', self)
 
-        insElem.triggered.connect(self.insElement)
-        editElem.triggered.connect(self.editElement)
-        remElem.triggered.connect(self.removeElement)
-        # remAttr.triggered.connect(self.removeAttribute)
+        ins_elem.triggered.connect(self.insElement)
+        edit_elem.triggered.connect(self.editElement)
+        rem_elem.triggered.connect(self.removeElement)
 
-        self.menu.addAction(insElem)
-        self.menu.addAction(editElem)
-        self.menu.addAction(remElem)
+        self.menu.addAction(ins_elem)
+        self.menu.addAction(edit_elem)
+        self.menu.addAction(rem_elem)
 
         self.menu.popup(QtGui.QCursor.pos())
 
@@ -235,7 +233,7 @@ class LatTreeFilters(QWidget):
         self.combo_box.setFixedWidth(300)
 
         self.search_bar.setPlaceholderText('Search Element Name')
-        self.search_bar.textChanged.connect(self.name_filter)
+        self.search_bar.textChanged.connect(self.nameFilter)
 
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.addWidget(self.combo_box)
@@ -243,17 +241,16 @@ class LatTreeFilters(QWidget):
 
         self.setLayout(self.layout)
 
-    def link(self, latEditor):
-        self.latEditor = latEditor
+    def link(self, lat_editor):
+        self.lat_editor = lat_editor
+        self.combo_box.currentTextChanged.connect(self.lat_editor.typeFilter)
 
-        self.combo_box.currentTextChanged.connect(self.latEditor.type_filter)
+    def nameFilter(self, filter_text):
+        name_i = self.lat_editor.headers.index('Name')
+        self.lat_editor.typeFilter(self.combo_box.currentText())
 
-    def name_filter(self, filter_text):
-        name_i = self.latEditor.headers.index('Name')
-        self.latEditor.type_filter(self.combo_box.currentText())
-
-        for i in range(self.latEditor.topLevelItemCount()):
-            item = self.latEditor.topLevelItem(i)
+        for i in range(self.lat_editor.topLevelItemCount()):
+            item = self.lat_editor.topLevelItem(i)
             if item.isHidden() == False:
                 if filter_text not in item.text(name_i):
                     item.setHidden(True)
@@ -314,7 +311,7 @@ class LatElementConfig(QWidget):
         self.commit_button = QPushButton()
         self.rem_attr_button.setText('Remove Selected Attribute')
         self.commit_button.setText('Apply')
-        self.rem_attr_button.clicked.connect(self.remove_attribute)
+        self.rem_attr_button.clicked.connect(self.removeAttribute)
         self.commit_button.clicked.connect(self.apply)
 
         bottom_row_layout.addWidget(self.rem_attr_button)
@@ -327,12 +324,11 @@ class LatElementConfig(QWidget):
         self.layout.addWidget(bottom_row)
         self.setLayout(self.layout)
 
-    def link(self, graph, filters, latEditor):
+    def link(self, graph, lat_editor):
         self.graph = graph
-        self.latComboBoxFilter = filters.combo_box
-        self.latEditor = latEditor
+        self.lat_editor = lat_editor
 
-    def remove_attribute(self):
+    def removeAttribute(self):
         indices = self.attr_table.selectionModel().selectedRows()
         for index in sorted(indices):
             self.attr_table.removeRow(index.row())
@@ -340,19 +336,19 @@ class LatElementConfig(QWidget):
     def insertItem(self, index):
         self.index_line.setText(index)
 
-    def editItem(self, topLevelItem):
+    def editItem(self, top_level_item):
         self.attr_table.blockSignals(True)
         self.edit_mode = True
 
-        index_i = self.latEditor.headers.index('Index')
-        name_i = self.latEditor.headers.index('Name')
-        type_i = self.latEditor.headers.index('Type')
-        attr_i = self.latEditor.headers.index('Attribute')
-        val_i = self.latEditor.headers.index('Value')
+        index_i = self.lat_editor.headers.index('Index')
+        name_i = self.lat_editor.headers.index('Name')
+        type_i = self.lat_editor.headers.index('Type')
+        attr_i = self.lat_editor.headers.index('Attribute')
+        val_i = self.lat_editor.headers.index('Value')
 
-        elem_index = topLevelItem.text(index_i)
-        elem_name = topLevelItem.text(name_i)
-        elem_type = topLevelItem.text(type_i)
+        elem_index = top_level_item.text(index_i)
+        elem_name = top_level_item.text(name_i)
+        elem_type = top_level_item.text(type_i)
 
         self.index_line.setText(elem_index)
         self.name_line.setText(elem_name)
@@ -367,16 +363,16 @@ class LatElementConfig(QWidget):
         attr = QTableWidgetItem()
         val = QTableWidgetItem()
 
-        attr.setText(topLevelItem.text(attr_i))
-        val.setText(topLevelItem.text(val_i))
+        attr.setText(top_level_item.text(attr_i))
+        val.setText(top_level_item.text(val_i))
 
         self.attr_table.setItem(0, 0, attr)
         self.attr_table.setItem(0, 1, val)
 
         # rest of the attributes
-        for i in range(topLevelItem.childCount()):
+        for i in range(top_level_item.childCount()):
             self.attr_table.insertRow(self.attr_table.rowCount())
-            child = topLevelItem.child(i)
+            child = top_level_item.child(i)
 
             attr = QTableWidgetItem()
             val = QTableWidgetItem()
@@ -393,7 +389,7 @@ class LatElementConfig(QWidget):
         self.attr_table.blockSignals(False)
 
     def apply(self):
-        self.graph.copy_model_to_history()
+        self.graph.copyModelToHistory()
 
         units = [
             'theta_x', 'theta_y', 'tm_xkick', 'tm_ykick', 'xyrotate',

@@ -242,28 +242,28 @@ class Workspace(QtWidgets.QWidget):
         self.graph = FmMplCanvas()
         self.toolbar = NavigationToolbar(self.graph, ws1)
         self.filters = LatTreeFilters()
-        self.latEditor = LatTree(self)
+        self.lat_editor = LatTree(self)
         self.config_window = LatElementConfig(self)
 
-        self.paramTree = Legend()
+        self.param_tree = Legend()
 
         # linking objects
-        self.graph.link(self.paramTree, self.main_window)
+        self.graph.link(self.param_tree, self.main_window)
         self.toolbar.actions()[0].triggered.connect(
             lambda: self.graph.figure.tight_layout())  # home button pressed
-        self.filters.link(self.latEditor)
-        self.latEditor.link(self.graph, self.config_window)
-        self.config_window.link(self.graph, self.filters, self.latEditor)
+        self.filters.link(self.lat_editor)
+        self.lat_editor.link(self.graph, self.config_window)
+        self.config_window.link(self.graph, self.lat_editor)
 
-        self.paramTree.link(self.items, self.graph)
+        self.param_tree.link(self.items, self.graph)
 
         # handling layouts
         ws1.layout().addWidget(self.toolbar)
         ws1.layout().addWidget(self.graph, 3)
         ws1.layout().addWidget(self.filters)
-        ws1.layout().addWidget(self.latEditor, 2)
+        ws1.layout().addWidget(self.lat_editor, 2)
 
-        ws2.layout().addWidget(self.paramTree)
+        ws2.layout().addWidget(self.param_tree)
 
         # components
         layout = QtWidgets.QHBoxLayout()
@@ -271,15 +271,15 @@ class Workspace(QtWidgets.QWidget):
         layout.addWidget(ws2, 1)
         self.setLayout(layout)
 
-    def link(self, phaseWindow):
-        self.phaseWindow = phaseWindow
+    def link(self, phase_window):
+        self.phase_window = phase_window
 
     def refresh(self):
-        self.latEditor.clear()
-        self.latEditor.populate()
-        self.latEditor.type_filter(self.filters.combo_box.currentText())
-        self.graph.update_lines()
-        self.phaseWindow.plot_current_element()
+        self.lat_editor.clear()
+        self.lat_editor.populate()
+        self.lat_editor.typeFilter(self.filters.combo_box.currentText())
+        self.graph.updateLines()
+        self.phase_window.plotCurrentElement()
 
     def _createItems(self):
         object_dict = {

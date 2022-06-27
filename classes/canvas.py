@@ -28,23 +28,23 @@ class FmMplCanvas(FigureCanvas):
 
         self.figure.tight_layout()
 
-    def link(self, paramTree, mainWindow):
-        self.paramTree = paramTree
-        self.mainWindow = mainWindow
+    def link(self, param_tree, main_window):
+        self.param_tree = param_tree
+        self.main_window = main_window
 
-    def set_model(self, filename):
+    def setModel(self, filename):
         self.filename = filename
         self.model = ModelFlame(filename)
 
-    def update_lines(self):
-        active_items = self.paramTree.getCheckedItems()
+    def updateLines(self):
+        active_items = self.param_tree.getCheckedItems()
         r, s = self.model.run(monitor='all')
         for item in active_items:
             data = self.model.collect_data(r, 'pos', item.kwrd)
             item.line.set_data(data['pos'], data[item.kwrd])
 
-        self._remove_lat()
-        self._plot_lat()
+        self._removeLocation()
+        self._plotLocation()
 
         for ax in self.axes:
             ax.relim()
@@ -53,25 +53,25 @@ class FmMplCanvas(FigureCanvas):
         self.figure.tight_layout()
         self.figure.canvas.draw()
 
-    def plot_item(self, item):
+    def plotItem(self, item):
         r, s = self.model.run(monitor='all')
         data = self.model.collect_data(r, 'pos', item.kwrd)
         item.line = FmMplLine(data['pos'], data[item.kwrd])
         item.line.set_label(item.kwrd)
         if item.dashed:
             item.line.set_linestyle('dashed')
-        self._set_line_color(item.line)
+        self._setLineColor(item.line)
 
-        ax = self._get_axis_with_ylabel(item.y_unit)
+        ax = self._getAxisWithYLabel(item.y_unit)
         if ax is not None:
             ax.add_line(item.line)
         else:
-            if self.base_ax is None:  # initial call of plot_item from blank canvas
+            if self.base_ax is None:  # initial call of plotItem from blank canvas
                 ax = self.figure.subplots()
                 self.base_ax = ax
             else:
                 ax = self.base_ax.twinx()
-                self._set_axis_location(ax)
+                self._setAxisLocation(ax)
                 base_xmargin, _ = self.base_ax.margins()
                 ax.margins(base_xmargin, 0.425)
             ax.add_line(item.line)
@@ -80,11 +80,11 @@ class FmMplCanvas(FigureCanvas):
         # same
         ax.set_ylabel(item.y_unit)
 
-        self._remove_legend()
-        self._create_legend()
+        self._removeLegend()
+        self._createLegend()
 
-        self._remove_lat()
-        self._plot_lat()
+        self._removeLocation()
+        self._plotLocation()
 
         ax.relim()
         ax.autoscale_view(True, True, True)
@@ -92,7 +92,7 @@ class FmMplCanvas(FigureCanvas):
         self.figure.tight_layout()
         self.figure.canvas.draw()
 
-    def _set_line_color(self, line):
+    def _setLineColor(self, line):
         taken = []
         for ax in self.axes:
             for ln in ax.lines:
@@ -102,14 +102,14 @@ class FmMplCanvas(FigureCanvas):
         n_color = available[0]
         line.set_color(n_color)
 
-    def _get_axis_with_ylabel(self, ylabel):
+    def _getAxisWithYLabel(self, ylabel):
         for ax in self.axes:
             if ylabel == ax.get_ylabel():
                 return ax
         return None
 
     # occurs prior to the appending of current axis
-    def _set_axis_location(self, axis):
+    def _setAxisLocation(self, axis):
         if len(self.axes) == 1:
             axis.yaxis.set_ticks_position('right')
             axis.spines.left.set_position(('outward', 0))
@@ -123,7 +123,7 @@ class FmMplCanvas(FigureCanvas):
             axis.spines.right.set_position(('outward', 60))
             axis.yaxis.set_label_position('right')
 
-    def _update_axis_location(self):
+    def _updateAxisLocation(self):
         for i in range(len(self.axes)):
             axis = self.axes[i]
             if i == 0:
@@ -143,7 +143,7 @@ class FmMplCanvas(FigureCanvas):
                 axis.spines.right.set_position(('outward', 60))
                 axis.yaxis.set_label_position('right')
 
-    def _create_legend(self):
+    def _createLegend(self):
         patches = []
         topmost_ax = self.axes[-1]
         for ax in self.axes:
@@ -154,7 +154,7 @@ class FmMplCanvas(FigureCanvas):
                     patches.append(patch)
         topmost_ax.legend(handles=patches, loc='upper left')
 
-    def _remove_legend(self):
+    def _removeLegend(self):
         if len(self.axes) > 1:  # new axis just added
             if self.axes[-2].get_legend():  # since new axis was just added, must go back 2
                 prev_legend = self.axes[-2].get_legend()
@@ -162,10 +162,10 @@ class FmMplCanvas(FigureCanvas):
                 prev_legend = self.axes[-1].get_legend()
             prev_legend.remove()
 
-    def remove_item(self, item):
+    def removeItem(self, item):
         item.line.remove()
-        self._remove_legend()
-        self._remove_lat()
+        self._removeLegend()
+        self._removeLocation()
 
         for ax in self.axes:
             if len(ax.lines) == 0:
@@ -183,11 +183,11 @@ class FmMplCanvas(FigureCanvas):
                     self.base_ax.yaxis.set_label_position('left')
 
         if len(self.axes) != 0:  # no axes = no legend
-            self._create_legend()
+            self._createLegend()
 
-        self._plot_lat()
+        self._plotLocation()
 
-        self._update_axis_location()
+        self._updateAxisLocation()
         for ax in self.axes:
             ax.relim()
             ax.autoscale_view(True, True, True)
@@ -195,9 +195,9 @@ class FmMplCanvas(FigureCanvas):
         self.figure.tight_layout()
         self.figure.canvas.draw()
 
-    def _plot_lat(self):
+    def _plotLocation(self):
         if self.base_ax:
-            ymax, ymin = self._get_ymaxmin(self.base_ax)
+            ymax, ymin = self._getYMaxMin(self.base_ax)
             yrange = ymax - ymin
             frac_yrange = yrange * 0.1
 
@@ -222,7 +222,7 @@ class FmMplCanvas(FigureCanvas):
             self.base_ax.relim()
             self.base_ax.autoscale_view(True, True, True)
 
-    def _remove_lat(self):
+    def _removeLocation(self):
         if self.base_ax:
             for ln in reversed(self.base_ax.lines):  # reversed necessary
                 if not isinstance(ln, FmMplLine):
@@ -233,7 +233,7 @@ class FmMplCanvas(FigureCanvas):
             self.base_ax.relim()
             self.base_ax.autoscale_view(True, True, True)
 
-    def _get_ymaxmin(self, axis):
+    def _getYMaxMin(self, axis):
         ymax = -np.inf
         ymin = np.inf
         for ln in axis.lines:
@@ -247,8 +247,8 @@ class FmMplCanvas(FigureCanvas):
                     ymin = ln_ymin
         return ymax, ymin
 
-    def copy_model_to_history(self):
+    def copyModelToHistory(self):
         self.model_history.append(ModelFlame(
             machine=self.model.clone_machine()))
         self.undo_history.clear()
-        self.mainWindow.menu_bar.handleUndoRedoEnabling()
+        self.main_window.menu_bar.handleUndoRedoEnabling()

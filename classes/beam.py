@@ -87,6 +87,5 @@ class BeamStateWindow(QtWidgets.QWidget):
                 self.graph.model.bmstate.set_twiss(
                     var, beta=kwrd1_val, alpha=alpha_val, nemittance=kwrd2_val)
 
-        # self.graph.update_lines()
         self.workspace.refresh()
-        self.graph.copy_model_to_history()
+        self.graph.copyModelToHistory()
