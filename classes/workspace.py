@@ -105,22 +105,22 @@ workspace_one_items = {
         "description": "weight average of all charge states for phi",
         "unit": "rad",
         "representation": "z"
-    }, # phi
+    },  # phi
     "zrms": {
         "description": "general rms beam envelope for phi",
         "unit": "rad",
         "representation": "z"
-    }, # phi
+    },  # phi
     "zpcen": {
         "description": "weight average of all charge states for SE_k",
         "unit": "MeV/u",
         "representation": "z'"
-    }, # SE_k
+    },  # SE_k
     "zprms": {
         "description": "general rms beam envelope for SE_k",
         "unit": "MeV/u",
         "representation": "z'"
-    }, # SE_k
+    },  # SE_k
     "xemittance": {
         "description": "weight average of geometrical x emittance",
         "unit": "mm-mrad",
@@ -218,15 +218,15 @@ workspace_one_items = {
     },
     "last_caviphi0": {
         "description": "last RF cavity's driven phase",
-        "unit": "deg",  
+        "unit": "deg",
         "representation": "Last Caviphi"
     }
 }
 
 
 class Workspace(QtWidgets.QWidget):
-    def __init__(self,parent=None):
-        super(QtWidgets.QWidget,self).__init__(parent)
+    def __init__(self, parent=None):
+        super(QtWidgets.QWidget, self).__init__(parent)
 
         self.main_window = parent
         self.items = self._createItems()
@@ -240,7 +240,7 @@ class Workspace(QtWidgets.QWidget):
 
         # objects
         self.graph = FmMplCanvas()
-        self.toolbar = NavigationToolbar(self.graph,ws1)
+        self.toolbar = NavigationToolbar(self.graph, ws1)
         self.filters = LatTreeFilters()
         self.latEditor = LatTree(self)
         self.config_window = LatElementConfig(self)
@@ -248,30 +248,30 @@ class Workspace(QtWidgets.QWidget):
         self.paramTree = Legend()
 
         # linking objects
-        self.graph.link(self.paramTree,self.main_window)
-        self.toolbar.actions()[0].triggered.connect(lambda: self.graph.figure.tight_layout()) # home button pressed
+        self.graph.link(self.paramTree, self.main_window)
+        self.toolbar.actions()[0].triggered.connect(
+            lambda: self.graph.figure.tight_layout())  # home button pressed
         self.filters.link(self.latEditor)
-        self.latEditor.link(self.graph,self.config_window)
-        self.config_window.link(self.graph,self.filters,self.latEditor)
+        self.latEditor.link(self.graph, self.config_window)
+        self.config_window.link(self.graph, self.filters, self.latEditor)
 
-        self.paramTree.link(self.items,self.graph)
+        self.paramTree.link(self.items, self.graph)
 
         # handling layouts
         ws1.layout().addWidget(self.toolbar)
-        ws1.layout().addWidget(self.graph,3)
+        ws1.layout().addWidget(self.graph, 3)
         ws1.layout().addWidget(self.filters)
-        ws1.layout().addWidget(self.latEditor,2)
+        ws1.layout().addWidget(self.latEditor, 2)
 
         ws2.layout().addWidget(self.paramTree)
-        
+
         # components
         layout = QtWidgets.QHBoxLayout()
-        layout.addWidget(ws1,3)
-        layout.addWidget(ws2,1)
+        layout.addWidget(ws1, 3)
+        layout.addWidget(ws2, 1)
         self.setLayout(layout)
 
-
-    def link(self,phaseWindow):
+    def link(self, phaseWindow):
         self.phaseWindow = phaseWindow
 
     def refresh(self):
@@ -294,7 +294,7 @@ class Workspace(QtWidgets.QWidget):
             "others": []
         }
 
-        for kwrd,attr in workspace_one_items.items():
+        for kwrd, attr in workspace_one_items.items():
             item = ItemWrapper()
             item.kwrd = kwrd
             item.x_unit = "pos"
@@ -302,14 +302,14 @@ class Workspace(QtWidgets.QWidget):
             item.description = attr["description"]
             item.text_repr = attr["representation"]
 
-            if "'" in attr["representation"]: # x', y', z' (prime)
+            if "'" in attr["representation"]:  # x', y', z' (prime)
                 item.dashed = True
 
-            for k,v in object_dict.items():
+            for k, v in object_dict.items():
                 if k in kwrd:
                     v.append(item)
                     break
-                elif k == "others": # if item made it to "others", it belongs there
+                elif k == "others":  # if item made it to "others", it belongs there
                     object_dict["others"].append(item)
 
         return object_dict

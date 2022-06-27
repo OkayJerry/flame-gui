@@ -2,9 +2,10 @@ from PyQt5.QtWidgets import QTreeWidget, QHeaderView, QTreeWidgetItem, QAbstract
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 
+
 class Legend(QTreeWidget):
-    def __init__(self,parent=None): # ,graph,items,parent=None):
-        super(QTreeWidget,self).__init__(parent)
+    def __init__(self, parent=None):  # ,graph,items,parent=None):
+        super(QTreeWidget, self).__init__(parent)
 
         # self.graph = graph
         # self.items = items
@@ -12,9 +13,8 @@ class Legend(QTreeWidget):
         self.setHeaderHidden(True)
         self.setSelectionMode(QAbstractItemView.NoSelection)
         self.ignore_next_item_change = False
-        
 
-    def link(self,items,graph):
+    def link(self, items, graph):
         self.items = items
         self.graph = graph
 
@@ -50,14 +50,14 @@ class Legend(QTreeWidget):
 
         for lst in self.items.values():
             for item in lst:
-                item.setText(0,item.text_repr)
+                item.setText(0, item.text_repr)
                 item.setToolTip(0, item.description)
 
         # top-level
         reference = QTreeWidgetItem()
         actual = QTreeWidgetItem()
-        reference.setText(0,"Reference")
-        actual.setText(0,"Actual")
+        reference.setText(0, "Reference")
+        actual.setText(0, "Actual")
 
         # secondary_level
         cen = QTreeWidgetItem()
@@ -69,15 +69,15 @@ class Legend(QTreeWidget):
         tws_z = QTreeWidgetItem()
         cpl = QTreeWidgetItem()
         others = QTreeWidgetItem()
-        cen.setText(0,"cen")
-        rms.setText(0,"rms")
-        emt.setText(0,"emittance")
-        tws.setText(0,"twiss")
-        tws_x.setText(0,"alpha")
-        tws_y.setText(0,"beta")
-        tws_z.setText(0,"gamma")
-        cpl.setText(0,"couple")
-        others.setText(0,"others")
+        cen.setText(0, "cen")
+        rms.setText(0, "rms")
+        emt.setText(0, "emittance")
+        tws.setText(0, "twiss")
+        tws_x.setText(0, "alpha")
+        tws_y.setText(0, "beta")
+        tws_z.setText(0, "gamma")
+        cpl.setText(0, "couple")
+        others.setText(0, "others")
 
         # creating view
         self.addTopLevelItem(reference)
@@ -120,14 +120,14 @@ class Legend(QTreeWidget):
         for lst in self.items.values():
             for item in lst:
                 item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
-                item.setCheckState(0,QtCore.Qt.Unchecked)
+                item.setCheckState(0, QtCore.Qt.Unchecked)
 
         self.itemChanged.connect(self.handle_checkboxes)
 
-    def handle_checkboxes(self,item,col):
+    def handle_checkboxes(self, item, col):
         if item.checkState(col) == 0:
-                self.graph.remove_item(item)
-                self.checked_box_cnt -= 1
+            self.graph.remove_item(item)
+            self.checked_box_cnt -= 1
         elif self.checked_box_cnt < 4:
             self.graph.plot_item(item)
             self.checked_box_cnt += 1
@@ -140,9 +140,9 @@ class Legend(QTreeWidget):
 
             if warning.exec() == QMessageBox.Ok:
                 warning.close()
-            
+
             self.blockSignals(True)
-            item.setCheckState(0,QtCore.Qt.Unchecked) 
+            item.setCheckState(0, QtCore.Qt.Unchecked)
             self.blockSignals(False)
 
     def getCheckedItems(self):
@@ -152,6 +152,3 @@ class Legend(QTreeWidget):
                 if item.checkState(0) == QtCore.Qt.Checked:
                     checked_items.append(item)
         return checked_items
-
-            
-

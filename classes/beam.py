@@ -1,5 +1,6 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 
+
 class BeamStateWindow(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
@@ -18,7 +19,7 @@ class BeamStateWindow(QtWidgets.QWidget):
         self.alpha_label.setText('Alpha:')
         self.commit_button.setText('Apply')
         self.commit_button.clicked.connect(self.apply)
-        
+
         for var in ['x', 'y', 'z']:
             self.var_box.addItem(var)
         for kwrd in ['beam size [mm]', 'twiss beta [m/rad]']:
@@ -26,28 +27,28 @@ class BeamStateWindow(QtWidgets.QWidget):
         for kwrd in ['geom. emittance [mm-mrad]', 'norm. emittance [mm-mrad]']:
             self.kwrd2_box.addItem(kwrd)
 
-        self.alpha_spin.setRange(-2147483648,2147483648)
+        self.alpha_spin.setRange(-2147483648, 2147483648)
         self.kwrd1_spin.setMinimum(0)
         self.kwrd2_spin.setMinimum(0)
 
         self.alpha_spin.setValue(0)
 
-        layout.addWidget(self.var_box,0,0)
-        layout.addWidget(self.kwrd1_box,1,1)
-        layout.addWidget(self.kwrd1_spin,1,2)
-        layout.addWidget(self.alpha_label,2,1)
-        layout.addWidget(self.alpha_spin,2,2)
-        layout.addWidget(self.kwrd2_box,3,1)
-        layout.addWidget(self.kwrd2_spin,3,2)
-        layout.addWidget(self.commit_button,4,2)
-        
+        layout.addWidget(self.var_box, 0, 0)
+        layout.addWidget(self.kwrd1_box, 1, 1)
+        layout.addWidget(self.kwrd1_spin, 1, 2)
+        layout.addWidget(self.alpha_label, 2, 1)
+        layout.addWidget(self.alpha_spin, 2, 2)
+        layout.addWidget(self.kwrd2_box, 3, 1)
+        layout.addWidget(self.kwrd2_spin, 3, 2)
+        layout.addWidget(self.commit_button, 4, 2)
+
         self.setLayout(layout)
 
-    def link(self,graph,workspace):
+    def link(self, graph, workspace):
         self.graph = graph
         self.workspace = workspace
 
-    def update(self,graph):
+    def update(self, graph):
         kwrd1 = self.kwrd1_box.currentText()
         kwrd2 = self.kwrd2_box.currentText()
 
@@ -73,19 +74,19 @@ class BeamStateWindow(QtWidgets.QWidget):
 
         if self.kwrd1_box.currentText() == 'beam size [mm]':
             if self.kwrd2_box.currentText() == 'geom. emittance [mm-mrad]':
-                self.graph.model.bmstate.set_twiss(var, rmssize=kwrd1_val, alpha=alpha_val, emittance=kwrd2_val)
+                self.graph.model.bmstate.set_twiss(
+                    var, rmssize=kwrd1_val, alpha=alpha_val, emittance=kwrd2_val)
             else:
-                self.graph.model.bmstate.set_twiss(var, rmssize=kwrd1_val, alpha=alpha_val, nemittance=kwrd2_val)
+                self.graph.model.bmstate.set_twiss(
+                    var, rmssize=kwrd1_val, alpha=alpha_val, nemittance=kwrd2_val)
         else:
             if self.kwrd2_box.currentText() == 'geom. emittance [mm-mrad]':
-                self.graph.model.bmstate.set_twiss(var, beta=kwrd1_val, alpha=alpha_val, emittance=kwrd2_val)
+                self.graph.model.bmstate.set_twiss(
+                    var, beta=kwrd1_val, alpha=alpha_val, emittance=kwrd2_val)
             else:
-                self.graph.model.bmstate.set_twiss(var, beta=kwrd1_val, alpha=alpha_val, nemittance=kwrd2_val)
+                self.graph.model.bmstate.set_twiss(
+                    var, beta=kwrd1_val, alpha=alpha_val, nemittance=kwrd2_val)
 
         # self.graph.update_lines()
         self.workspace.refresh()
         self.graph.copy_model_to_history()
-
-        
-
-        
