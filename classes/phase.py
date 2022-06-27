@@ -9,7 +9,19 @@ import numpy as np
 class FmMplPhaseSpaceCanvas(FigureCanvas):
     def __init__(self,parent=None):
         super(FigureCanvas,self).__init__(parent)
-        self.axes = self.figure.subplots(1,2)
+        axes = self.figure.subplots(1,2)
+        self.x_axes = axes[0]
+        self.y_axes = axes[1]
+        
+        for ax in axes:
+            ax.margins(0.05,10)
+            ax.set_box_aspect(1)
+            ax.grid()
+            
+        self.x_axes.set_xlabel('x [mm]')
+        self.x_axes.set_ylabel('xp [mrad]')
+        self.y_axes.set_xlabel('y [mm]')
+        self.y_axes.set_ylabel('yp [mrad]')
 
     def tws2cov(self,alpha,beta,eps): # Function to convert Twiss parameters to Sigma-matrix (covariance)
         mat = np.zeros([2,2])
@@ -39,11 +51,9 @@ class FmMplPhaseSpaceCanvas(FigureCanvas):
 
     def plot_element(self,element_name):
         model = self.root_graph.model
-        x_axes = self.axes[0]
-        y_axes = self.axes[1]
 
-        [p.remove() for p in reversed(x_axes.patches)]
-        [p.remove() for p in reversed(y_axes.patches)]
+        [p.remove() for p in reversed(self.x_axes.patches)]
+        [p.remove() for p in reversed(self.y_axes.patches)]
 
         r, s = model.run(monitor='all')
         d = model.collect_data(r, 'xcen', 'ycen', 'xpcen', 'ypcen', 'xtwsa', 'ytwsa', 'xtwsb', 'ytwsb', 'xeps', 'yeps')    
@@ -51,26 +61,17 @@ class FmMplPhaseSpaceCanvas(FigureCanvas):
 
         # 'x' graph
         el, x_res = self.phase_ellipse(d,idx,'x',r[idx][1],edgecolor='b')
-        x_axes.add_patch(el)
-        x_axes.autoscale_view()
-        x_axes.set_xlabel('x [mm]')
-        x_axes.set_ylabel('xp [mrad]')
-        x_axes.set_box_aspect(1)
-        x_axes.grid()
+        self.x_axes.add_patch(el)
+        self.x_axes.relim()
+        self.x_axes.autoscale_view()
 
         # 'y' graph
         el, y_res = self.phase_ellipse(d,idx,'y',r[idx][1],edgecolor='r')
-        y_axes.add_patch(el)
-        y_axes.autoscale_view()
-        y_axes.set_xlabel('y [mm]')
-        y_axes.set_ylabel('yp [mrad]')
-        y_axes.set_box_aspect(1)
-        y_axes.grid()
+        self.y_axes.add_patch(el)
+        self.y_axes.relim()
+        self.y_axes.autoscale_view()
 
-        # for ax in self.axes:
-        #     ax.relim()
-        #     ax.autoscale_view(True,True,True)
-        # self.figure.canvas.draw()
+        self.figure.canvas.draw_idle()
         self.figure.tight_layout()
         return x_res, y_res
 
@@ -128,15 +129,17 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
 
 
     def open(self):
+        self.elementBox.blockSignals(True)
         model = self.graphs.root_graph.model
 
         self.elementBox.clear()
         names = model.get_all_names()
         names = names[1:]
-        for name in names:
-            self.elementBox.addItem(name)
+
+        self.elementBox.addItems(names)
 
         self.plot_current_element()
-        
+
         self.show()
+        self.elementBox.blockSignals(False)
         
