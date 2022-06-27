@@ -112,7 +112,15 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
         self.graphs.root_graph = graph
 
     def plot_current_element(self):
-        x_res, y_res = self.graphs.plot_element(self.elementBox.currentText())
+        try:
+            x_res, y_res = self.graphs.plot_element(self.elementBox.currentText())
+        except:
+            self.elementBox.removeItem(self.elementBox.findText(self.elementBox.currentText()))
+            model = self.graphs.root_graph.model
+            names = model.get_all_names()
+            self.elementBox.setCurrentText(names[1]) # skip header (0th) element
+            x_res, y_res = self.graphs.plot_element(self.elementBox.currentText())
+
 
         for i in range(self.tableView.rowCount()):
             x_num = x_res[i]

@@ -242,8 +242,8 @@ class Workspace(QtWidgets.QWidget):
         self.graph = FmMplCanvas()
         self.toolbar = NavigationToolbar(self.graph,ws1)
         self.filters = LatTreeFilters()
-        self.latEditor = LatTree()
-        self.config_window = LatElementConfig()
+        self.latEditor = LatTree(self)
+        self.config_window = LatElementConfig(self)
 
         self.paramTree = Legend()
 
@@ -271,12 +271,15 @@ class Workspace(QtWidgets.QWidget):
         self.setLayout(layout)
 
 
+    def link(self,phaseWindow):
+        self.phaseWindow = phaseWindow
 
     def refresh(self):
         self.latEditor.clear()
         self.latEditor.populate()
         self.latEditor.type_filter(self.filters.combo_box.currentText())
         self.graph.update_lines()
+        self.phaseWindow.plot_current_element()
 
     def _createItems(self):
         object_dict = {

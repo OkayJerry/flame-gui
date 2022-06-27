@@ -43,8 +43,9 @@ class BeamStateWindow(QtWidgets.QWidget):
         
         self.setLayout(layout)
 
-    def link(self,graph):
+    def link(self,graph,workspace):
         self.graph = graph
+        self.workspace = workspace
 
     def update(self,graph):
         kwrd1 = self.kwrd1_box.currentText()
@@ -81,7 +82,8 @@ class BeamStateWindow(QtWidgets.QWidget):
             else:
                 self.graph.model.bmstate.set_twiss(var, beta=kwrd1_val, alpha=alpha_val, nemittance=kwrd2_val)
 
-        self.graph.update_lines()
+        # self.graph.update_lines()
+        self.workspace.refresh()
         self.graph.copy_model_to_history()
 
         
