@@ -137,7 +137,6 @@ class LatTree(QTreeWidget):
             val = selected.text(val_i)
 
         self.graph.model.reconfigure(element, {attribute: val})
-        # self.graph.update_lines()
         self.workspace.refresh()
 
 
@@ -213,9 +212,6 @@ class LatTree(QTreeWidget):
         index_i = self.headers.index('Index')
         item = self.currentItem()
         self.graph.model.pop_element(int(item.text(index_i)))
-        # self.clear()
-        # self.populate()
-        # self.graph.update_lines()
         self.workspace.refresh()
 
 
