@@ -48,7 +48,7 @@ class FmMplPhaseSpaceCanvas(FigureCanvas):
             **kws)
         return ell
 
-    def phase_ellipse(self, d, idx, coor, bmstate, **kws):
+    def phaseEllipse(self, d, idx, coor, bmstate, **kws):
         if coor not in ['x', 'y', 'z']:
             return None
         cen = np.array([d[coor + 'cen'][idx], d[coor + 'pcen'][idx]])
@@ -59,7 +59,7 @@ class FmMplPhaseSpaceCanvas(FigureCanvas):
         return self.ellipse(
             cen, cov, **kws), np.array([cen[0], cen[1], twsa, twsb, eps])
 
-    def plot_element(self, element_name):
+    def plotElement(self, element_name):
         model = self.root_graph.model
 
         [p.remove() for p in reversed(self.x_axes.patches)]
@@ -81,13 +81,13 @@ class FmMplPhaseSpaceCanvas(FigureCanvas):
         idx = model.find(element_name)[0]
 
         # 'x' graph
-        el, x_res = self.phase_ellipse(d, idx, 'x', r[idx][1], edgecolor='b')
+        el, x_res = self.phaseEllipse(d, idx, 'x', r[idx][1], edgecolor='b')
         self.x_axes.add_patch(el)
         self.x_axes.relim()
         self.x_axes.autoscale_view()
 
         # 'y' graph
-        el, y_res = self.phase_ellipse(d, idx, 'y', r[idx][1], edgecolor='r')
+        el, y_res = self.phaseEllipse(d, idx, 'y', r[idx][1], edgecolor='r')
         self.y_axes.add_patch(el)
         self.y_axes.relim()
         self.y_axes.autoscale_view()
@@ -109,49 +109,49 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
             'Twiss Beta [m/rad]',
             'Geom. Emittance [mm-mrad]']
 
-        self.elementBox = QtWidgets.QComboBox()
+        self.element_box = QtWidgets.QComboBox()
         self.graphs = FmMplPhaseSpaceCanvas()
-        self.tableView = QtWidgets.QTableWidget(5, 3)
+        self.table_view = QtWidgets.QTableWidget(5, 3)
 
-        self.elementBox.currentTextChanged.connect(self.plot_current_element)
+        self.element_box.currentTextChanged.connect(self.plotCurrentElement)
 
-        self.tableView.setHorizontalHeaderLabels(['', 'x', 'y'])
-        self.tableView.horizontalHeader().setSectionResizeMode(
+        self.table_view.setHorizontalHeaderLabels(['', 'x', 'y'])
+        self.table_view.horizontalHeader().setSectionResizeMode(
             QtWidgets.QHeaderView.Stretch)
-        self.tableView.setEditTriggers(
+        self.table_view.setEditTriggers(
             QtWidgets.QAbstractItemView.NoEditTriggers)
-        self.tableView.verticalHeader().hide()
-        for i in range(self.tableView.rowCount()):
+        self.table_view.verticalHeader().hide()
+        for i in range(self.table_view.rowCount()):
             label = labels[i]
             item = QtWidgets.QTableWidgetItem()
             item.setText(label)
-            self.tableView.setItem(i, 0, item)
+            self.table_view.setItem(i, 0, item)
 
-        layout.addWidget(self.elementBox)
+        layout.addWidget(self.element_box)
         layout.addWidget(self.graphs)
-        layout.addWidget(self.tableView)
+        layout.addWidget(self.table_view)
 
         self.setLayout(layout)
 
     def link(self, graph):
         self.graphs.root_graph = graph
 
-    def plot_current_element(self):
+    def plotCurrentElement(self):
         try:
-            x_res, y_res = self.graphs.plot_element(
-                self.elementBox.currentText())
-        except IndexError:
-            self.elementBox.removeItem(
-                self.elementBox.findText(
-                    self.elementBox.currentText()))
+            x_res, y_res = self.graphs.plotElement(
+                self.element_box.currentText())
+        except:
+            self.element_box.removeItem(
+                self.element_box.findText(
+                    self.element_box.currentText()))
             model = self.graphs.root_graph.model
             names = model.get_all_names()
-            self.elementBox.setCurrentText(
+            self.element_box.setCurrentText(
                 names[1])  # skip header (0th) element
-            x_res, y_res = self.graphs.plot_element(
-                self.elementBox.currentText())
+            x_res, y_res = self.graphs.plotElement(
+                self.element_box.currentText())
 
-        for i in range(self.tableView.rowCount()):
+        for i in range(self.table_view.rowCount()):
             x_num = x_res[i]
             y_num = y_res[i]
             x_item = QtWidgets.QTableWidgetItem()
@@ -159,20 +159,21 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
             x_item.setText(str(x_num))
             y_item.setText(str(y_num))
 
-            self.tableView.setItem(i, 1, x_item)
-            self.tableView.setItem(i, 2, y_item)
+            self.table_view.setItem(i, 1, x_item)
+            self.table_view.setItem(i, 2, y_item)
 
     def open(self):
-        self.elementBox.blockSignals(True)
-        model = self.graphs.root_graph.model
+        self.element_box.blockSignals(True)
+        
+        self.setElementBox()
+        self.plotCurrentElement()
+        self.show()
 
-        self.elementBox.clear()
+        self.element_box.blockSignals(False)
+
+    def setElementBox(self):
+        model = self.graphs.root_graph.model
+        self.element_box.clear()
         names = model.get_all_names()
         names = names[1:]
-
-        self.elementBox.addItems(names)
-
-        self.plot_current_element()
-
-        self.show()
-        self.elementBox.blockSignals(False)
+        self.element_box.addItems(names)

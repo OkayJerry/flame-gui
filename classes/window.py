@@ -44,11 +44,11 @@ class MenuBar(QtWidgets.QMenuBar):
         # set trigger
         open_action.triggered.connect(self.open)
         save_action.triggered.connect(self.save)
-        save_as_action.triggered.connect(self.save_as)
+        save_as_action.triggered.connect(self.saveAs)
         exit_action.triggered.connect(QtWidgets.qApp.quit)
 
-        self.undo_action.triggered.connect(self.undo_models)
-        self.redo_action.triggered.connect(self.redo_models)
+        self.undo_action.triggered.connect(self.undoModels)
+        self.redo_action.triggered.connect(self.redoModels)
         self.bmstate_action.triggered.connect(
             lambda: self.bmstate_window.show())
 
@@ -71,7 +71,7 @@ class MenuBar(QtWidgets.QMenuBar):
 
     def open(self):
         graph = self.main_window.workspace.graph
-        latEditor = self.main_window.workspace.latEditor
+        lat_editor = self.main_window.workspace.lat_editor
 
         self.filename = QtWidgets.QFileDialog.getOpenFileName(
             self.main_window, 'Open File')
@@ -89,27 +89,28 @@ class MenuBar(QtWidgets.QMenuBar):
 
         self.main_window.setWindowTitle("FLAME: " + self.filename)
 
-        graph.set_model(self.filename)
+        graph.setModel(self.filename)
         self.bmstate_window.update(graph)
-        latEditor.populate()
+        lat_editor.populate()
 
-        for i in range(len(latEditor.header())):
-            latEditor.resizeColumnToContents(i)
+        for i in range(len(lat_editor.header())):
+            lat_editor.resizeColumnToContents(i)
 
         self.main_window.fileIsOpen = True
         self.main_window.handleFileOpen()
+        self.phase_window.setElementBox()
 
     def save(self):
         model = self.main_window.workspace.graph.model
         model.generate_latfile(latfile=self.filename)
 
-    def save_as(self):
+    def saveAs(self):
         model = self.main_window.workspace.graph.model
         name = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File')
         name = name[0]  # previously tuple
         model.generate_latfile(latfile=name)
 
-    def undo_models(self):
+    def undoModels(self):
         crnt = self.main_window.workspace.graph.model
         model_history = self.main_window.workspace.graph.model_history
         undo_history = self.main_window.workspace.graph.undo_history
@@ -121,7 +122,7 @@ class MenuBar(QtWidgets.QMenuBar):
 
         self.handleUndoRedoEnabling()
 
-    def redo_models(self):
+    def redoModels(self):
         crnt = self.main_window.workspace.graph.model
         model_history = self.main_window.workspace.graph.model_history
         undo_history = self.main_window.workspace.graph.undo_history

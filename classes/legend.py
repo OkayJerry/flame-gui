@@ -7,12 +7,9 @@ class Legend(QTreeWidget):
     def __init__(self, parent=None):  # ,graph,items,parent=None):
         super(QTreeWidget, self).__init__(parent)
 
-        # self.graph = graph
-        # self.items = items
         self.checked_box_cnt = 0
         self.setHeaderHidden(True)
         self.setSelectionMode(QAbstractItemView.NoSelection)
-        self.ignore_next_item_change = False
 
     def link(self, items, graph):
         self.items = items
@@ -122,14 +119,14 @@ class Legend(QTreeWidget):
                 item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
                 item.setCheckState(0, QtCore.Qt.Unchecked)
 
-        self.itemChanged.connect(self.handle_checkboxes)
+        self.itemChanged.connect(self.handleCheckBoxes)
 
-    def handle_checkboxes(self, item, col):
+    def handleCheckBoxes(self, item, col):
         if item.checkState(col) == 0:
-            self.graph.remove_item(item)
+            self.graph.removeItem(item)
             self.checked_box_cnt -= 1
         elif self.checked_box_cnt < 4:
-            self.graph.plot_item(item)
+            self.graph.plotItem(item)
             self.checked_box_cnt += 1
         else:
             warning = QMessageBox()
