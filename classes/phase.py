@@ -114,7 +114,7 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
     def plot_current_element(self):
         try:
             x_res, y_res = self.graphs.plot_element(self.elementBox.currentText())
-        except:
+        except IndexError:
             self.elementBox.removeItem(self.elementBox.findText(self.elementBox.currentText()))
             model = self.graphs.root_graph.model
             names = model.get_all_names()
