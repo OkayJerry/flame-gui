@@ -1,5 +1,23 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
+import numpy as np
 
+
+class BeamStateSpinBox(QtWidgets.QDoubleSpinBox):
+    def __init__(self):
+        super().__init__()
+        self.setDecimals(10)
+        self.valueChanged.connect(self.setStep)
+
+    def setStep(self):
+        step_size = self.value() * 0.1
+        if step_size < 0:
+            step_size *= -1
+        elif step_size == 0:
+            step_size = 1
+        self.setSingleStep(step_size)
+
+    def textFromValue(self,value):
+        return QtCore.QLocale().toString(value, 'g', QtCore.QLocale.FloatingPointShortest);
 
 class BeamStateWindow(QtWidgets.QWidget):
     def __init__(self):
@@ -11,9 +29,9 @@ class BeamStateWindow(QtWidgets.QWidget):
         self.qa_label = QtWidgets.QLabel()
         self.energy_label = QtWidgets.QLabel()
         self.mr_label = QtWidgets.QLabel()
-        self.qa_spin = QtWidgets.QSpinBox()
-        self.energy_spin = QtWidgets.QSpinBox()
-        self.mr_spin = QtWidgets.QSpinBox()
+        self.qa_spin = BeamStateSpinBox()
+        self.energy_spin = BeamStateSpinBox()
+        self.mr_spin = BeamStateSpinBox()
 
         self.qa_label.setText('Q / A:')
         self.energy_label.setText('Energy:')
@@ -21,6 +39,9 @@ class BeamStateWindow(QtWidgets.QWidget):
         self.qa_spin.setRange(-2147483648, 2147483648)
         self.energy_spin.setRange(-2147483648, 2147483648)
         self.mr_spin.setRange(-2147483648, 2147483648)
+
+        self.mr_spin.valueChanged.connect(lambda: self._updateTwin(self.energy_spin))
+        self.energy_spin.valueChanged.connect(lambda: self._updateTwin(self.mr_spin))
         
         layout.addWidget(self.qa_label, 0, 1)
         layout.addWidget(self.energy_label, 1, 1)
@@ -36,18 +57,23 @@ class BeamStateWindow(QtWidgets.QWidget):
         layout.addWidget(h_line, 3, 0, 1, 3)
 
         # variable section
+        self.pos_label = QtWidgets.QLabel()
+        self.mom_label = QtWidgets.QLabel()
         self.var_box = QtWidgets.QComboBox()
         self.kwrd1_box = QtWidgets.QComboBox()
         self.kwrd2_box = QtWidgets.QComboBox()
         self.alpha_label = QtWidgets.QLabel()
-        self.alpha_spin = QtWidgets.QDoubleSpinBox()
-        self.kwrd1_spin = QtWidgets.QDoubleSpinBox()
-        self.kwrd2_spin = QtWidgets.QDoubleSpinBox()
+        self.pos_spin = BeamStateSpinBox()
+        self.mom_spin = BeamStateSpinBox()
+        self.kwrd1_spin = BeamStateSpinBox()
+        self.alpha_spin = BeamStateSpinBox()
+        self.kwrd2_spin = BeamStateSpinBox()
         self.commit_button = QtWidgets.QPushButton()
 
+        self.pos_label.setText('Position:')
+        self.mom_label.setText('Momentum:')
         self.alpha_label.setText('Alpha:')
         self.commit_button.setText('Apply')
-        self.commit_button.clicked.connect(self.apply)
 
         for var in ['x', 'y', 'z']:
             self.var_box.addItem(var)
@@ -56,6 +82,11 @@ class BeamStateWindow(QtWidgets.QWidget):
         for kwrd in ['geom. emittance [mm-mrad]', 'norm. emittance [mm-mrad]']:
             self.kwrd2_box.addItem(kwrd)
 
+        self.var_box.currentTextChanged.connect(self._updateVariableDependant)
+        self.commit_button.clicked.connect(self.apply)
+
+        self.pos_spin.setRange(-2147483648, 2147483648)
+        self.mom_spin.setRange(-2147483648, 2147483648)
         self.alpha_spin.setRange(-2147483648, 2147483648)
         self.kwrd1_spin.setRange(0, 2147483648)
         self.kwrd2_spin.setRange(0, 2147483648)
@@ -63,13 +94,17 @@ class BeamStateWindow(QtWidgets.QWidget):
         self.alpha_spin.setValue(0)
 
         layout.addWidget(self.var_box, 4, 0)
-        layout.addWidget(self.kwrd1_box, 5, 1)
-        layout.addWidget(self.kwrd1_spin, 5, 2)
-        layout.addWidget(self.alpha_label, 6, 1)
-        layout.addWidget(self.alpha_spin, 6, 2)
-        layout.addWidget(self.kwrd2_box, 7, 1)
-        layout.addWidget(self.kwrd2_spin, 7, 2)
-        layout.addWidget(self.commit_button, 8, 2)
+        layout.addWidget(self.pos_label, 5, 1)
+        layout.addWidget(self.pos_spin, 5, 2)
+        layout.addWidget(self.mom_label, 6, 1)
+        layout.addWidget(self.mom_spin, 6, 2)
+        layout.addWidget(self.kwrd1_box, 7, 1)
+        layout.addWidget(self.kwrd1_spin, 7, 2)
+        layout.addWidget(self.alpha_label, 8, 1)
+        layout.addWidget(self.alpha_spin, 8, 2)
+        layout.addWidget(self.kwrd2_box, 9, 1)
+        layout.addWidget(self.kwrd2_spin, 9, 2)
+        layout.addWidget(self.commit_button, 10, 2)
 
         self.setLayout(layout)
 
@@ -77,9 +112,21 @@ class BeamStateWindow(QtWidgets.QWidget):
         self.graph = graph
         self.workspace = workspace
 
-    def update(self, graph):
+    def update(self):
+        # universal section
+        qa_val = self.graph.model.bmstate.ref_IonZ
+        energy_val = self.graph.model.bmstate.ref_IonEk
+        mr_val = self.graph.model.bmstate.ref_Brho
+
+        self.qa_spin.setValue(qa_val)
+        self.energy_spin.setValue(energy_val)
+        self.mr_spin.setValue(mr_val)
+
+        # variable section
         kwrd1 = self.kwrd1_box.currentText()
         kwrd2 = self.kwrd2_box.currentText()
+
+        self._updateVariableDependant()
 
         if kwrd1 == 'beam size [mm]':
             kwrd1_val = self.graph.model.bmstate.xrms
@@ -95,11 +142,51 @@ class BeamStateWindow(QtWidgets.QWidget):
         self.kwrd1_spin.setValue(kwrd1_val)
         self.kwrd2_spin.setValue(kwrd2_val)
 
+    def _updateVariableDependant(self):
+        var = self.var_box.currentText()
+
+        if var == 'x':
+            pos_val = self.graph.model.bmstate.xcen
+            mom_val = self.graph.model.bmstate.xpcen
+        elif var == 'y':
+            pos_val = self.graph.model.bmstate.ycen
+            mom_val = self.graph.model.bmstate.ypcen
+        elif var == 'z':
+            pos_val = self.graph.model.bmstate.zcen
+            mom_val = self.graph.model.bmstate.zpcen
+
+        self.pos_spin.setValue(pos_val)
+        self.mom_spin.setValue(mom_val)
+
+    def _updateTwin(self, twin):
+        bmstate = self.graph.model.bmstate.clone()
+        if twin is self.energy_spin:
+            self.energy_spin.blockSignals(True)
+            bmstate.ref_Brho = self.mr_spin.value()
+            self.energy_spin.setValue(bmstate.ref_IonEk)
+            self.energy_spin.blockSignals(False)
+        elif twin is self.mr_spin:
+            self.mr_spin.blockSignals(True)
+            bmstate.ref_IonEk = self.energy_spin.value()
+            self.mr_spin.setValue(bmstate.ref_Brho)
+            self.mr_spin.blockSignals(False)
+
     def apply(self):
         var = self.var_box.currentText()
+        qa_val = self.qa_spin.value()
+        energy_val = self.energy_spin.value()
+        mr_val = self.mr_spin.value()
         alpha_val = self.alpha_spin.value()
         kwrd1_val = self.kwrd1_spin.value()
         kwrd2_val = self.kwrd2_spin.value()
+
+        self.graph.model.bmstate.ref_IonZ = qa_val
+        self.graph.model.bmstate.ref_IonEk = energy_val
+        self.graph.model.bmstate.ref_Brho = mr_val
+
+        self.graph.model.bmstate.IonZ = np.array([qa_val for _ in range(len(self.graph.model.bmstate.IonZ))])
+        self.graph.model.bmstate.IonEk = np.array([qa_val for _ in range(len(self.graph.model.bmstate.IonEk))])
+        self.graph.model.bmstate.Brho = np.array([qa_val for _ in range(len(self.graph.model.bmstate.Brho))])
 
         if self.kwrd1_box.currentText() == 'beam size [mm]':
             if self.kwrd2_box.currentText() == 'geom. emittance [mm-mrad]':
