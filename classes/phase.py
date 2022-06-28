@@ -173,7 +173,10 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
 
     def setElementBox(self):
         model = self.graphs.root_graph.model
+        self.element_box.blockSignals(True)
         self.element_box.clear()
         names = model.get_all_names()
         names = names[1:]
         self.element_box.addItems(names)
+        self.plotCurrentElement()
+        self.element_box.blockSignals(False)
