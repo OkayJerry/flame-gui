@@ -90,7 +90,7 @@ class MenuBar(QtWidgets.QMenuBar):
         self.main_window.setWindowTitle("FLAME: " + self.filename)
 
         graph.setModel(self.filename)
-        self.bmstate_window.update(graph)
+        self.bmstate_window.update()
         lat_editor.populate()
 
         for i in range(len(lat_editor.header())):
