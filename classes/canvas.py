@@ -1,10 +1,8 @@
-from matplotlib.backends.qt_compat import QtWidgets
-from matplotlib.backends.backend_qtagg import FigureCanvas, NavigationToolbar2QT as NavigationToolbar
+from matplotlib.backends.backend_qtagg import FigureCanvas
 from matplotlib.figure import Figure
 from flame_utils import ModelFlame, PlotLat
 from matplotlib.lines import Line2D
 import matplotlib.patches as mpatches
-from PyQt5 import QtGui
 import numpy as np
 
 
@@ -169,15 +167,15 @@ class FmMplCanvas(FigureCanvas):
                         self.base_ax = None
                         ax.remove()
                         self.axes.remove(ax)
-                        del ax # because any left over reference will remain on the canvas: https://stackoverflow.com/questions/4981815/how-to-remove-lines-in-a-matplotlib-plot
+                        del ax  # because any left over reference will remain on the canvas: https://stackoverflow.com/questions/4981815/how-to-remove-lines-in-a-matplotlib-plot
                     else:
                         above_axis = self.axes[1]
                         for ln in above_axis.get_lines():
                             above_axis.lines.remove(ln)
                             self._assignLine(ln.parent_item)
                             self.base_ax.add_line(ln.parent_item.line)
-                            del ln # necessary
-                            
+                            del ln  # necessary
+
                         y_unit = above_axis.yaxis.get_label().get_text()
                         self.base_ax.set_ylabel(y_unit)
                         above_axis.remove()
@@ -185,7 +183,7 @@ class FmMplCanvas(FigureCanvas):
                 else:
                     ax.remove()
                     self.axes.remove(ax)
-                    del ax # necessary
+                    del ax  # necessary
 
         self._updateAxisLocation()
 
@@ -194,7 +192,6 @@ class FmMplCanvas(FigureCanvas):
             ax.autoscale()
 
         if len(self.axes) != 0:  # no axes = no legend
-            print(len(self.axes))
             self._createLegend()
 
         self._plotLocation()
@@ -268,4 +265,3 @@ class FmMplCanvas(FigureCanvas):
         if item.dashed:
             item.line.set_linestyle('dashed')
         self._setLineColor(item.line)
-

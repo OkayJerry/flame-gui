@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
 import numpy as np
 
 
@@ -16,8 +16,9 @@ class BeamStateSpinBox(QtWidgets.QDoubleSpinBox):
             step_size = 1
         self.setSingleStep(step_size)
 
-    def textFromValue(self,value):
-        return QtCore.QLocale().toString(value, 'g', QtCore.QLocale.FloatingPointShortest);
+    def textFromValue(self, value):
+        return QtCore.QLocale().toString(value, 'g', QtCore.QLocale.FloatingPointShortest)
+
 
 class BeamStateWindow(QtWidgets.QWidget):
     def __init__(self):
@@ -40,9 +41,11 @@ class BeamStateWindow(QtWidgets.QWidget):
         self.energy_spin.setRange(-2147483648, 2147483648)
         self.mr_spin.setRange(-2147483648, 2147483648)
 
-        self.mr_spin.valueChanged.connect(lambda: self._updateTwin(self.energy_spin))
-        self.energy_spin.valueChanged.connect(lambda: self._updateTwin(self.mr_spin))
-        
+        self.mr_spin.valueChanged.connect(
+            lambda: self._updateTwin(self.energy_spin))
+        self.energy_spin.valueChanged.connect(
+            lambda: self._updateTwin(self.mr_spin))
+
         layout.addWidget(self.qa_label, 0, 1)
         layout.addWidget(self.energy_label, 1, 1)
         layout.addWidget(self.mr_label, 2, 1)
@@ -184,9 +187,12 @@ class BeamStateWindow(QtWidgets.QWidget):
         self.graph.model.bmstate.ref_IonEk = energy_val
         self.graph.model.bmstate.ref_Brho = mr_val
 
-        self.graph.model.bmstate.IonZ = np.array([qa_val for _ in range(len(self.graph.model.bmstate.IonZ))])
-        self.graph.model.bmstate.IonEk = np.array([qa_val for _ in range(len(self.graph.model.bmstate.IonEk))])
-        self.graph.model.bmstate.Brho = np.array([qa_val for _ in range(len(self.graph.model.bmstate.Brho))])
+        self.graph.model.bmstate.IonZ = np.array(
+            [qa_val for _ in range(len(self.graph.model.bmstate.IonZ))])
+        self.graph.model.bmstate.IonEk = np.array(
+            [qa_val for _ in range(len(self.graph.model.bmstate.IonEk))])
+        self.graph.model.bmstate.Brho = np.array(
+            [qa_val for _ in range(len(self.graph.model.bmstate.Brho))])
 
         if self.kwrd1_box.currentText() == 'beam size [mm]':
             if self.kwrd2_box.currentText() == 'geom. emittance [mm-mrad]':

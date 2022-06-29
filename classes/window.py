@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets
 from classes.workspace import *
 from classes.beam import *
 from classes.phase import PhaseSpaceWindow

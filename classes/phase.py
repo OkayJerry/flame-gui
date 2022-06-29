@@ -1,8 +1,7 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets
 from matplotlib.backends.qt_compat import QtWidgets
-from matplotlib.backends.backend_qtagg import FigureCanvas, NavigationToolbar2QT as NavigationToolbar
+from matplotlib.backends.backend_qtagg import FigureCanvas
 from matplotlib.figure import Figure
-from flame_utils import ModelFlame, hplot
 import matplotlib as mpl
 import numpy as np
 
@@ -140,7 +139,7 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
         try:
             x_res, y_res = self.graphs.plotElement(
                 self.element_box.currentText())
-        except:
+        except BaseException:
             self.element_box.removeItem(
                 self.element_box.findText(
                     self.element_box.currentText()))
@@ -164,7 +163,7 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
 
     def open(self):
         self.element_box.blockSignals(True)
-        
+
         self.setElementBox()
         self.plotCurrentElement()
         self.show()
