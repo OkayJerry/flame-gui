@@ -275,12 +275,25 @@ class Workspace(QtWidgets.QWidget):
         self.phase_window = phase_window
 
     def refresh(self):
+        # pre
+        name_i = self.lat_editor.headers.index('Name')
+        expanded_elements = []
+        for i in range(self.lat_editor.topLevelItemCount()):
+            element = self.lat_editor.topLevelItem(i)
+            if element.isExpanded():
+                expanded_elements.append(element.text(name_i))
+
+
         self.lat_editor.clear()
         self.lat_editor.populate()
         self.lat_editor.typeFilter(self.filters.combo_box.currentText())
         self.graph.updateLines()
         self.phase_window.setElementBox()
         self.phase_window.plotCurrentElement()
+
+        for element in expanded_elements:
+            item = self.lat_editor.findItems(element, QtCore.Qt.MatchExactly, name_i)[0]
+            item.setExpanded(True)
 
     def _createItems(self):
         object_dict = {
