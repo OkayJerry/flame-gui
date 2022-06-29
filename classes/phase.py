@@ -179,5 +179,6 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
         names = model.get_all_names()
         names = names[1:]
         self.element_box.addItems(names)
-        self.plotCurrentElement()
+        if len(names) != 0:
+            self.plotCurrentElement()
         self.element_box.blockSignals(False)
