@@ -115,12 +115,20 @@ class LatTree(QTreeWidget):
         if item.text(attr_i) in unit_info:
             item.setText(unit_i, unit_info[item.text(attr_i)])
 
-    def updateModel(self):
+    def updateModel(self, item):
         name_i = self.headers.index('Name')
         type_i = self.headers.index('Type')
         attr_i = self.headers.index('Attribute')
         val_i = self.headers.index('Value')
         unit_i = self.headers.index('Unit')
+        item_is_expanded = False
+
+        if item.parent():
+            item = item.parent()
+
+        if item.isExpanded(): # required before refreshing workspace
+            item_is_expanded = True
+            item_name = item.text(name_i)
 
         selected = self.currentItem()
         attribute = selected.text(attr_i)
@@ -138,6 +146,11 @@ class LatTree(QTreeWidget):
 
         self.graph.model.reconfigure(element, {attribute: val})
         self.workspace.refresh()
+
+        if item_is_expanded:
+            item = self.findItems(item_name, QtCore.Qt.MatchExactly, name_i)
+            item = item[0]
+            item.setExpanded(True)
 
     def _handle_edits(self, item, col):
         index_i = self.headers.index('Index')
