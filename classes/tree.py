@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QTreeWidget, QHeaderView, QTreeWidgetItem, QAbstractItemView, QStyledItemDelegate, QLineEdit, QMenu, QAction, QWidget, QHBoxLayout, QVBoxLayout, QComboBox, QLabel, QTableWidget, QTableWidgetItem, QHeaderView, QPushButton
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import *
+from PyQt5 import QtCore, QtGui
 
 
 class DoubleDelegate(QStyledItemDelegate):
