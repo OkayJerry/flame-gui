@@ -279,6 +279,7 @@ class Workspace(QtWidgets.QWidget):
         self.lat_editor.populate()
         self.lat_editor.typeFilter(self.filters.combo_box.currentText())
         self.graph.updateLines()
+        self.phase_window.setElementBox()
         self.phase_window.plotCurrentElement()
 
     def _createItems(self):
