@@ -10,8 +10,9 @@ import numpy as np
 
 class FmMplLine(Line2D):
     # only purpose as for now is to differentiate lines I've added from Line2D
-    def __init__(self, xdata, ydata):
+    def __init__(self, xdata, ydata, parent_item):
         super().__init__(xdata, ydata)
+        self.parent_item = parent_item
 
 
 class FmMplCanvas(FigureCanvas):
@@ -54,13 +55,7 @@ class FmMplCanvas(FigureCanvas):
         self.figure.canvas.draw()
 
     def plotItem(self, item):
-        r, s = self.model.run(monitor='all')
-        data = self.model.collect_data(r, 'pos', item.kwrd)
-        item.line = FmMplLine(data['pos'], data[item.kwrd])
-        item.line.set_label(item.kwrd)
-        if item.dashed:
-            item.line.set_linestyle('dashed')
-        self._setLineColor(item.line)
+        self._assignLine(item)
 
         ax = self._getAxisWithYLabel(item.y_unit)
         if ax is not None:
@@ -170,30 +165,42 @@ class FmMplCanvas(FigureCanvas):
         for ax in self.axes:
             if len(ax.lines) == 0:
                 if ax == self.base_ax:
-                    self.base_ax = None
-                ax.remove()
-                self.axes.remove(ax)
-                if len(
-                        self.axes) != 0 and self.base_ax is None:  # must reassign base_ax for PlotLat()
-                    self.base_ax = self.axes[0]
-                    # setting to defaults
-                    self.base_ax.margins(0.05, 0.05)
-                    self.base_ax.yaxis.set_ticks_position('left')
-                    self.base_ax.spines.left.set_position(('outward', 0))
-                    self.base_ax.yaxis.set_label_position('left')
+                    if len(self.axes) == 1:
+                        self.base_ax = None
+                        ax.remove()
+                        self.axes.remove(ax)
+                        del ax # because any left over reference will remain on the canvas: https://stackoverflow.com/questions/4981815/how-to-remove-lines-in-a-matplotlib-plot
+                    else:
+                        above_axis = self.axes[1]
+                        for ln in above_axis.get_lines():
+                            above_axis.lines.remove(ln)
+                            self._assignLine(ln.parent_item)
+                            self.base_ax.add_line(ln.parent_item.line)
+                            del ln # necessary
+                            
+                        y_unit = above_axis.yaxis.get_label().get_text()
+                        self.base_ax.set_ylabel(y_unit)
+                        above_axis.remove()
+                        self.axes.remove(above_axis)
+                else:
+                    ax.remove()
+                    self.axes.remove(ax)
+                    del ax # necessary
+
+        self._updateAxisLocation()
+
+        for ax in self.axes:
+            ax.relim()
+            ax.autoscale()
 
         if len(self.axes) != 0:  # no axes = no legend
+            print(len(self.axes))
             self._createLegend()
 
         self._plotLocation()
 
-        self._updateAxisLocation()
-        for ax in self.axes:
-            ax.relim()
-            ax.autoscale_view(True, True, True)
-
         self.figure.tight_layout()
-        self.figure.canvas.draw()
+        self.figure.canvas.draw_idle()
 
     def _plotLocation(self):
         if self.base_ax:
@@ -252,3 +259,13 @@ class FmMplCanvas(FigureCanvas):
             machine=self.model.clone_machine()))
         self.undo_history.clear()
         self.main_window.menu_bar.handleUndoRedoEnabling()
+
+    def _assignLine(self, item):
+        r, s = self.model.run(monitor='all')
+        data = self.model.collect_data(r, 'pos', item.kwrd)
+        item.line = FmMplLine(data['pos'], data[item.kwrd], item)
+        item.line.set_label(item.kwrd)
+        if item.dashed:
+            item.line.set_linestyle('dashed')
+        self._setLineColor(item.line)
+
