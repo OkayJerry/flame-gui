@@ -190,11 +190,20 @@ class LatTree(QTreeWidget):
         self.menu.popup(QtGui.QCursor.pos())
 
     def insElement(self):
-        index_i = self.headers.index('Index')
-        item = self.currentItem()
-        if item.parent():
-            item = item.parent()
-        self.config_window.insertItem(item.text(index_i))
+        if self.currentItem() != None:
+            index_i = self.headers.index('Index')
+            item = self.currentItem()
+            if item.parent():
+                item = item.parent()
+            self.config_window.insertItem(item.text(index_i))
+        else:
+            print(self.topLevelItemCount())
+            if self.topLevelItemCount() == 0:
+                self.config_window.insertItem('1')
+            else:
+                i = self.topLevelItemCount() + 1
+                self.config_window.insertItem(str(i))
+
         self.config_window.show()
 
     def editElement(self):
@@ -424,7 +433,7 @@ class LatElementConfig(QWidget):
         self.graph.model.insert_element(index=i, element=d)
 
         self.workspace.refresh()
-
+        self.lat_editor.setCurrentItem(None)
         self.edit_mode = False
 
     def clear(self):

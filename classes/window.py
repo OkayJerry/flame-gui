@@ -2,6 +2,10 @@ from PyQt5 import QtWidgets
 from classes.workspace import *
 from classes.beam import *
 from classes.phase import PhaseSpaceWindow
+from flame_utils import ModelFlame
+from flame import Machine
+from collections import OrderedDict
+import numpy as np
 
 
 class MenuBar(QtWidgets.QMenuBar):
@@ -67,7 +71,6 @@ class MenuBar(QtWidgets.QMenuBar):
         view_menu.addAction(phase_action)
 
         self.handleUndoRedoEnabling()
-        self.bmstate_action.setEnabled(False)
 
     def open(self):
         graph = self.main_window.workspace.graph
@@ -96,8 +99,6 @@ class MenuBar(QtWidgets.QMenuBar):
         for i in range(len(lat_editor.header())):
             lat_editor.resizeColumnToContents(i)
 
-        self.main_window.fileIsOpen = True
-        self.main_window.handleFileOpen()
         self.phase_window.setElementBox()
 
     def save(self):
@@ -152,7 +153,6 @@ class MenuBar(QtWidgets.QMenuBar):
 class Window(QtWidgets.QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
-        self.fileIsOpen = False
 
         # properties
         self.setWindowTitle('FLAME')
@@ -173,8 +173,33 @@ class Window(QtWidgets.QMainWindow):
         self.menu_bar.bmstate_window.link(self.workspace.graph, self.workspace)
         self.menu_bar.phase_window.link(self.workspace.graph)
         self.workspace.link(self.menu_bar.phase_window)
-        self.menu_bar.open()
 
-    def handleFileOpen(self):
-        if self.fileIsOpen:
-            self.menu_bar.bmstate_action.setEnabled(True)
+        self._createModel()
+
+    def _createModel(self):
+        vec = np.zeros(7)
+        vec[6] = 1.0
+        mat = np.zeros([7, 7])
+        mat[0, 0] = mat[2, 2] = 1.0
+        mat[1, 1] = mat[3, 3] = 1.0e-6
+
+        source = OrderedDict([
+            ('name', 'S'),
+            ('type', 'source'),
+            ('vector_variable', 'BC'),
+            ('matrix_variable', 'S')
+        ])
+
+        conf = OrderedDict([
+            ('sim_type', 'MomentMatrix'),
+            ('IonEk', 1e6),
+            ('IonEs', 931494320.0),
+            ('IonChargeStates', np.array([0.5])),
+            ('NCharge', np.array([1.0])),
+            ('BC0', vec),
+            ('S0', mat),
+            ('elements', [source])
+        ])
+
+        self.workspace.graph.model = ModelFlame(machine=Machine(conf))
+        self.menu_bar.bmstate_window.update()
