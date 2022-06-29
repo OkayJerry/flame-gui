@@ -298,7 +298,6 @@ class Workspace(QtWidgets.QWidget):
         element = self.phase_window.element_box.currentText()
         self.phase_window.setElementBox()
         self.phase_window.element_box.setCurrentText(element)
-        self.phase_window.plotCurrentElement()
 
     def _createItems(self):
         object_dict = {
