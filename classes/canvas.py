@@ -62,6 +62,7 @@ class FmMplCanvas(FigureCanvas):
             if self.base_ax is None:  # initial call of plotItem from blank canvas
                 ax = self.figure.subplots()
                 self.base_ax = ax
+                self.base_ax.set_xlabel('pos [m]')
             else:
                 ax = self.base_ax.twinx()
                 self._setAxisLocation(ax)
