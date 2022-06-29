@@ -286,18 +286,19 @@ class LatElementConfig(QWidget):
         index_label = QLabel()
         name_label = QLabel()
         type_label = QLabel()
-        self.index_line = QLineEdit()
+        self.index_spin = QSpinBox()
         self.name_line = QLineEdit()
         self.type_box = QComboBox()
 
         index_label.setText('Index:')
         name_label.setText('Name:')
         type_label.setText('Type:')
-        self.index_line.setPlaceholderText('Element Index')
+        self.index_spin.setRange(1, 1)
+        # self.index_spin.setPlaceholderText('Element Index')
         self.name_line.setPlaceholderText('Element Name')
-        self.index_line.setValidator(QtGui.QIntValidator(self.index_line))
+        # self.index_spin.setValidator(QtGui.QIntValidator(self.index_spin))
         top_row_layout.addWidget(index_label)
-        top_row_layout.addWidget(self.index_line)
+        top_row_layout.addWidget(self.index_spin)
         top_row_layout.addWidget(name_label)
         top_row_layout.addWidget(self.name_line)
         top_row_layout.addWidget(type_label)
@@ -343,7 +344,7 @@ class LatElementConfig(QWidget):
             self.attr_table.removeRow(index.row())
 
     def insertItem(self, index):
-        self.index_line.setText(index)
+        self.index_spin.setValue(int(index))
 
     def editItem(self, top_level_item):
         self.attr_table.blockSignals(True)
@@ -359,12 +360,12 @@ class LatElementConfig(QWidget):
         elem_name = top_level_item.text(name_i)
         elem_type = top_level_item.text(type_i)
 
-        self.index_line.setText(elem_index)
+        self.index_spin.setValue(int(elem_index))
         self.name_line.setText(elem_name)
         self.type_box.setCurrentText(elem_type)
 
         # disabling changes
-        self.index_line.setEnabled(False)
+        self.index_spin.setEnabled(False)
         self.name_line.setEnabled(False)
         self.type_box.setEnabled(False)
 
@@ -425,7 +426,7 @@ class LatElementConfig(QWidget):
 
         d['name'] = self.name_line.text()
         d['type'] = self.type_box.currentText()
-        i = int(self.index_line.text())
+        i = self.index_spin.value()
 
         if self.edit_mode:
             self.graph.model.pop_element(index=i)
@@ -435,12 +436,13 @@ class LatElementConfig(QWidget):
         self.workspace.refresh()
         self.lat_editor.setCurrentItem(None)
         self.edit_mode = False
+        self.index_spin.setMaximum(self.lat_editor.topLevelItemCount() + 1)
 
     def clear(self):
-        self.index_line.setEnabled(True)
+        self.index_spin.setEnabled(True)
         self.name_line.setEnabled(True)
         self.type_box.setEnabled(True)
-        self.index_line.clear()
+        self.index_spin.clear()
         self.name_line.clear()
         while self.attr_table.rowCount() > 1:
             self.attr_table.removeRow(0)
