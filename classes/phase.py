@@ -168,7 +168,8 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
             elif self.type_box.currentText() == 'magnetic':
                 if t != 'drift':
                     self.element_box.addItem(n)
-        self.plotCurrentElement()
+        if len(elements) != 0:
+            self.plotCurrentElement()
 
         self.element_box.blockSignals(False)
 
@@ -199,10 +200,12 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
             self.table_view.setItem(i, 2, y_item)
 
     def open(self):
+        model = self.graphs.root_graph.model
         self.element_box.blockSignals(True)
 
         self.setElementBox()
-        self.plotCurrentElement()
+        if len(model.get_all_names()[1:]) != 0:
+            self.plotCurrentElement()
         self.show()
 
         self.element_box.blockSignals(False)
