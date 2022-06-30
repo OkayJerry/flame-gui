@@ -19,7 +19,6 @@ class FmMplCanvas(FigureCanvas):
         self.model = None
         self.model_history = []
         self.undo_history = []
-        self.filename = None
         self.axes = []
         self.base_ax = None
         self.colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
@@ -31,9 +30,8 @@ class FmMplCanvas(FigureCanvas):
         self.param_tree = param_tree
         self.main_window = main_window
 
-    def setModel(self, filename):
-        self.filename = filename
-        self.model = ModelFlame(filename)
+    def setModel(self, model):
+        self.model = model
 
     def updateLines(self):
         active_items = self.param_tree.getCheckedItems()
