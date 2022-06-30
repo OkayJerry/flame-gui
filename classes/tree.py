@@ -191,7 +191,7 @@ class LatTree(QTreeWidget):
         self.menu.popup(QtGui.QCursor.pos())
 
     def insElement(self):
-        if self.currentItem() != None:
+        if self.currentItem() is not None:
             index_i = self.headers.index('Index')
             item = self.currentItem()
             if item.parent():
