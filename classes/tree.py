@@ -198,7 +198,6 @@ class LatTree(QTreeWidget):
                 item = item.parent()
             self.config_window.insertItem(item.text(index_i))
         else:
-            print(self.topLevelItemCount())
             if self.topLevelItemCount() == 0:
                 self.config_window.insertItem('1')
             else:

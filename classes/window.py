@@ -95,7 +95,6 @@ class MenuBar(QtWidgets.QMenuBar):
         self.main_window.setWindowTitle("FLAME: " + self.filename)
 
         model = ModelFlame(self.filename)
-        print(model.machine.conf().keys())
         if 'Eng_Data_Dir' not in model.machine.conf().keys():
             n_conf = model.machine.conf()
             n_conf['Eng_Data_Dir'] = flame.__file__.replace('__init__.py', 'test/data')
