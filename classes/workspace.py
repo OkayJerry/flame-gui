@@ -297,6 +297,7 @@ class Workspace(QtWidgets.QWidget):
         # phase space window
         element = self.phase_window.element_box.currentText()
         self.phase_window.setElementBox()
+        self.phase_window.filter()
         self.phase_window.element_box.setCurrentText(element)
 
     def _createItems(self):

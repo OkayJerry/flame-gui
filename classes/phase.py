@@ -110,10 +110,24 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
             'Twiss Beta [m/rad]',
             'Geom. Emittance [mm-mrad]']
 
+        search_ws = QtWidgets.QWidget()
+        search_ws.setLayout(QtWidgets.QHBoxLayout())
+
         self.element_box = QtWidgets.QComboBox()
+        self.type_box = QtWidgets.QComboBox()
         self.graphs = FmMplPhaseSpaceCanvas()
         self.table_view = QtWidgets.QTableWidget(5, 3)
 
+        for word in [
+            'all',
+            'magnetic',
+            'quadrupole',
+            'drift',
+            'orbtrim',
+            'marker',
+                'sbend']:
+            self.type_box.addItem(word)
+        self.type_box.currentTextChanged.connect(self.filter)
         self.element_box.currentTextChanged.connect(self.plotCurrentElement)
 
         self.table_view.setHorizontalHeaderLabels(['', 'x', 'y'])
@@ -128,7 +142,9 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
             item.setText(label)
             self.table_view.setItem(i, 0, item)
 
-        layout.addWidget(self.element_box)
+        search_ws.layout().addWidget(self.element_box)
+        search_ws.layout().addWidget(self.type_box)
+        layout.addWidget(search_ws)
         layout.addWidget(self.graphs)
         layout.addWidget(self.table_view)
 
@@ -136,6 +152,28 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
 
     def link(self, graph):
         self.graphs.root_graph = graph
+
+    def filter(self):
+        self.element_box.blockSignals(True)
+        model = self.graphs.root_graph.model
+        self.element_box.clear()
+        elements = model.get_element(name=model.get_all_names())
+        elements = elements[1:] # skip header
+        for element in elements:
+            n = element['properties']['name']
+            t = element['properties']['type']
+            if t == self.type_box.currentText() or self.type_box.currentText() == 'all':
+                self.element_box.addItem(n)
+            elif self.type_box.currentText() == 'magnetic':
+                if t != 'drift':
+                    self.element_box.addItem(n)
+
+        self.plotCurrentElement()
+        self.element_box.blockSignals(False)
+
+
+
+                
 
     def plotCurrentElement(self):
         try:
