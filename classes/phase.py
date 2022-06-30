@@ -22,6 +22,7 @@ class FmMplPhaseSpaceCanvas(FigureCanvas):
         self.x_axes.set_ylabel('xp [mrad]')
         self.y_axes.set_xlabel('y [mm]')
         self.y_axes.set_ylabel('yp [mrad]')
+        self.figure.tight_layout()
 
     # Function to convert Twiss parameters to Sigma-matrix (covariance)
     def tws2cov(self, alpha, beta, eps):
@@ -82,14 +83,14 @@ class FmMplPhaseSpaceCanvas(FigureCanvas):
         # 'x' graph
         el, x_res = self.phaseEllipse(d, idx, 'x', r[idx][1], edgecolor='b')
         self.x_axes.add_patch(el)
-        self.x_axes.margins(0.05,0.05)  # necessary for patches?
+        self.x_axes.margins(0.05, 0.05)  # necessary for patches?
         self.x_axes.relim()
         self.x_axes.autoscale()
 
         # 'y' graph
         el, y_res = self.phaseEllipse(d, idx, 'y', r[idx][1], edgecolor='r')
         self.y_axes.add_patch(el)
-        self.y_axes.margins(0.05,0.05)  # necessary for patches?
+        self.y_axes.margins(0.05, 0.05)  # necessary for patches?
         self.y_axes.relim()
         self.y_axes.autoscale()
 
@@ -149,6 +150,7 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
         layout.addWidget(self.table_view)
 
         self.setLayout(layout)
+        self.setMinimumSize(683, 640)
 
     def link(self, graph):
         self.graphs.root_graph = graph
@@ -159,7 +161,7 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
         model = self.graphs.root_graph.model
         self.element_box.clear()
         elements = model.get_element(name=model.get_all_names())
-        elements = elements[1:] # skip header
+        elements = elements[1:]  # skip header
         for element in elements:
             n = element['properties']['name']
             t = element['properties']['type']

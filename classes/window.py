@@ -97,7 +97,8 @@ class MenuBar(QtWidgets.QMenuBar):
         model = ModelFlame(self.filename)
         if 'Eng_Data_Dir' not in model.machine.conf().keys():
             n_conf = model.machine.conf()
-            n_conf['Eng_Data_Dir'] = flame.__file__.replace('__init__.py', 'test/data')
+            n_conf['Eng_Data_Dir'] = flame.__file__.replace(
+                '__init__.py', 'test/data')
             model = ModelFlame(machine=Machine(n_conf))
         graph.setModel(model)
         self.bmstate_window.update()

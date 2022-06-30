@@ -288,7 +288,8 @@ class Workspace(QtWidgets.QWidget):
         self.lat_editor.typeFilter(self.filters.combo_box.currentText())
 
         for element in expanded_elements:
-            item = self.lat_editor.findItems(element, QtCore.Qt.MatchExactly, name_i)[0]
+            item = self.lat_editor.findItems(
+                element, QtCore.Qt.MatchExactly, name_i)[0]
             item.setExpanded(True)
 
         # graph
