@@ -295,9 +295,7 @@ class LatElementConfig(QWidget):
         name_label.setText('Name:')
         type_label.setText('Type:')
         self.index_spin.setRange(1, 1)
-        # self.index_spin.setPlaceholderText('Element Index')
         self.name_line.setPlaceholderText('Element Name')
-        # self.index_spin.setValidator(QtGui.QIntValidator(self.index_spin))
         top_row_layout.addWidget(index_label)
         top_row_layout.addWidget(self.index_spin)
         top_row_layout.addWidget(name_label)
@@ -310,6 +308,7 @@ class LatElementConfig(QWidget):
         for t in types:
             self.type_box.addItem(t)
         top_row_layout.addWidget(self.type_box)
+        self.type_box.currentTextChanged.connect(self._setRequiredProperties)
 
         self.attr_table = QTableWidget(1, 2)
         self.attr_table.setHorizontalHeaderLabels(
@@ -346,6 +345,7 @@ class LatElementConfig(QWidget):
 
     def insertItem(self, index):
         self.index_spin.setValue(int(index))
+        self._setRequiredProperties()
 
     def editItem(self, top_level_item):
         self.attr_table.blockSignals(True)
@@ -399,6 +399,96 @@ class LatElementConfig(QWidget):
 
         self.attr_table.blockSignals(False)
 
+    def _setRequiredProperties(self):
+        while self.attr_table.rowCount() > 1:
+            self.attr_table.removeRow(0)
+
+        t = self.type_box.currentText()
+        attributes = []
+        defaults = {}
+        if t == 'solenoid':
+            attr1 = QTableWidgetItem()
+            attr2 = QTableWidgetItem()
+            attr1.setText('L')
+            attr2.setText('B')
+            attributes.append(attr1)
+            attributes.append(attr2)
+        elif t == 'quadrupole':
+            attr1 = QTableWidgetItem()
+            attr2 = QTableWidgetItem()
+            attr1.setText('L')
+            attr2.setText('B2')
+            attributes.append(attr1)
+            attributes.append(attr2)
+        elif t == 'sextupole':
+            attr1 = QTableWidgetItem()
+            attr2 = QTableWidgetItem()
+            attr1.setText('L')
+            attr2.setText('B3')
+            attributes.append(attr1)
+            attributes.append(attr2)
+        elif t == 'sbend':
+            attr1 = QTableWidgetItem()
+            attr2 = QTableWidgetItem()
+            attr1.setText('L')
+            attr2.setText('phi')
+            attributes.append(attr1)
+            attributes.append(attr2)
+            defaults['phi'] = 1
+        elif t == 'equad':
+            attr1 = QTableWidgetItem()
+            attr2 = QTableWidgetItem()
+            attr3 = QTableWidgetItem()
+            attr1.setText('L')
+            attr2.setText('V')
+            attr3.setText('radius')
+            attributes.append(attr1)
+            attributes.append(attr2)
+            attributes.append(attr3)
+            defaults['radius'] = 1
+        elif t == 'edipole':
+            attr1 = QTableWidgetItem()
+            attr2 = QTableWidgetItem()
+            attr3 = QTableWidgetItem()
+            attr4 = QTableWidgetItem()
+            attr1.setText('L')
+            attr2.setText('phi')
+            attr3.setText('ver')
+            attr4.setText('spher')
+            attributes.append(attr1)
+            attributes.append(attr2)
+            attributes.append(attr3)
+            attributes.append(attr4)
+            defaults['phi'] = 1
+        elif t == 'rfcavity':
+            attr1 = QTableWidgetItem()
+            attr2 = QTableWidgetItem()
+            attr3 = QTableWidgetItem()
+            attr4 = QTableWidgetItem()
+            attr5 = QTableWidgetItem()
+            attr1.setText('L')
+            attr2.setText('f')
+            attr3.setText('phi')
+            attr4.setText('scl_fac')
+            attr5.setText('cavtype')
+            attributes.append(attr1)
+            attributes.append(attr2)
+            attributes.append(attr3)
+            attributes.append(attr4)
+            attributes.append(attr5)
+            defaults['L'] = 0.24
+            defaults['f'] = 80.5e6
+            defaults['cavtype'] = '0.041QWR'
+
+        for i in range(len(attributes)):
+            attribute = attributes[i]
+            self.attr_table.insertRow(self.attr_table.rowCount())
+            self.attr_table.setItem(i, 0, attribute)
+            if attribute.text() in defaults.keys():
+                val = QTableWidgetItem()
+                val.setText(str(defaults[attribute.text()]))
+                self.attr_table.setItem(i, 1, val)
+
     def apply(self):
         self.graph.copyModelToHistory()
 
@@ -406,7 +496,7 @@ class LatElementConfig(QWidget):
             'theta_x', 'theta_y', 'tm_xkick', 'tm_ykick', 'xyrotate',
             'L', 'B', 'dx', 'dy', 'pitch', 'yaw', 'roll', 'B2', 'B3',
             'V', 'radius', 'phi', 'phi1', 'phi2', 'fringe_x',
-            'fringe_y', 'f', 'Rm'
+            'fringe_y', 'f', 'Rm', 'scl_fac'
         ]
 
         d = {}
