@@ -4,8 +4,10 @@ from classes.beam import *
 from classes.phase import PhaseSpaceWindow
 from flame_utils import ModelFlame
 from flame import Machine
+import flame
 from collections import OrderedDict
 import numpy as np
+import os
 
 
 class MenuBar(QtWidgets.QMenuBar):
@@ -92,7 +94,13 @@ class MenuBar(QtWidgets.QMenuBar):
 
         self.main_window.setWindowTitle("FLAME: " + self.filename)
 
-        graph.setModel(self.filename)
+        model = ModelFlame(self.filename)
+        print(model.machine.conf().keys())
+        if 'Eng_Data_Dir' not in model.machine.conf().keys():
+            n_conf = model.machine.conf()
+            n_conf['Eng_Data_Dir'] = os.getcwd() + '/FLAME/python/flame/test/data'
+            model = ModelFlame(machine=Machine(n_conf))
+        graph.setModel(model)
         self.bmstate_window.update()
         lat_editor.populate()
 
@@ -198,7 +206,8 @@ class Window(QtWidgets.QMainWindow):
             ('NCharge', np.array([1.0])),
             ('BC0', vec),
             ('S0', mat),
-            ('elements', [source])
+            ('elements', [source]),
+            ('Eng_Data_Dir', os.getcwd() + '/FLAME/python/flame/test/data')
         ])
 
         self.workspace.graph.model = ModelFlame(machine=Machine(conf))
