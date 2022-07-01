@@ -33,6 +33,8 @@ class OptimizationWindow(QtWidgets.QWidget):
         self.param_tree.setHeaderHidden(True)
         self.fillParamTree()
 
+        self.opt_button.setText('Optimize')
+
         ws1.layout().addWidget(self.target_label)
         ws1.layout().addWidget(self.element_table)
         ws1.layout().addWidget(self.select_button)
@@ -77,8 +79,10 @@ class OptimizationWindow(QtWidgets.QWidget):
             if target_check.checkState() == QtCore.Qt.Checked:
                 self.target_label.setText('Target: ' + item.text())
 
-        self.element_table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
-        self.element_table.horizontalHeader().setStretchLastSection(True)
+        if select_table.rowCount() != 0:
+            self.element_table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+            self.element_table.horizontalHeader().setStretchLastSection(True)
+        self.select_window.close()
 
     def fillParamTree(self):
         # top-level
@@ -158,6 +162,7 @@ class SelectWindow(QtWidgets.QWidget):
         self.table.setHorizontalHeaderLabels(['Knob', 'Target', 'Name'])
         self.table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
 
+        self.button.setText('Confirm')
         self.button.clicked.connect(self.opt_window.updateElementTable)
 
         layout.addWidget(self.table)
