@@ -2,6 +2,7 @@ from PyQt5 import QtWidgets
 from classes.workspace import *
 from classes.beam import *
 from classes.phase import PhaseSpaceWindow
+from classes.optimize import OptimizationWindow
 from flame_utils import ModelFlame
 from flame import Machine
 import flame
@@ -20,6 +21,7 @@ class MenuBar(QtWidgets.QMenuBar):
 
         self.bmstate_window = BeamStateWindow()
         self.phase_window = PhaseSpaceWindow()
+        self.opt_window = OptimizationWindow()
 
         # menus
         file_menu = self.addMenu('File')
@@ -35,6 +37,7 @@ class MenuBar(QtWidgets.QMenuBar):
         self.undo_action = QtWidgets.QAction('&Undo', main_window)
         self.redo_action = QtWidgets.QAction('&Redo', main_window)
         self.bmstate_action = QtWidgets.QAction('&Beam State', main_window)
+        self.opt_action = QtWidgets.QAction('&Optimization', main_window)
 
         phase_action = QtWidgets.QAction('&Phase Space', main_window)
 
@@ -57,6 +60,7 @@ class MenuBar(QtWidgets.QMenuBar):
         self.redo_action.triggered.connect(self.redoModels)
         self.bmstate_action.triggered.connect(
             lambda: self.bmstate_window.show())
+        self.opt_action.triggered.connect(self.opt_window.open)
 
         phase_action.triggered.connect(self.phase_window.open)
 
@@ -69,6 +73,7 @@ class MenuBar(QtWidgets.QMenuBar):
         edit_menu.addAction(self.undo_action)
         edit_menu.addAction(self.redo_action)
         edit_menu.addAction(self.bmstate_action)
+        edit_menu.addAction(self.opt_action)
 
         view_menu.addAction(phase_action)
 
@@ -211,4 +216,5 @@ class Window(QtWidgets.QMainWindow):
         ])
 
         self.workspace.graph.model = ModelFlame(machine=Machine(conf))
+        self.menu_bar.opt_window.link(self.workspace.graph)
         self.menu_bar.bmstate_window.update()
