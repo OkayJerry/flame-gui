@@ -71,16 +71,6 @@ workspace_one_items = {
         "unit": "mm",
         "representation": "x"
     },
-    "xpcen": {
-        "description": "weight average of all charge states for x'",
-        "unit": "rad",
-        "representation": "x'"
-    },
-    "xprms": {
-        "description": "general rms beam envelope for x'",
-        "unit": "rad",
-        "representation": "x'"
-    },
     "ycen": {
         "description": "weight average of all charge states for y",
         "unit": "mm",
@@ -90,16 +80,6 @@ workspace_one_items = {
         "description": "general rms beam envelope for y",
         "unit": "mm",
         "representation": "y"
-    },
-    "ypcen": {
-        "description": "weight average of all charge states for y'",
-        "unit": "rad",
-        "representation": "y'"
-    },
-    "yprms": {
-        "description": "general rms beam envelope for y'",
-        "unit": "rad",
-        "representation": "y'"
     },
     "zcen": {
         "description": "weight average of all charge states for phi",
@@ -111,6 +91,26 @@ workspace_one_items = {
         "unit": "rad",
         "representation": "z"
     },  # phi
+    "xpcen": {
+        "description": "weight average of all charge states for x'",
+        "unit": "rad",
+        "representation": "x'"
+    },
+    "xprms": {
+        "description": "general rms beam envelope for x'",
+        "unit": "rad",
+        "representation": "x'"
+    },
+    "ypcen": {
+        "description": "weight average of all charge states for y'",
+        "unit": "rad",
+        "representation": "y'"
+    },
+    "yprms": {
+        "description": "general rms beam envelope for y'",
+        "unit": "rad",
+        "representation": "y'"
+    },
     "zpcen": {
         "description": "weight average of all charge states for SE_k",
         "unit": "MeV/u",
@@ -126,25 +126,25 @@ workspace_one_items = {
         "unit": "mm-mrad",
         "representation": "x"
     },
-    "xnemittance": {
-        "description": "weight average of normalized x emittance",
-        "unit": "mm-mrad",
-        "representation": "norm(x)"
-    },
     "yemittance": {
         "description": "weight average of geometrical y emittance",
         "unit": "mm-mrad",
         "representation": "y"
     },
-    "ynemittance": {
-        "description": "weight average of normalized y emittance",
-        "unit": "mm-mrad",
-        "representation": "norm(y)"
-    },
     "zemittance": {
         "description": "weight average of geometrical z emittance",
         "unit": "rad-MeV/u",
         "representation": "z"
+    },
+    "xnemittance": {
+        "description": "weight average of normalized x emittance",
+        "unit": "mm-mrad",
+        "representation": "norm(x)"
+    },
+    "ynemittance": {
+        "description": "weight average of normalized y emittance",
+        "unit": "mm-mrad",
+        "representation": "norm(y)"
     },
     "znemittance": {
         "description": "weight average of normalized z emittance",
