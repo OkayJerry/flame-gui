@@ -185,6 +185,7 @@ class Window(QtWidgets.QMainWindow):
         # startup
         self.menu_bar.bmstate_window.link(self.workspace.graph, self.workspace)
         self.menu_bar.phase_window.link(self.workspace.graph)
+        self.menu_bar.opt_window.link(self.workspace)
         self.workspace.link(self.menu_bar.phase_window)
 
         self._createModel()
@@ -216,5 +217,5 @@ class Window(QtWidgets.QMainWindow):
         ])
 
         self.workspace.graph.model = ModelFlame(machine=Machine(conf))
-        self.menu_bar.opt_window.link(self.workspace.graph)
+        self.menu_bar.opt_window.link(self.workspace)
         self.menu_bar.bmstate_window.update()
