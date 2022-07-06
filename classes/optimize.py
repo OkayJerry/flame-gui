@@ -82,6 +82,7 @@ class OptimizationWindow(QtWidgets.QWidget):
     def link(self, workspace):
         self.graph = workspace.graph
         self.workspace = workspace
+        self.select_window.graph = workspace.graph
 
     def _handle_edits(self, item, col):
         if col == 0:  # odd logic, but others didn't work?
@@ -286,8 +287,14 @@ class OptimizationWindow(QtWidgets.QWidget):
 class SelectWindow(QtWidgets.QWidget):
     def __init__(self, opt_window):
         super().__init__()
+        self.checked = {
+            'knobs': [],
+            'target': None
+        }
         self.setWindowTitle('Select Elements')
+        self.setMinimumSize(550, 375)
         self.opt_window = opt_window
+        self.graph = None
         layout = QtWidgets.QVBoxLayout()
 
         self.table = QtWidgets.QTableWidget(0, 3)
@@ -307,6 +314,7 @@ class SelectWindow(QtWidgets.QWidget):
         self.setLayout(layout)
         
     def fill(self, model):
+        model = self.graph.model
         while self.table.rowCount() > 1:
             self.table.removeRow(0)
 
@@ -333,6 +341,9 @@ class SelectWindow(QtWidgets.QWidget):
             target_layout.setContentsMargins(0,0,0,0)
             target_widget.setLayout(target_layout)
 
+            knob_check.stateChanged.connect(self.handleTargetKnobs)
+            target_check.stateChanged.connect(self.handleTargetKnobs)
+
             item = QtWidgets.QTableWidgetItem()
             item.setText(name)
 
@@ -341,3 +352,59 @@ class SelectWindow(QtWidgets.QWidget):
                 self.table.setCellWidget(self.table.rowCount() - 1, 0, knob_widget)
             self.table.setCellWidget(self.table.rowCount() - 1, 1, target_widget)
             self.table.setItem(self.table.rowCount() - 1, 2, item)
+
+    def handleTargetKnobs(self):
+        model = self.graph.model
+        checkbox = QtWidgets.QApplication.focusWidget()
+        checkbox.blockSignals(True)
+        index = self.table.indexAt(checkbox.parent().pos())
+        element_name = self.table.item(index.row(), 2).text()
+        element_index = model.get_index_by_name(name=element_name)[element_name][0]
+        if index.column() == 0:
+            if self.checked['target']:
+                target_index = self.checked['target']
+                if element_index > target_index:
+                    warning = QtWidgets.QMessageBox()
+                    warning.setIcon(QtWidgets.QMessageBox.Critical)
+                    warning.setText("Cannot use knob beyond target location.")
+                    warning.setWindowTitle("ERROR")
+                    warning.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                    if warning.exec() == QtWidgets.QMessageBox.Ok:
+                        warning.close()
+                        checkbox.setCheckState(QtCore.Qt.Unchecked)
+                elif element_index in self.checked['knobs']:
+                    self.checked['knobs'].remove(element_index)
+                else:
+                    self.checked['knobs'].append(element_index)
+            elif element_index in self.checked['knobs']:
+                self.checked['knobs'].remove(element_index)
+            else:
+                self.checked['knobs'].append(element_index)
+        elif index.column() == 1:
+            if self.checked['target']:
+                if self.checked['target'] == element_index:
+                    self.checked['target'] = None
+                else:
+                    warning = QtWidgets.QMessageBox()
+                    warning.setIcon(QtWidgets.QMessageBox.Critical)
+                    warning.setText("You can only select one target location.")
+                    warning.setWindowTitle("ERROR")
+                    warning.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                    if warning.exec() == QtWidgets.QMessageBox.Ok:
+                        warning.close()
+                        checkbox.setCheckState(QtCore.Qt.Unchecked)
+            else:
+                self.checked['target'] = element_index
+
+            for knob_index in self.checked['knobs']:
+                if element_index < knob_index:
+                    warning = QtWidgets.QMessageBox()
+                    warning.setIcon(QtWidgets.QMessageBox.Critical)
+                    warning.setText("Target must be beyond all knobs or at then final knob.")
+                    warning.setWindowTitle("ERROR")
+                    warning.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                    if warning.exec() == QtWidgets.QMessageBox.Ok:
+                        warning.close()
+                        checkbox.setCheckState(QtCore.Qt.Unchecked)
+                    break
+        checkbox.blockSignals(False)
