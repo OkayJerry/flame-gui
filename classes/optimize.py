@@ -31,7 +31,7 @@ class OptimizationWindow(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Optimization')
-        self.setMinimumSize(1100, 500)
+        self.setMinimumSize(1200, 500)
 
         self.target_params = {}
 
@@ -52,6 +52,7 @@ class OptimizationWindow(QtWidgets.QWidget):
             ['Name', 'Attribute', 'x0'])
         self.element_table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.element_table.verticalHeader().hide()
+        self.element_table.cellChanged.connect(self.updateModel)
 
         self.select_button.setText('Select Elements')
         self.select_button.clicked.connect(lambda: self.select_window.show())
@@ -65,6 +66,8 @@ class OptimizationWindow(QtWidgets.QWidget):
         self.param_tree.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.param_tree.itemChanged.connect(self._handleTargetParam)
         self.fillParamTree()
+        self.param_tree.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        self.param_tree.header().setStretchLastSection(True)
 
         self.opt_button.setText('Optimize')
         self.opt_button.clicked.connect(self.optimize)
@@ -75,8 +78,8 @@ class OptimizationWindow(QtWidgets.QWidget):
         ws2.layout().addWidget(self.param_tree)
         ws2.layout().addWidget(self.opt_button)
 
-        layout.addWidget(ws1, 2)
-        layout.addWidget(ws2)
+        layout.addWidget(ws1, 5)
+        layout.addWidget(ws2, 3)
         self.setLayout(layout)
 
     def link(self, workspace):
@@ -88,7 +91,6 @@ class OptimizationWindow(QtWidgets.QWidget):
         if col == 0:  # odd logic, but others didn't work?
             return
         self.param_tree.editItem(item, col)
-        # self.graph.copyModelToHistory()
 
     def _costGeneric(self, x, knob, obj):
         model = self.graph.model
@@ -179,6 +181,7 @@ class OptimizationWindow(QtWidgets.QWidget):
         self.show()
 
     def updateElementTable(self):
+        self.element_table.blockSignals(True)
         while self.element_table.rowCount() > 1:
             self.element_table.removeRow(0)
 
@@ -216,6 +219,8 @@ class OptimizationWindow(QtWidgets.QWidget):
             self.element_table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
             self.element_table.horizontalHeader().setStretchLastSection(True)
         self.select_window.close()
+
+        self.element_table.blockSignals(False)
 
     def fillParamTree(self):
         # top-level
@@ -285,6 +290,8 @@ class OptimizationWindow(QtWidgets.QWidget):
         self.param_tree.addTopLevelItem(actual)
 
     def updateElements(self):
+        self.element_table.blockSignals(True)
+
         # target
         target = self.target_label.text()
         target = target[target.find(' ') + 1:]
@@ -294,7 +301,10 @@ class OptimizationWindow(QtWidgets.QWidget):
         # element table
         for i in range(self.element_table.rowCount()):
             item = self.element_table.item(i, 0)
-            element = item.text()
+            try:
+                element = item.text()
+            except:
+                continue
             if element not in self.graph.model.get_all_names()[1:]:
                 self.element_table.removeRow(self.element_table.row(item))
             else:
@@ -313,8 +323,16 @@ class OptimizationWindow(QtWidgets.QWidget):
             if element not in self.graph.model.get_all_names()[1:]:
                 self.select_window.table.removeRow(self.select_window.table.row(item))
 
-        
+        self.element_table.blockSignals(False)
 
+        
+    def updateModel(self, row):
+        model = self.graph.model
+        element = self.element_table.item(row, 0).text()
+        attr = self.element_table.cellWidget(row, 1).currentText()
+        val = float(self.element_table.item(row, 2).text())
+        model.reconfigure(element, {attr: val})
+        self.workspace.refresh()
         
                 
 
