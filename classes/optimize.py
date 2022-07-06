@@ -13,6 +13,7 @@ class DoubleDelegate(QtWidgets.QStyledItemDelegate):
         line_edit.setValidator(validator)
         return line_edit
 
+
 class ComboBox(QtWidgets.QComboBox):
     def __init__(self, element_name, row_num, table, graph):
         super().__init__()
@@ -23,7 +24,8 @@ class ComboBox(QtWidgets.QComboBox):
 
     def _setx0(self, text):
         item = QtWidgets.QTableWidgetItem()
-        item.setText(str(self.graph.model.get_element(name=self.element)[0]['properties'][text]))
+        item.setText(str(self.graph.model.get_element(
+            name=self.element)[0]['properties'][text]))
         self.table.setItem(self.row_num, 2, item)
 
 
@@ -50,7 +52,8 @@ class OptimizationWindow(QtWidgets.QWidget):
 
         self.element_table.setHorizontalHeaderLabels(
             ['Name', 'Attribute', 'x0'])
-        self.element_table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.element_table.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.Stretch)
         self.element_table.verticalHeader().hide()
         self.element_table.cellChanged.connect(self.updateModel)
 
@@ -63,10 +66,12 @@ class OptimizationWindow(QtWidgets.QWidget):
         self.param_tree.setColumnCount(2)
         self.param_tree.setItemDelegateForColumn(1, DoubleDelegate(self))
         self.param_tree.itemDoubleClicked.connect(self._handle_edits)
-        self.param_tree.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.param_tree.setEditTriggers(
+            QtWidgets.QAbstractItemView.NoEditTriggers)
         self.param_tree.itemChanged.connect(self._handleTargetParam)
         self.fillParamTree()
-        self.param_tree.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        self.param_tree.header().setSectionResizeMode(
+            QtWidgets.QHeaderView.ResizeToContents)
         self.param_tree.header().setStretchLastSection(True)
 
         self.opt_button.setText('Optimize')
@@ -95,11 +100,12 @@ class OptimizationWindow(QtWidgets.QWidget):
     def _costGeneric(self, x, knob, obj):
         model = self.graph.model
         for i, n in enumerate(knob.keys()):
-            model.reconfigure(n, {knob[n]:x[i]})
+            model.reconfigure(n, {knob[n]: x[i]})
         r, s = model.run(to_element=obj['location'])
         t = obj['target']
-        dif = np.array([getattr(s, n)-v for n,v in zip(t.keys(), t.values())])
-        return sum(dif*dif)
+        dif = np.array(
+            [getattr(s, n) - v for n, v in zip(t.keys(), t.values())])
+        return sum(dif * dif)
 
     def _handleTargetParam(self, item):
         parent = item.parent()
@@ -144,16 +150,16 @@ class OptimizationWindow(QtWidgets.QWidget):
                     param += "xyp"
                 elif item.text(0) == "x'-y'":
                     param += "xpyp"
-            
+
         if item.checkState(0) == QtCore.Qt.Checked:
             try:
                 self.target_params[param] = float(item.text(1))
-            except:
+            except BaseException:
                 self.target_params[param] = None
         else:
             try:
                 self.target_params.pop(param)
-            except:
+            except BaseException:
                 return
 
     def optimize(self):
@@ -171,8 +177,11 @@ class OptimizationWindow(QtWidgets.QWidget):
             attr = self.element_table.cellWidget(i, 1).currentText()
             knob[name] = attr
 
-        x0 = np.array([model.get_element(name=n)[0]['properties'][knob[n]] for n in knob])
-        ans = minimize(self._costGeneric, x0, args=(knob, obj), method='Nelder-Mead')
+        x0 = np.array([model.get_element(name=n)[0]
+                      ['properties'][knob[n]] for n in knob])
+        ans = minimize(
+            self._costGeneric, x0, args=(
+                knob, obj), method='Nelder-Mead')
 
         self.workspace.refresh()
 
@@ -189,7 +198,7 @@ class OptimizationWindow(QtWidgets.QWidget):
         for i in range(select_table.rowCount()):
             try:
                 knob_check = select_table.cellWidget(i, 0).children()[1]
-            except:
+            except BaseException:
                 knob_check = QtWidgets.QCheckBox()
                 knob_check.setCheckState(QtCore.Qt.Unchecked)
             target_check = select_table.cellWidget(i, 1).children()[1]
@@ -199,15 +208,21 @@ class OptimizationWindow(QtWidgets.QWidget):
                 n_item.setText(item.text())
 
                 element = self.graph.model.get_element(name=item.text())[0]
-                combo = ComboBox(element['properties']['name'], self.element_table.rowCount(), self.element_table, self.graph)
+                combo = ComboBox(
+                    element['properties']['name'],
+                    self.element_table.rowCount(),
+                    self.element_table,
+                    self.graph)
                 for key, val in element['properties'].items():
                     if key != 'name' and key != 'type':
                         combo.addItem(key)
 
                 combo.currentTextChanged.connect(combo._setx0)
                 self.element_table.insertRow(self.element_table.rowCount())
-                self.element_table.setItem(self.element_table.rowCount() - 1, 0, n_item)
-                self.element_table.setCellWidget(self.element_table.rowCount() - 1, 1, combo)
+                self.element_table.setItem(
+                    self.element_table.rowCount() - 1, 0, n_item)
+                self.element_table.setCellWidget(
+                    self.element_table.rowCount() - 1, 1, combo)
                 combo._setx0(combo.currentText())
                 if len(element['properties']) == 3:
                     combo.setEnabled(False)
@@ -216,7 +231,8 @@ class OptimizationWindow(QtWidgets.QWidget):
                 self.target_label.setText('Target: ' + item.text())
 
         if select_table.rowCount() != 0:
-            self.element_table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+            self.element_table.horizontalHeader().setSectionResizeMode(
+                QtWidgets.QHeaderView.ResizeToContents)
             self.element_table.horizontalHeader().setStretchLastSection(True)
         self.select_window.close()
 
@@ -250,7 +266,8 @@ class OptimizationWindow(QtWidgets.QWidget):
         cpl.setText(0, "couple")
 
         for param in [ion_ek, phis]:
-            param.setFlags(param.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEditable)
+            param.setFlags(
+                param.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEditable)
             param.setCheckState(0, QtCore.Qt.Unchecked)
             reference.addChild(param)
 
@@ -263,7 +280,8 @@ class OptimizationWindow(QtWidgets.QWidget):
             for var in ["x", "y", "z", "x'", "y'", "z'"]:
                 item = QtWidgets.QTreeWidgetItem()
                 item.setText(0, var)
-                item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEditable)
+                item.setFlags(
+                    item.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEditable)
                 item.setCheckState(0, QtCore.Qt.Unchecked)
 
                 param.addChild(item)
@@ -273,7 +291,8 @@ class OptimizationWindow(QtWidgets.QWidget):
             for var in ["x", "y", "z"]:
                 item = QtWidgets.QTreeWidgetItem()
                 item.setText(0, var)
-                item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEditable)
+                item.setFlags(
+                    item.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEditable)
                 item.setCheckState(0, QtCore.Qt.Unchecked)
 
                 radiation_type.addChild(item)
@@ -281,7 +300,8 @@ class OptimizationWindow(QtWidgets.QWidget):
         for var in ["x-y", "x'-y", "x-y'", "x'-y'"]:
             item = QtWidgets.QTreeWidgetItem()
             item.setText(0, var)
-            item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEditable)
+            item.setFlags(
+                item.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEditable)
             item.setCheckState(0, QtCore.Qt.Unchecked)
 
             cpl.addChild(item)
@@ -303,29 +323,30 @@ class OptimizationWindow(QtWidgets.QWidget):
             item = self.element_table.item(i, 0)
             try:
                 element = item.text()
-            except:
+            except BaseException:
                 continue
             if element not in self.graph.model.get_all_names()[1:]:
                 self.element_table.removeRow(self.element_table.row(item))
             else:
                 attr = self.element_table.cellWidget(i, 1).currentText()
                 x0 = QtWidgets.QTableWidgetItem()
-                x0.setText(str(self.graph.model.get_element(name=element)[0]['properties'][attr]))
+                x0.setText(str(self.graph.model.get_element(
+                    name=element)[0]['properties'][attr]))
                 self.element_table.setItem(i, 2, x0)
 
-        # select window table 
+        # select window table
         for i in range(self.select_window.table.rowCount()):
             item = self.select_window.table.item(i, 2)
             try:
                 element = item.text()
-            except:
+            except BaseException:
                 continue
             if element not in self.graph.model.get_all_names()[1:]:
-                self.select_window.table.removeRow(self.select_window.table.row(item))
+                self.select_window.table.removeRow(
+                    self.select_window.table.row(item))
 
         self.element_table.blockSignals(False)
 
-        
     def updateModel(self, row):
         model = self.graph.model
         element = self.element_table.item(row, 0).text()
@@ -333,9 +354,6 @@ class OptimizationWindow(QtWidgets.QWidget):
         val = float(self.element_table.item(row, 2).text())
         model.reconfigure(element, {attr: val})
         self.workspace.refresh()
-        
-                
-
 
 
 class SelectWindow(QtWidgets.QWidget):
@@ -356,7 +374,8 @@ class SelectWindow(QtWidgets.QWidget):
 
         self.table.verticalHeader().hide()
         self.table.setHorizontalHeaderLabels(['Knob', 'Target', 'Name'])
-        self.table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.ResizeToContents)
         self.table.horizontalHeader().setStretchLastSection(True)
 
         self.button.setText('Confirm')
@@ -366,7 +385,7 @@ class SelectWindow(QtWidgets.QWidget):
         layout.addWidget(self.button)
 
         self.setLayout(layout)
-        
+
     def fill(self, model):
         model = self.graph.model
         while self.table.rowCount() > 1:
@@ -386,13 +405,13 @@ class SelectWindow(QtWidgets.QWidget):
             knob_layout = QtWidgets.QHBoxLayout()
             knob_layout.addWidget(knob_check)
             knob_layout.setAlignment(QtCore.Qt.AlignCenter)
-            knob_layout.setContentsMargins(0,0,0,0)
+            knob_layout.setContentsMargins(0, 0, 0, 0)
             knob_widget.setLayout(knob_layout)
 
             target_layout = QtWidgets.QHBoxLayout()
             target_layout.addWidget(target_check)
             target_layout.setAlignment(QtCore.Qt.AlignCenter)
-            target_layout.setContentsMargins(0,0,0,0)
+            target_layout.setContentsMargins(0, 0, 0, 0)
             target_widget.setLayout(target_layout)
 
             knob_check.stateChanged.connect(self.handleTargetKnobs)
@@ -403,8 +422,10 @@ class SelectWindow(QtWidgets.QWidget):
 
             self.table.insertRow(self.table.rowCount())
             if len(element['properties']) > 2:
-                self.table.setCellWidget(self.table.rowCount() - 1, 0, knob_widget)
-            self.table.setCellWidget(self.table.rowCount() - 1, 1, target_widget)
+                self.table.setCellWidget(
+                    self.table.rowCount() - 1, 0, knob_widget)
+            self.table.setCellWidget(
+                self.table.rowCount() - 1, 1, target_widget)
             self.table.setItem(self.table.rowCount() - 1, 2, item)
 
     def handleTargetKnobs(self):
@@ -413,7 +434,8 @@ class SelectWindow(QtWidgets.QWidget):
         checkbox.blockSignals(True)
         index = self.table.indexAt(checkbox.parent().pos())
         element_name = self.table.item(index.row(), 2).text()
-        element_index = model.get_index_by_name(name=element_name)[element_name][0]
+        element_index = model.get_index_by_name(
+            name=element_name)[element_name][0]
         if index.column() == 0:
             if self.checked['target']:
                 target_index = self.checked['target']
@@ -454,7 +476,8 @@ class SelectWindow(QtWidgets.QWidget):
                 if element_index < knob_index:
                     warning = QtWidgets.QMessageBox()
                     warning.setIcon(QtWidgets.QMessageBox.Critical)
-                    warning.setText("Target must be beyond all knobs or at then final knob.")
+                    warning.setText(
+                        "Target must be beyond all knobs or at then final knob.")
                     warning.setWindowTitle("ERROR")
                     warning.setStandardButtons(QtWidgets.QMessageBox.Ok)
                     if warning.exec() == QtWidgets.QMessageBox.Ok:
