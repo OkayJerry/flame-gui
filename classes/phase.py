@@ -131,6 +131,7 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
         self.type_box.currentTextChanged.connect(self.filter)
         self.element_box.currentTextChanged.connect(self.plotCurrentElement)
 
+        self.table_view.setAlternatingRowColors(True)
         self.table_view.setHorizontalHeaderLabels(['', 'x', 'y'])
         self.table_view.horizontalHeader().setSectionResizeMode(
             QtWidgets.QHeaderView.Stretch)

@@ -50,6 +50,7 @@ class OptimizationWindow(QtWidgets.QWidget):
         self.opt_button = QtWidgets.QPushButton()
         self.select_window = SelectWindow(self)
 
+        self.element_table.setAlternatingRowColors(True)
         self.element_table.setHorizontalHeaderLabels(
             ['Name', 'Attribute', 'x0'])
         self.element_table.horizontalHeader().setSectionResizeMode(
@@ -62,6 +63,7 @@ class OptimizationWindow(QtWidgets.QWidget):
 
         self.target_label.setText('Target: --')
 
+        self.param_tree.setAlternatingRowColors(True)
         self.param_tree.setHeaderLabels(['Parameter', 'Target Value'])
         self.param_tree.setColumnCount(2)
         self.param_tree.setItemDelegateForColumn(1, DoubleDelegate(self))
@@ -372,6 +374,7 @@ class SelectWindow(QtWidgets.QWidget):
         self.table = QtWidgets.QTableWidget(0, 3)
         self.button = QtWidgets.QPushButton()
 
+        self.table.setAlternatingRowColors(True)
         self.table.verticalHeader().hide()
         self.table.setHorizontalHeaderLabels(['Knob', 'Target', 'Name'])
         self.table.horizontalHeader().setSectionResizeMode(
