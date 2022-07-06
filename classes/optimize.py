@@ -22,11 +22,33 @@ class ComboBox(QtWidgets.QComboBox):
         self.row_num = row_num
         self.table = table
 
-    def _setx0(self, text):
+    def _setx0Nelder(self, text):
         item = QtWidgets.QTableWidgetItem()
         item.setText(str(self.graph.model.get_element(
             name=self.element)[0]['properties'][text]))
         self.table.setItem(self.row_num, 2, item)
+
+    def _setx0Evo(self, text):
+        low_item = QtWidgets.QTableWidgetItem()
+        high_item = QtWidgets.QTableWidgetItem()
+        val = self.graph.model.get_element(name=self.element)[0]['properties'][text]
+
+        if val > 0:
+            val = np.floor(val * 10)
+            low_item.setText('0')
+            high_item.setText(str(val))
+        elif val < 0:
+            val = np.ceil(val * 10)
+            low_item.setText(str(val))
+            high_item.setText('0')
+        else:
+            low_item.setText('0')
+            high_item.setText('10')
+
+        self.table.setItem(self.row_num, 2, low_item)
+        self.table.setItem(self.row_num, 3, high_item)
+            
+        
 
 
 class OptimizationWindow(QtWidgets.QWidget):
@@ -38,25 +60,39 @@ class OptimizationWindow(QtWidgets.QWidget):
         self.target_params = {}
 
         layout = QtWidgets.QHBoxLayout()
+        self.tabs = QtWidgets.QTabWidget()
+        tab1 = QtWidgets.QWidget()
+        tab2 = QtWidgets.QWidget()
+        tab1.setLayout(QtWidgets.QVBoxLayout())
+        tab2.setLayout(QtWidgets.QVBoxLayout())
         ws1 = QtWidgets.QWidget()
         ws2 = QtWidgets.QWidget()
         ws1.setLayout(QtWidgets.QVBoxLayout())
         ws2.setLayout(QtWidgets.QVBoxLayout())
 
-        self.element_table = QtWidgets.QTableWidget(0, 3)
+        self.nelder_table = QtWidgets.QTableWidget(0, 3)
+        self.evo_table = QtWidgets.QTableWidget(0, 4)
         self.select_button = QtWidgets.QPushButton()
         self.target_label = QtWidgets.QLabel()
         self.param_tree = QtWidgets.QTreeWidget()
         self.opt_button = QtWidgets.QPushButton()
         self.select_window = SelectWindow(self)
 
-        self.element_table.setAlternatingRowColors(True)
-        self.element_table.setHorizontalHeaderLabels(
+        self.nelder_table.setAlternatingRowColors(True)
+        self.nelder_table.setHorizontalHeaderLabels(
             ['Name', 'Attribute', 'x0'])
-        self.element_table.horizontalHeader().setSectionResizeMode(
+        self.nelder_table.horizontalHeader().setSectionResizeMode(
             QtWidgets.QHeaderView.Stretch)
-        self.element_table.verticalHeader().hide()
-        self.element_table.cellChanged.connect(self.updateModel)
+        self.nelder_table.verticalHeader().hide()
+        self.nelder_table.cellChanged.connect(self.updateModel)
+
+        self.evo_table.setAlternatingRowColors(True)
+        self.evo_table.setHorizontalHeaderLabels(
+            ['Name', 'Attribute', 'x0-Low', 'x0-High'])
+        self.evo_table.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.Stretch)
+        self.evo_table.verticalHeader().hide()
+        # self.evo_table.cellChanged.connect(self.updateModel)
 
         self.select_button.setText('Select Elements')
         self.select_button.clicked.connect(lambda: self.select_window.show())
@@ -79,8 +115,13 @@ class OptimizationWindow(QtWidgets.QWidget):
         self.opt_button.setText('Optimize')
         self.opt_button.clicked.connect(self.optimize)
 
+        tab1.layout().addWidget(self.nelder_table)
+        tab2.layout().addWidget(self.evo_table)
+        self.tabs.addTab(tab1, 'Nelder-Mead')
+        self.tabs.addTab(tab2, 'Differential Evolution')
+
         ws1.layout().addWidget(self.target_label)
-        ws1.layout().addWidget(self.element_table)
+        ws1.layout().addWidget(self.tabs)
         ws1.layout().addWidget(self.select_button)
         ws2.layout().addWidget(self.param_tree)
         ws2.layout().addWidget(self.opt_button)
@@ -99,7 +140,7 @@ class OptimizationWindow(QtWidgets.QWidget):
             return
         self.param_tree.editItem(item, col)
 
-    def _costGeneric(self, x, knob, obj):
+    def _costGenericNelder(self, x, knob, obj):
         model = self.graph.model
         for i, n in enumerate(knob.keys()):
             model.reconfigure(n, {knob[n]: x[i]})
@@ -108,6 +149,24 @@ class OptimizationWindow(QtWidgets.QWidget):
         dif = np.array(
             [getattr(s, n) - v for n, v in zip(t.keys(), t.values())])
         return sum(dif * dif)
+    
+    def _costGenericEvo(self, x, knob, obj):
+        model = self.graph.model
+        for i, n in enumerate(knob.keys()):
+            model.reconfigure(n, {knob[n]:x[i]})
+        r, s = model.run(to_element=obj['location'])
+        dif = []
+        t = obj['target']
+        for n, v in zip(t.keys(), t.values()):
+            if isinstance(v, (list, tuple)):
+                val = getattr(s, n)*v[1] - v[0]
+            elif isinstance(v, (int, float)):
+                val = getattr(s, n) - v
+            else:
+                val = 0.0
+            dif.append(val)
+        dif = np.asarray(dif)
+        return sum(dif*dif)
 
     def _handleTargetParam(self, item):
         parent = item.parent()
@@ -174,16 +233,25 @@ class OptimizationWindow(QtWidgets.QWidget):
             'target': self.target_params
         }
 
-        for i in range(self.element_table.rowCount()):
-            name = self.element_table.item(i, 0).text()
-            attr = self.element_table.cellWidget(i, 1).currentText()
+        for i in range(self.nelder_table.rowCount()):
+            name = self.nelder_table.item(i, 0).text()
+            attr = self.nelder_table.cellWidget(i, 1).currentText()
             knob[name] = attr
 
-        x0 = np.array([model.get_element(name=n)[0]
-                      ['properties'][knob[n]] for n in knob])
-        ans = minimize(
-            self._costGeneric, x0, args=(
-                knob, obj), method='Nelder-Mead')
+        if self.tabs.tabText(self.tabs.currentIndex()) == 'Nelder-Mead':
+            x0 = np.array([model.get_element(name=n)[0]
+                        ['properties'][knob[n]] for n in knob])
+            ans = minimize(
+                self._costGenericNelder, x0, args=(
+                    knob, obj), method='Nelder-Mead')
+        else:
+            x0 = []
+            for i in range(self.evo_table.rowCount()):
+                low = float(self.evo_table.item(i, 2).text())
+                high = float(self.evo_table.item(i, 3).text())
+                x0.append((low, high))
+
+            ans = differential_evolution(self._costGenericNelder, x0, args=(knob, obj), maxiter=10, workers=1)# , workers=-1)
 
         self.workspace.refresh()
 
@@ -192,9 +260,13 @@ class OptimizationWindow(QtWidgets.QWidget):
         self.show()
 
     def updateElementTable(self):
-        self.element_table.blockSignals(True)
-        while self.element_table.rowCount() > 1:
-            self.element_table.removeRow(0)
+        self.nelder_table.blockSignals(True)
+        self.evo_table.blockSignals(True)
+    
+        while self.nelder_table.rowCount() > 1:
+            self.nelder_table.removeRow(0)
+        while self.evo_table.rowCount() > 1:
+            self.evo_table.removeRow(0)
 
         select_table = self.select_window.table
         for i in range(select_table.rowCount()):
@@ -206,39 +278,62 @@ class OptimizationWindow(QtWidgets.QWidget):
             target_check = select_table.cellWidget(i, 1).children()[1]
             item = select_table.item(i, 2)
             if knob_check.checkState() == QtCore.Qt.Checked:
-                n_item = QtWidgets.QTableWidgetItem()
-                n_item.setText(item.text())
+                nelder_item = QtWidgets.QTableWidgetItem()
+                evo_item = QtWidgets.QTableWidgetItem()
+                nelder_item.setText(item.text())
+                evo_item.setText(item.text())
 
                 element = self.graph.model.get_element(name=item.text())[0]
-                combo = ComboBox(
+                nelder_combo = ComboBox(
                     element['properties']['name'],
-                    self.element_table.rowCount(),
-                    self.element_table,
+                    self.nelder_table.rowCount(),
+                    self.nelder_table,
+                    self.graph)
+                evo_combo = ComboBox(
+                    element['properties']['name'],
+                    self.evo_table.rowCount(),
+                    self.evo_table,
                     self.graph)
                 for key, val in element['properties'].items():
                     if key != 'name' and key != 'type':
-                        combo.addItem(key)
+                        nelder_combo.addItem(key)
+                        evo_combo.addItem(key)
 
-                combo.currentTextChanged.connect(combo._setx0)
-                self.element_table.insertRow(self.element_table.rowCount())
-                self.element_table.setItem(
-                    self.element_table.rowCount() - 1, 0, n_item)
-                self.element_table.setCellWidget(
-                    self.element_table.rowCount() - 1, 1, combo)
-                combo._setx0(combo.currentText())
+                nelder_combo.currentTextChanged.connect(nelder_combo._setx0Nelder)
+                self.nelder_table.insertRow(self.nelder_table.rowCount())
+                self.nelder_table.setItem(
+                    self.nelder_table.rowCount() - 1, 0, nelder_item)
+                self.nelder_table.setCellWidget(
+                    self.nelder_table.rowCount() - 1, 1, nelder_combo)
+                nelder_combo._setx0Nelder(nelder_combo.currentText())
+
+                evo_combo.currentTextChanged.connect(evo_combo._setx0Evo)
+                self.evo_table.insertRow(self.evo_table.rowCount())
+                self.evo_table.setItem(
+                    self.evo_table.rowCount() - 1, 0, evo_item)
+                self.evo_table.setCellWidget(
+                    self.evo_table.rowCount() - 1, 1, evo_combo)
+                evo_combo._setx0Evo(evo_combo.currentText())
+
                 if len(element['properties']) == 3:
-                    combo.setEnabled(False)
+                    nelder_combo.setEnabled(False)
+                    evo_combo.setEnabled(False)
 
             if target_check.checkState() == QtCore.Qt.Checked:
                 self.target_label.setText('Target: ' + item.text())
 
         if select_table.rowCount() != 0:
-            self.element_table.horizontalHeader().setSectionResizeMode(
+            self.nelder_table.horizontalHeader().setSectionResizeMode(
                 QtWidgets.QHeaderView.ResizeToContents)
-            self.element_table.horizontalHeader().setStretchLastSection(True)
-        self.select_window.close()
+            self.nelder_table.horizontalHeader().setStretchLastSection(True)
 
-        self.element_table.blockSignals(False)
+            self.evo_table.horizontalHeader().setSectionResizeMode(
+                QtWidgets.QHeaderView.ResizeToContents)
+            self.evo_table.horizontalHeader().setStretchLastSection(True)
+
+        self.select_window.close()
+        self.nelder_table.blockSignals(False)
+        self.evo_table.blockSignals(False)
 
     def fillParamTree(self):
         # top-level
@@ -312,7 +407,8 @@ class OptimizationWindow(QtWidgets.QWidget):
         self.param_tree.addTopLevelItem(actual)
 
     def updateElements(self):
-        self.element_table.blockSignals(True)
+        self.nelder_table.blockSignals(True)
+        self.evo_table.blockSignals(True)
 
         # target
         target = self.target_label.text()
@@ -320,21 +416,31 @@ class OptimizationWindow(QtWidgets.QWidget):
         if target not in self.graph.model.get_all_names()[1:]:
             self.target_label.setText('Target: --')
 
-        # element table
-        for i in range(self.element_table.rowCount()):
-            item = self.element_table.item(i, 0)
+        # nelder-mead table
+        for i in range(self.nelder_table.rowCount()):
+            item = self.nelder_table.item(i, 0)
             try:
                 element = item.text()
             except BaseException:
                 continue
             if element not in self.graph.model.get_all_names()[1:]:
-                self.element_table.removeRow(self.element_table.row(item))
+                self.nelder_table.removeRow(self.nelder_table.row(item))
             else:
-                attr = self.element_table.cellWidget(i, 1).currentText()
-                x0 = QtWidgets.QTableWidgetItem()
-                x0.setText(str(self.graph.model.get_element(
-                    name=element)[0]['properties'][attr]))
-                self.element_table.setItem(i, 2, x0)
+                nelder_combo = self.nelder_table.cellWidget(i, 1)
+                nelder_combo._setx0Nelder(nelder_combo.currentText())
+
+        # differential evolution table
+        for i in range(self.evo_table.rowCount()):
+            item = self.evo_table.item(i, 0)
+            try:
+                element = item.text()
+            except BaseException:
+                continue
+            if element not in self.graph.model.get_all_names()[1:]:
+                self.evo_table.removeRow(self.evo_table.row(item))
+            else:
+                evo_combo = self.evo_table.cellWidget(i, 1)
+                evo_combo._setx0Evo(evo_combo.currentText())
 
         # select window table
         for i in range(self.select_window.table.rowCount()):
@@ -347,13 +453,15 @@ class OptimizationWindow(QtWidgets.QWidget):
                 self.select_window.table.removeRow(
                     self.select_window.table.row(item))
 
-        self.element_table.blockSignals(False)
+        self.nelder_table.blockSignals(False)
+        self.evo_table.blockSignals(False)
 
     def updateModel(self, row):
         model = self.graph.model
-        element = self.element_table.item(row, 0).text()
-        attr = self.element_table.cellWidget(row, 1).currentText()
-        val = float(self.element_table.item(row, 2).text())
+        element = self.nelder_table.item(row, 0).text()
+        attr = self.nelder_table.cellWidget(row, 1).currentText()
+        val = float(self.nelder_table.item(row, 2).text())
+
         model.reconfigure(element, {attr: val})
         self.workspace.refresh()
 
