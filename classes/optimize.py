@@ -155,6 +155,7 @@ class OptimizationWindow(QtWidgets.QWidget):
                 return
 
     def optimize(self):
+        self.graph.copyModelToHistory()
         knob = {}
         model = self.graph.model
         target = self.target_label.text()
@@ -282,6 +283,41 @@ class OptimizationWindow(QtWidgets.QWidget):
 
         self.param_tree.addTopLevelItem(reference)
         self.param_tree.addTopLevelItem(actual)
+
+    def updateElements(self):
+        # target
+        target = self.target_label.text()
+        target = target[target.find(' ') + 1:]
+        if target not in self.graph.model.get_all_names()[1:]:
+            self.target_label.setText('Target: --')
+
+        # element table
+        for i in range(self.element_table.rowCount()):
+            item = self.element_table.item(i, 0)
+            element = item.text()
+            if element not in self.graph.model.get_all_names()[1:]:
+                self.element_table.removeRow(self.element_table.row(item))
+            else:
+                attr = self.element_table.cellWidget(i, 1).currentText()
+                x0 = QtWidgets.QTableWidgetItem()
+                x0.setText(str(self.graph.model.get_element(name=element)[0]['properties'][attr]))
+                self.element_table.setItem(i, 2, x0)
+
+        # select window table 
+        for i in range(self.select_window.table.rowCount()):
+            item = self.select_window.table.item(i, 2)
+            try:
+                element = item.text()
+            except:
+                continue
+            if element not in self.graph.model.get_all_names()[1:]:
+                self.select_window.table.removeRow(self.select_window.table.row(item))
+
+        
+
+        
+                
+
 
 
 class SelectWindow(QtWidgets.QWidget):

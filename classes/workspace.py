@@ -271,8 +271,9 @@ class Workspace(QtWidgets.QWidget):
         layout.addWidget(ws2, 1)
         self.setLayout(layout)
 
-    def link(self, phase_window):
+    def link(self, phase_window, opt_window):
         self.phase_window = phase_window
+        self.opt_window = opt_window
 
     def refresh(self):
         # .lat editor
@@ -300,6 +301,9 @@ class Workspace(QtWidgets.QWidget):
         self.phase_window.setElementBox()
         self.phase_window.filter()
         self.phase_window.element_box.setCurrentText(element)
+
+        # optimization window
+        self.opt_window.updateElements()
 
     def _createItems(self):
         object_dict = {
