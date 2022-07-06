@@ -29,6 +29,7 @@ class LatTree(QTreeWidget):
         self.workspace = parent
 
         # format
+        self.setAlternatingRowColors(True)
         self.setColumnCount(len(self.headers))
         self.setHeaderLabels(self.headers)
 
@@ -310,6 +311,7 @@ class LatElementConfig(QWidget):
         self.type_box.currentTextChanged.connect(self._setRequiredProperties)
 
         self.attr_table = QTableWidget(1, 2)
+        self.attr_table.setAlternatingRowColors(True)
         self.attr_table.setHorizontalHeaderLabels(
             ['Attribute', 'Value', 'Unit'])
         self.attr_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)

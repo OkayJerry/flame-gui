@@ -9,6 +9,7 @@ class Legend(QTreeWidget):
         self.checked_box_cnt = 0
         self.setHeaderHidden(True)
         self.setSelectionMode(QAbstractItemView.NoSelection)
+        self.setAlternatingRowColors(True)
 
     def link(self, items, graph):
         self.items = items
