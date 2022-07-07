@@ -259,7 +259,11 @@ class OptimizationWindow(QtWidgets.QWidget):
 
             ans = differential_evolution(self._costGeneric, x0, args=(knob, obj), maxiter=10, workers=1)  # , workers=-1)
 
+        self.nelder_table.cellWidget(i, 1).original_vals = {}
+        self.evo_table.cellWidget(i, 1).original_vals = {}
         self.workspace.refresh()
+        self.select_window.checkPrevCheckedItems()
+
 
     def open(self):
         self.select_window.fill(self.graph.model)
@@ -269,12 +273,15 @@ class OptimizationWindow(QtWidgets.QWidget):
         self.nelder_table.blockSignals(True)
         self.evo_table.blockSignals(True)
     
-        while self.nelder_table.rowCount() > 1:
+        while self.nelder_table.rowCount() > 0:
             self.nelder_table.removeRow(0)
-        while self.evo_table.rowCount() > 1:
+        while self.evo_table.rowCount() > 0:
             self.evo_table.removeRow(0)
 
         select_table = self.select_window.table
+        present_knobs = self.getKnobs()
+        self.target_label.setText('Target: --')
+
         for i in range(select_table.rowCount()):
             try:
                 knob_check = select_table.cellWidget(i, 0).children()[1]
@@ -283,7 +290,7 @@ class OptimizationWindow(QtWidgets.QWidget):
                 knob_check.setCheckState(QtCore.Qt.Unchecked)
             target_check = select_table.cellWidget(i, 1).children()[1]
             item = select_table.item(i, 2)
-            if knob_check.checkState() == QtCore.Qt.Checked:
+            if knob_check.checkState() == QtCore.Qt.Checked and item.text() not in present_knobs:
                 nelder_item = QtWidgets.QTableWidgetItem()
                 evo_item = QtWidgets.QTableWidgetItem()
                 nelder_item.setText(item.text())
@@ -427,7 +434,7 @@ class OptimizationWindow(QtWidgets.QWidget):
         # target
         target = self.target_label.text()
         target = target[target.find(' ') + 1:]
-        if target not in self.graph.model.get_all_names()[1:]:
+        if target not in self.graph.model.get_all_names()[1:] or self.select_window.checked['target'][1] == None:
             self.target_label.setText('Target: --')
 
         # nelder-mead table
@@ -465,7 +472,17 @@ class OptimizationWindow(QtWidgets.QWidget):
                 continue
             if element not in self.graph.model.get_all_names()[1:]:
                 self.select_window.table.removeRow(
-                    self.select_window.table.row(item))
+                    self.select_window.table.row(item)) # remove from checked items
+                try:
+                    element_i = self.select_window.checked['knobs'][0].index(element)
+                    self.select_window.checked['knobs'][0].pop(element_i)
+                    self.select_window.checked['knobs'][1].pop(element_i)
+                except ValueError:
+                    pass
+                if element == self.select_window.checked['target'][1]:
+                    self.select_window.checked['target'][0] = None
+                    self.select_window.checked['target'][1] = None
+
 
         self.nelder_table.blockSignals(False)
         self.evo_table.blockSignals(False)
@@ -479,13 +496,20 @@ class OptimizationWindow(QtWidgets.QWidget):
         model.reconfigure(element, {attr: val})
         self.workspace.refresh()
 
+    def getKnobs(self):
+        knobs = []
+        for i in range(self.nelder_table.rowCount()):
+            element = self.nelder_table.item(i, 0).text()
+            knobs.append(element)
+        return knobs
+
 
 class SelectWindow(QtWidgets.QWidget):
     def __init__(self, opt_window):
         super().__init__()
         self.checked = {
-            'knobs': [],
-            'target': None
+            'knobs': [[], []],
+            'target': [None, None]
         }
         self.setWindowTitle('Select Elements')
         self.setMinimumSize(550, 375)
@@ -562,8 +586,8 @@ class SelectWindow(QtWidgets.QWidget):
         element_index = model.get_index_by_name(
             name=element_name)[element_name][0]
         if index.column() == 0:
-            if self.checked['target']:
-                target_index = self.checked['target']
+            if self.checked['target'][0]:
+                target_index = self.checked['target'][0]
                 if element_index > target_index:
                     warning = QtWidgets.QMessageBox()
                     warning.setIcon(QtWidgets.QMessageBox.Critical)
@@ -573,35 +597,35 @@ class SelectWindow(QtWidgets.QWidget):
                     if warning.exec() == QtWidgets.QMessageBox.Ok:
                         warning.close()
                         checkbox.setCheckState(QtCore.Qt.Unchecked)
-                elif element_index in self.checked['knobs']:
-                    self.checked['knobs'].remove(element_index)
+                elif element_index in self.checked['knobs'][0]:
+                    self.checked['knobs'][0].remove(element_index)
+                    self.checked['knobs'][1].remove(element_name)
                 else:
-                    self.checked['knobs'].append(element_index)
-            elif element_index in self.checked['knobs']:
-                self.checked['knobs'].remove(element_index)
+                    self.checked['knobs'][0].append(element_index)
+                    self.checked['knobs'][1].append(element_name)
+            elif element_index in self.checked['knobs'][0]:
+                self.checked['knobs'][0].remove(element_index)
+                self.checked['knobs'][1].remove(element_name)
             else:
-                self.checked['knobs'].append(element_index)
+                self.checked['knobs'][0].append(element_index)
+                self.checked['knobs'][1].append(element_name)
         elif index.column() == 1:
-            if self.checked['target']:
-                if self.checked['target'] == element_index:
-                    self.checked['target'] = None
-                elif self.checked['target'] < element_index:
-                    target_checkbox = self.table.cellWidget(self.checked['target'] - 1, 0).children()[1]
-                    target_checkbox.setCheckState(QtCore.Qt.Unchecked)
-                    self.checked['target'] = element_index
+            if self.checked['target'][0]:
+                if self.checked['target'][0] == element_index:
+                    self.checked['target'][0] = None
+                    self.checked['target'][1] = None
                 else:
-                    warning = QtWidgets.QMessageBox()
-                    warning.setIcon(QtWidgets.QMessageBox.Critical)
-                    warning.setText("You can only select one target location.")
-                    warning.setWindowTitle("ERROR")
-                    warning.setStandardButtons(QtWidgets.QMessageBox.Ok)
-                    if warning.exec() == QtWidgets.QMessageBox.Ok:
-                        warning.close()
-                        checkbox.setCheckState(QtCore.Qt.Unchecked)
+                    target_checkbox = self.table.cellWidget(self.checked['target'][0] - 1, 1).children()[1]
+                    target_checkbox.blockSignals(True)
+                    target_checkbox.setCheckState(QtCore.Qt.Unchecked)
+                    self.checked['target'][0] = element_index
+                    self.checked['target'][1] = element_name
+                    target_checkbox.blockSignals(False)
             else:
-                self.checked['target'] = element_index
+                self.checked['target'][0] = element_index
+                self.checked['target'][1] = element_name
 
-            for knob_index in self.checked['knobs']:
+            for knob_index in self.checked['knobs'][0]:
                 if element_index < knob_index:
                     warning = QtWidgets.QMessageBox()
                     warning.setIcon(QtWidgets.QMessageBox.Critical)
@@ -612,5 +636,18 @@ class SelectWindow(QtWidgets.QWidget):
                     if warning.exec() == QtWidgets.QMessageBox.Ok:
                         warning.close()
                         checkbox.setCheckState(QtCore.Qt.Unchecked)
+                        if element_index == self.checked['target'][0]:
+                            self.checked['target'][0] = None
+                            self.checked['target'][1] = None
                     break
         checkbox.blockSignals(False)
+
+    def checkPrevCheckedItems(self):
+        for i in range(self.table.rowCount()):
+            element = self.table.item(i, 2).text()
+            if element in self.checked['knobs'][1]:
+                checkbox = self.table.cellWidget(i, 0).children()[1]
+                checkbox.setCheckState(QtCore.Qt.Checked)
+            elif element in self.checked['target'][1]:
+                checkbox = self.table.cellWidget(i, 1).children()[1]
+                checkbox.setCheckState(QtCore.Qt.Checked)
