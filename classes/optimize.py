@@ -513,7 +513,7 @@ class SelectWindow(QtWidgets.QWidget):
 
     def fill(self, model):
         model = self.graph.model
-        while self.table.rowCount() > 1:
+        while self.table.rowCount() > 0:
             self.table.removeRow(0)
 
         names = model.get_all_names()
@@ -585,6 +585,10 @@ class SelectWindow(QtWidgets.QWidget):
             if self.checked['target']:
                 if self.checked['target'] == element_index:
                     self.checked['target'] = None
+                elif self.checked['target'] < element_index:
+                    target_checkbox = self.table.cellWidget(self.checked['target'] - 1, 0).children()[1]
+                    target_checkbox.setCheckState(QtCore.Qt.Unchecked)
+                    self.checked['target'] = element_index
                 else:
                     warning = QtWidgets.QMessageBox()
                     warning.setIcon(QtWidgets.QMessageBox.Critical)
