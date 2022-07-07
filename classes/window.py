@@ -82,6 +82,7 @@ class MenuBar(QtWidgets.QMenuBar):
     def open(self):
         graph = self.main_window.workspace.graph
         lat_editor = self.main_window.workspace.lat_editor
+        opt_window = self.main_window.menu_bar.opt_window
 
         self.filename = QtWidgets.QFileDialog.getOpenFileName(
             self.main_window, 'Open File')
@@ -106,8 +107,10 @@ class MenuBar(QtWidgets.QMenuBar):
                 '__init__.py', 'test/data')
             model = ModelFlame(machine=Machine(n_conf))
         graph.setModel(model)
+        graph.updateLines()
         self.bmstate_window.update()
         lat_editor.populate()
+        opt_window.select_window.fill(graph.model)
 
         for i in range(len(lat_editor.header())):
             lat_editor.resizeColumnToContents(i)
