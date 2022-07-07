@@ -3,25 +3,6 @@ import numpy as np
 from scipy.optimize import minimize, differential_evolution
 
 
-global _costGeneric
-def _costGeneric(x, knob, obj, model):
-        for i, n in enumerate(knob.keys()):
-            model.reconfigure(n, {knob[n]:x[i]})
-        r, s = model.run(to_element=obj['location'])
-        dif = []
-        t = obj['target']
-        for n, v in zip(t.keys(), t.values()):
-            if isinstance(v, (list, tuple)):
-                val = getattr(s, n)*v[1] - v[0]
-            elif isinstance(v, (int, float)):
-                val = getattr(s, n) - v
-            else:
-                val = 0.0
-            dif.append(val)
-        dif = np.asarray(dif)
-        return sum(dif*dif)
-
-
 class DoubleDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -240,6 +221,24 @@ class OptimizationWindow(QtWidgets.QWidget):
             'target': self.target_params
         }
 
+        global _costGeneric # for pickle
+        def _costGeneric(x, k, o):
+                for i, n in enumerate(k.keys()):
+                    model.reconfigure(n, {k[n]:x[i]})
+                r, s = model.run(to_element=o['location'])
+                dif = []
+                t = o['target']
+                for n, v in zip(t.keys(), t.values()):
+                    if isinstance(v, (list, tuple)):
+                        val = getattr(s, n)*v[1] - v[0]
+                    elif isinstance(v, (int, float)):
+                        val = getattr(s, n) - v
+                    else:
+                        val = 0.0
+                    dif.append(val)
+                dif = np.asarray(dif)
+                return sum(dif*dif)
+
         for i in range(self.nelder_table.rowCount()):
             name = self.nelder_table.item(i, 0).text()
             attr = self.nelder_table.cellWidget(i, 1).currentText()
@@ -250,7 +249,7 @@ class OptimizationWindow(QtWidgets.QWidget):
                         ['properties'][knob[n]] for n in knob])
             ans = minimize(
                 _costGeneric, x0, args=(
-                    knob, obj, self.graph.model), method='Nelder-Mead')
+                    knob, obj), method='Nelder-Mead')
         else:
             x0 = []
             for i in range(self.evo_table.rowCount()):
@@ -258,7 +257,7 @@ class OptimizationWindow(QtWidgets.QWidget):
                 high = float(self.evo_table.item(i, 3).text())
                 x0.append((low, high))
 
-            ans = differential_evolution(_costGeneric, x0, args=(knob, obj, self.graph.model), workers=-1)
+            ans = differential_evolution(_costGeneric, x0, args=(knob, obj), workers=-1)
 
         self.nelder_table.cellWidget(i, 1).original_vals = {}
         self.evo_table.cellWidget(i, 1).original_vals = {}
