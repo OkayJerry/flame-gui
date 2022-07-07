@@ -21,29 +21,44 @@ class ComboBox(QtWidgets.QComboBox):
         self.graph = graph
         self.row_num = row_num
         self.table = table
+        self.original_vals = {}
 
     def _setx0Nelder(self, text):
         item = QtWidgets.QTableWidgetItem()
-        item.setText(str(self.graph.model.get_element(
-            name=self.element)[0]['properties'][text]))
+        val = self.graph.model.get_element(
+            name=self.element)[0]['properties'][text]
+        item.setText(str(val))
+        if text not in self.original_vals:
+            self.original_vals[text] = str(val)
+        item.setToolTip('Original Value: ' + self.original_vals[text])
         self.table.setItem(self.row_num, 2, item)
 
     def _setx0Evo(self, text):
         low_item = QtWidgets.QTableWidgetItem()
         high_item = QtWidgets.QTableWidgetItem()
         val = self.graph.model.get_element(name=self.element)[0]['properties'][text]
+        
 
         if val > 0:
             val = np.floor(val * 10)
             low_item.setText('0')
             high_item.setText(str(val))
+            if text not in self.original_vals:
+                self.original_vals[text] = ['0', str(val)]
         elif val < 0:
             val = np.ceil(val * 10)
             low_item.setText(str(val))
             high_item.setText('0')
+            if text not in self.original_vals:
+                self.original_vals[text] = [str(val), '0']
         else:
             low_item.setText('0')
             high_item.setText('10')
+            if text not in self.original_vals:
+                self.original_vals[text] = ['0', '10']
+
+        low_item.setToolTip('Original Value: ' + self.original_vals[text][0])
+        high_item.setToolTip('Original Value: ' + self.original_vals[text][1])
 
         self.table.setItem(self.row_num, 2, low_item)
         self.table.setItem(self.row_num, 3, high_item)
@@ -100,17 +115,18 @@ class OptimizationWindow(QtWidgets.QWidget):
         self.target_label.setText('Target: --')
 
         self.param_tree.setAlternatingRowColors(True)
-        self.param_tree.setHeaderLabels(['Parameter', 'Target Value'])
-        self.param_tree.setColumnCount(2)
+        self.param_tree.setHeaderLabels(['Parameter', 'Target Value', 'Weight'])
+        self.param_tree.setColumnCount(3)
         self.param_tree.setItemDelegateForColumn(1, DoubleDelegate(self))
+        self.param_tree.setItemDelegateForColumn(2, DoubleDelegate(self))
         self.param_tree.itemDoubleClicked.connect(self._handle_edits)
         self.param_tree.setEditTriggers(
             QtWidgets.QAbstractItemView.NoEditTriggers)
         self.param_tree.itemChanged.connect(self._handleTargetParam)
         self.fillParamTree()
-        self.param_tree.header().setSectionResizeMode(
-            QtWidgets.QHeaderView.ResizeToContents)
-        self.param_tree.header().setStretchLastSection(True)
+        self.param_tree.header().resizeSection(1, 165)
+        self.param_tree.header().resizeSection(2, 90)
+        self.param_tree.header().setDefaultAlignment(QtCore.Qt.AlignCenter)
 
         self.opt_button.setText('Optimize')
         self.opt_button.clicked.connect(self.optimize)
@@ -126,8 +142,8 @@ class OptimizationWindow(QtWidgets.QWidget):
         ws2.layout().addWidget(self.param_tree)
         ws2.layout().addWidget(self.opt_button)
 
-        layout.addWidget(ws1, 5)
-        layout.addWidget(ws2, 3)
+        layout.addWidget(ws1)  # , 7)
+        layout.addWidget(ws2)  # , 5)
         self.setLayout(layout)
 
     def link(self, workspace):
@@ -140,17 +156,7 @@ class OptimizationWindow(QtWidgets.QWidget):
             return
         self.param_tree.editItem(item, col)
 
-    def _costGenericNelder(self, x, knob, obj):
-        model = self.graph.model
-        for i, n in enumerate(knob.keys()):
-            model.reconfigure(n, {knob[n]: x[i]})
-        r, s = model.run(to_element=obj['location'])
-        t = obj['target']
-        dif = np.array(
-            [getattr(s, n) - v for n, v in zip(t.keys(), t.values())])
-        return sum(dif * dif)
-    
-    def _costGenericEvo(self, x, knob, obj):
+    def _costGeneric(self, x, knob, obj):
         model = self.graph.model
         for i, n in enumerate(knob.keys()):
             model.reconfigure(n, {knob[n]:x[i]})
@@ -214,7 +220,7 @@ class OptimizationWindow(QtWidgets.QWidget):
 
         if item.checkState(0) == QtCore.Qt.Checked:
             try:
-                self.target_params[param] = float(item.text(1))
+                self.target_params[param] = [float(item.text(1)), float(item.text(2))]
             except BaseException:
                 self.target_params[param] = None
         else:
@@ -242,7 +248,7 @@ class OptimizationWindow(QtWidgets.QWidget):
             x0 = np.array([model.get_element(name=n)[0]
                         ['properties'][knob[n]] for n in knob])
             ans = minimize(
-                self._costGenericNelder, x0, args=(
+                self._costGeneric, x0, args=(
                     knob, obj), method='Nelder-Mead')
         else:
             x0 = []
@@ -251,7 +257,7 @@ class OptimizationWindow(QtWidgets.QWidget):
                 high = float(self.evo_table.item(i, 3).text())
                 x0.append((low, high))
 
-            ans = differential_evolution(self._costGenericNelder, x0, args=(knob, obj), maxiter=10, workers=1)# , workers=-1)
+            ans = differential_evolution(self._costGeneric, x0, args=(knob, obj), maxiter=10, workers=1)  # , workers=-1)
 
         self.workspace.refresh()
 
@@ -363,6 +369,8 @@ class OptimizationWindow(QtWidgets.QWidget):
         cpl.setText(0, "couple")
 
         for param in [ion_ek, phis]:
+            param.setTextAlignment(1, QtCore.Qt.AlignCenter)
+            param.setTextAlignment(2, QtCore.Qt.AlignCenter)
             param.setFlags(
                 param.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEditable)
             param.setCheckState(0, QtCore.Qt.Unchecked)
@@ -377,6 +385,8 @@ class OptimizationWindow(QtWidgets.QWidget):
             for var in ["x", "y", "z", "x'", "y'", "z'"]:
                 item = QtWidgets.QTreeWidgetItem()
                 item.setText(0, var)
+                item.setTextAlignment(1, QtCore.Qt.AlignCenter)
+                item.setTextAlignment(2, QtCore.Qt.AlignCenter)
                 item.setFlags(
                     item.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEditable)
                 item.setCheckState(0, QtCore.Qt.Unchecked)
@@ -388,6 +398,8 @@ class OptimizationWindow(QtWidgets.QWidget):
             for var in ["x", "y", "z"]:
                 item = QtWidgets.QTreeWidgetItem()
                 item.setText(0, var)
+                item.setTextAlignment(1, QtCore.Qt.AlignCenter)
+                item.setTextAlignment(2, QtCore.Qt.AlignCenter)
                 item.setFlags(
                     item.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEditable)
                 item.setCheckState(0, QtCore.Qt.Unchecked)
@@ -397,6 +409,8 @@ class OptimizationWindow(QtWidgets.QWidget):
         for var in ["x-y", "x'-y", "x-y'", "x'-y'"]:
             item = QtWidgets.QTreeWidgetItem()
             item.setText(0, var)
+            item.setTextAlignment(1, QtCore.Qt.AlignCenter)
+            item.setTextAlignment(2, QtCore.Qt.AlignCenter)
             item.setFlags(
                 item.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEditable)
             item.setCheckState(0, QtCore.Qt.Unchecked)
