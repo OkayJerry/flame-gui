@@ -3,6 +3,25 @@ import numpy as np
 from scipy.optimize import minimize, differential_evolution
 
 
+global _costGeneric
+def _costGeneric(x, knob, obj, model):
+        for i, n in enumerate(knob.keys()):
+            model.reconfigure(n, {knob[n]:x[i]})
+        r, s = model.run(to_element=obj['location'])
+        dif = []
+        t = obj['target']
+        for n, v in zip(t.keys(), t.values()):
+            if isinstance(v, (list, tuple)):
+                val = getattr(s, n)*v[1] - v[0]
+            elif isinstance(v, (int, float)):
+                val = getattr(s, n) - v
+            else:
+                val = 0.0
+            dif.append(val)
+        dif = np.asarray(dif)
+        return sum(dif*dif)
+
+
 class DoubleDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -156,24 +175,6 @@ class OptimizationWindow(QtWidgets.QWidget):
             return
         self.param_tree.editItem(item, col)
 
-    def _costGeneric(self, x, knob, obj):
-        model = self.graph.model
-        for i, n in enumerate(knob.keys()):
-            model.reconfigure(n, {knob[n]:x[i]})
-        r, s = model.run(to_element=obj['location'])
-        dif = []
-        t = obj['target']
-        for n, v in zip(t.keys(), t.values()):
-            if isinstance(v, (list, tuple)):
-                val = getattr(s, n)*v[1] - v[0]
-            elif isinstance(v, (int, float)):
-                val = getattr(s, n) - v
-            else:
-                val = 0.0
-            dif.append(val)
-        dif = np.asarray(dif)
-        return sum(dif*dif)
-
     def _handleTargetParam(self, item):
         parent = item.parent()
         val = item.text(1)
@@ -248,8 +249,8 @@ class OptimizationWindow(QtWidgets.QWidget):
             x0 = np.array([model.get_element(name=n)[0]
                         ['properties'][knob[n]] for n in knob])
             ans = minimize(
-                self._costGeneric, x0, args=(
-                    knob, obj), method='Nelder-Mead')
+                _costGeneric, x0, args=(
+                    knob, obj, self.graph.model), method='Nelder-Mead')
         else:
             x0 = []
             for i in range(self.evo_table.rowCount()):
@@ -257,13 +258,27 @@ class OptimizationWindow(QtWidgets.QWidget):
                 high = float(self.evo_table.item(i, 3).text())
                 x0.append((low, high))
 
-            ans = differential_evolution(self._costGeneric, x0, args=(knob, obj), maxiter=10, workers=1)  # , workers=-1)
+            ans = differential_evolution(_costGeneric, x0, args=(knob, obj, self.graph.model), workers=-1)
 
         self.nelder_table.cellWidget(i, 1).original_vals = {}
         self.evo_table.cellWidget(i, 1).original_vals = {}
         self.workspace.refresh()
         self.select_window.checkPrevCheckedItems()
 
+        popup = QtWidgets.QMessageBox()
+        popup.setIcon(QtWidgets.QMessageBox.Information)
+        popup.setText("Model has been optimized.")
+        popup.setDetailedText(str(ans))
+        popup.setWindowTitle("SUCCESS")
+        popup.setStandardButtons(QtWidgets.QMessageBox.Ok)
+
+        te = popup.findChild(QtWidgets.QTextEdit)
+        te.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
+        width = te.document().idealWidth() + te.document().documentMargin() + te.verticalScrollBar().width()
+        te.parent().setFixedWidth(width)
+
+        if popup.exec() == QtWidgets.QMessageBox.Ok:
+            popup.close()
 
     def open(self):
         self.select_window.fill(self.graph.model)
