@@ -36,8 +36,8 @@ class ComboBox(QtWidgets.QComboBox):
     def _setx0Evo(self, text):
         low_item = QtWidgets.QTableWidgetItem()
         high_item = QtWidgets.QTableWidgetItem()
-        val = self.graph.model.get_element(name=self.element)[0]['properties'][text]
-        
+        val = self.graph.model.get_element(
+            name=self.element)[0]['properties'][text]
 
         if val > 0:
             val = np.floor(val * 10)
@@ -62,8 +62,6 @@ class ComboBox(QtWidgets.QComboBox):
 
         self.table.setItem(self.row_num, 2, low_item)
         self.table.setItem(self.row_num, 3, high_item)
-            
-        
 
 
 class OptimizationWindow(QtWidgets.QWidget):
@@ -115,7 +113,8 @@ class OptimizationWindow(QtWidgets.QWidget):
         self.target_label.setText('Target: --')
 
         self.param_tree.setAlternatingRowColors(True)
-        self.param_tree.setHeaderLabels(['Parameter', 'Target Value', 'Weight'])
+        self.param_tree.setHeaderLabels(
+            ['Parameter', 'Target Value', 'Weight'])
         self.param_tree.setColumnCount(3)
         self.param_tree.setItemDelegateForColumn(1, DoubleDelegate(self))
         self.param_tree.setItemDelegateForColumn(2, DoubleDelegate(self))
@@ -202,7 +201,10 @@ class OptimizationWindow(QtWidgets.QWidget):
 
         if item.checkState(0) == QtCore.Qt.Checked:
             try:
-                self.target_params[param] = [float(item.text(1)), float(item.text(2))]
+                self.target_params[param] = [
+                    float(
+                        item.text(1)), float(
+                        item.text(2))]
             except BaseException:
                 self.target_params[param] = None
         else:
@@ -221,23 +223,24 @@ class OptimizationWindow(QtWidgets.QWidget):
             'target': self.target_params
         }
 
-        global _costGeneric # for pickle
+        global _costGeneric  # for pickle
+
         def _costGeneric(x, k, o):
-                for i, n in enumerate(k.keys()):
-                    model.reconfigure(n, {k[n]:x[i]})
-                r, s = model.run(to_element=o['location'])
-                dif = []
-                t = o['target']
-                for n, v in zip(t.keys(), t.values()):
-                    if isinstance(v, (list, tuple)):
-                        val = getattr(s, n)*v[1] - v[0]
-                    elif isinstance(v, (int, float)):
-                        val = getattr(s, n) - v
-                    else:
-                        val = 0.0
-                    dif.append(val)
-                dif = np.asarray(dif)
-                return sum(dif*dif)
+            for i, n in enumerate(k.keys()):
+                model.reconfigure(n, {k[n]: x[i]})
+            r, s = model.run(to_element=o['location'])
+            dif = []
+            t = o['target']
+            for n, v in zip(t.keys(), t.values()):
+                if isinstance(v, (list, tuple)):
+                    val = getattr(s, n) * v[1] - v[0]
+                elif isinstance(v, (int, float)):
+                    val = getattr(s, n) - v
+                else:
+                    val = 0.0
+                dif.append(val)
+            dif = np.asarray(dif)
+            return sum(dif * dif)
 
         for i in range(self.nelder_table.rowCount()):
             name = self.nelder_table.item(i, 0).text()
@@ -246,7 +249,7 @@ class OptimizationWindow(QtWidgets.QWidget):
 
         if self.tabs.tabText(self.tabs.currentIndex()) == 'Nelder-Mead':
             x0 = np.array([model.get_element(name=n)[0]
-                        ['properties'][knob[n]] for n in knob])
+                           ['properties'][knob[n]] for n in knob])
             ans = minimize(
                 _costGeneric, x0, args=(
                     knob, obj), method='Nelder-Mead')
@@ -257,7 +260,9 @@ class OptimizationWindow(QtWidgets.QWidget):
                 high = float(self.evo_table.item(i, 3).text())
                 x0.append((low, high))
 
-            ans = differential_evolution(_costGeneric, x0, args=(knob, obj), workers=-1)
+            ans = differential_evolution(
+                _costGeneric, x0, args=(
+                    knob, obj), workers=-1)
 
         self.nelder_table.cellWidget(i, 1).original_vals = {}
         self.evo_table.cellWidget(i, 1).original_vals = {}
@@ -273,7 +278,8 @@ class OptimizationWindow(QtWidgets.QWidget):
 
         te = popup.findChild(QtWidgets.QTextEdit)
         te.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
-        width = te.document().idealWidth() + te.document().documentMargin() + te.verticalScrollBar().width()
+        width = te.document().idealWidth() + te.document().documentMargin() + \
+            te.verticalScrollBar().width()
         te.parent().setFixedWidth(width)
 
         if popup.exec() == QtWidgets.QMessageBox.Ok:
@@ -286,7 +292,7 @@ class OptimizationWindow(QtWidgets.QWidget):
     def updateElementTable(self):
         self.nelder_table.blockSignals(True)
         self.evo_table.blockSignals(True)
-    
+
         while self.nelder_table.rowCount() > 0:
             self.nelder_table.removeRow(0)
         while self.evo_table.rowCount() > 0:
@@ -326,7 +332,8 @@ class OptimizationWindow(QtWidgets.QWidget):
                         nelder_combo.addItem(key)
                         evo_combo.addItem(key)
 
-                nelder_combo.currentTextChanged.connect(nelder_combo._setx0Nelder)
+                nelder_combo.currentTextChanged.connect(
+                    nelder_combo._setx0Nelder)
                 self.nelder_table.insertRow(self.nelder_table.rowCount())
                 self.nelder_table.setItem(
                     self.nelder_table.rowCount() - 1, 0, nelder_item)
@@ -448,7 +455,8 @@ class OptimizationWindow(QtWidgets.QWidget):
         # target
         target = self.target_label.text()
         target = target[target.find(' ') + 1:]
-        if target not in self.graph.model.get_all_names()[1:] or self.select_window.checked['target'][1] == None:
+        if target not in self.graph.model.get_all_names()[
+                1:] or self.select_window.checked['target'][1] is None:
             self.target_label.setText('Target: --')
 
         # nelder-mead table
@@ -486,9 +494,10 @@ class OptimizationWindow(QtWidgets.QWidget):
                 continue
             if element not in self.graph.model.get_all_names()[1:]:
                 self.select_window.table.removeRow(
-                    self.select_window.table.row(item)) # remove from checked items
+                    self.select_window.table.row(item))  # remove from checked items
                 try:
-                    element_i = self.select_window.checked['knobs'][0].index(element)
+                    element_i = self.select_window.checked['knobs'][0].index(
+                        element)
                     self.select_window.checked['knobs'][0].pop(element_i)
                     self.select_window.checked['knobs'][1].pop(element_i)
                 except ValueError:
@@ -496,7 +505,6 @@ class OptimizationWindow(QtWidgets.QWidget):
                 if element == self.select_window.checked['target'][1]:
                     self.select_window.checked['target'][0] = None
                     self.select_window.checked['target'][1] = None
-
 
         self.nelder_table.blockSignals(False)
         self.evo_table.blockSignals(False)
@@ -629,7 +637,8 @@ class SelectWindow(QtWidgets.QWidget):
                     self.checked['target'][0] = None
                     self.checked['target'][1] = None
                 else:
-                    target_checkbox = self.table.cellWidget(self.checked['target'][0] - 1, 1).children()[1]
+                    target_checkbox = self.table.cellWidget(
+                        self.checked['target'][0] - 1, 1).children()[1]
                     target_checkbox.blockSignals(True)
                     target_checkbox.setCheckState(QtCore.Qt.Unchecked)
                     self.checked['target'][0] = element_index
