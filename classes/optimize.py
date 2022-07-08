@@ -1,7 +1,11 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 import numpy as np
 from scipy.optimize import minimize, differential_evolution
+from concurrent.futures import ThreadPoolExecutor
 
+
+def _differential_evolution(func, x0, args, workers):
+    return differential_evolution(_costGeneric, x0, args=args, workers=workers)
 
 class DoubleDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent=None):
@@ -247,12 +251,13 @@ class OptimizationWindow(QtWidgets.QWidget):
             attr = self.nelder_table.cellWidget(i, 1).currentText()
             knob[name] = attr
 
+        executor = ThreadPoolExecutor(max_workers=3)
+
         if self.tabs.tabText(self.tabs.currentIndex()) == 'Nelder-Mead':
             x0 = np.array([model.get_element(name=n)[0]
                            ['properties'][knob[n]] for n in knob])
-            ans = minimize(
-                _costGeneric, x0, args=(
-                    knob, obj), method='Nelder-Mead')
+            ans = executor.submit(minimize, fun=_costGeneric, x0=x0, args=(knob, obj), method='Nelder-Mead')
+            ans = ans.result()
         else:
             x0 = []
             for i in range(self.evo_table.rowCount()):
@@ -260,9 +265,11 @@ class OptimizationWindow(QtWidgets.QWidget):
                 high = float(self.evo_table.item(i, 3).text())
                 x0.append((low, high))
 
-            ans = differential_evolution(
-                _costGeneric, x0, args=(
-                    knob, obj), workers=-1)
+            ans = executor.submit(_differential_evolution, func=_costGeneric, x0=x0, args=(knob, obj), workers=-1)
+            ans = ans.result()
+            # ans = differential_evolution(
+            #     _costGeneric, x0, args=(
+            #         knob, obj), workers=-1)
 
         self.nelder_table.cellWidget(i, 1).original_vals = {}
         self.evo_table.cellWidget(i, 1).original_vals = {}
