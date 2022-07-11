@@ -10,6 +10,11 @@ class PreferenceWindow(QtWidgets.QWidget):
         self.plt_fsize_scroll = QtWidgets.QSlider(QtCore.Qt.Horizontal)
         self.tree_dec_spin = QtWidgets.QSpinBox()
 
+        self.app_fsize_scroll.setTickInterval(1)
+        self.plt_fsize_scroll.setTickInterval(1)
+        self.app_fsize_scroll.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.plt_fsize_scroll.setTickPosition(QtWidgets.QSlider.TicksBelow)
+
         app_fsize_label = QtWidgets.QLabel('Application Font Size:')
         plt_fsize_label = QtWidgets.QLabel('Plot Font Size:')
         tree_dec_label = QtWidgets.QLabel('Element Tree View Significant Figures:')
