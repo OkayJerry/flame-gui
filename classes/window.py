@@ -3,6 +3,7 @@ from classes.workspace import *
 from classes.beam import *
 from classes.phase import PhaseSpaceWindow
 from classes.optimize import OptimizationWindow
+from classes.pref import PreferenceWindow
 from flame_utils import ModelFlame
 from flame import Machine
 import flame
@@ -22,6 +23,7 @@ class MenuBar(QtWidgets.QMenuBar):
         self.bmstate_window = BeamStateWindow()
         self.phase_window = PhaseSpaceWindow()
         self.opt_window = OptimizationWindow()
+        self.pref_window = PreferenceWindow()
 
         # menus
         file_menu = self.addMenu('File')
@@ -33,6 +35,7 @@ class MenuBar(QtWidgets.QMenuBar):
         save_action = QtWidgets.QAction('&Save', main_window)
         save_as_action = QtWidgets.QAction('&Save As...', main_window)
         exit_action = QtWidgets.QAction('&Exit', main_window)
+        pref_action = QtWidgets.QAction('&Preferences', main_window)
 
         self.undo_action = QtWidgets.QAction('&Undo', main_window)
         self.redo_action = QtWidgets.QAction('&Redo', main_window)
@@ -55,6 +58,8 @@ class MenuBar(QtWidgets.QMenuBar):
         save_action.triggered.connect(self.save)
         save_as_action.triggered.connect(self.saveAs)
         exit_action.triggered.connect(QtWidgets.qApp.quit)
+        pref_action.triggered.connect(
+            lambda: self.pref_window.show())
 
         self.undo_action.triggered.connect(self.undoModels)
         self.redo_action.triggered.connect(self.redoModels)
@@ -69,6 +74,7 @@ class MenuBar(QtWidgets.QMenuBar):
         file_menu.addAction(save_action)
         file_menu.addAction(save_as_action)
         file_menu.addAction(exit_action)
+        file_menu.addAction(pref_action)
 
         edit_menu.addAction(self.undo_action)
         edit_menu.addAction(self.redo_action)
