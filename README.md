@@ -2,7 +2,7 @@
 Graphical User Interface for [Fast Linear Accelerator Model Engine (FLAME)](https://github.com/frib-high-level-controls/FLAME).
 
 ## How to Install (Linux Only)
-1. Install Prerequisites
+**1. Install Prerequisites**
 ```shell
 # FLAME and flame-utils
 sudo apt install libboost-dev libboost-system-dev \
@@ -20,19 +20,15 @@ sudo apt-get install qttools5-dev-tools
 # MatPlotLib
 sudo apt-get install python3-matplotlib
 ```
-2. Clone Repository
+**2. Clone Repositories & Initialize**
 ```shell
 cd ~/path-to-directory
+
+# flame-gui
 git clone https://github.com/OkayJerry/flame-gui.git
-```
 
-### Not Working?
-*Follow these steps to ensure FLAME and flame-utils are properly installed*
-1. Install FLAME
-```shell
-cd ~/path-to-directory
+# FLAME
 git clone https://github.com/frib-high-level-controls/FLAME.git
-
 cd FLAME
 git checkout dev
 mkdir bld
@@ -41,10 +37,8 @@ cmake ..
 make
 sudo make install
 sudo ldconfig
-```
-2. Install flame-utils
-```shell
-cd ~/path-to-directory
+
+# flame-utils
 git clone https://github.com/frib-high-level-controls/flame-utils.git
 cd flame-utils
 git checkout dev
