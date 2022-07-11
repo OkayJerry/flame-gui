@@ -4,6 +4,7 @@ from matplotlib.backends.backend_qtagg import FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib as mpl
 import numpy as np
+import classes.globals as glb
 
 
 class FmMplPhaseSpaceCanvas(FigureCanvas):
@@ -60,13 +61,11 @@ class FmMplPhaseSpaceCanvas(FigureCanvas):
             cen, cov, **kws), np.array([cen[0], cen[1], twsa, twsb, eps])
 
     def plotElement(self, element_name):
-        model = self.root_graph.model
-
         [p.remove() for p in reversed(self.x_axes.patches)]
         [p.remove() for p in reversed(self.y_axes.patches)]
 
-        r, s = model.run(monitor='all')
-        d = model.collect_data(
+        r, s = glb.model.run(monitor='all')
+        d = glb.model.collect_data(
             r,
             'xcen',
             'ycen',
@@ -78,7 +77,7 @@ class FmMplPhaseSpaceCanvas(FigureCanvas):
             'ytwsb',
             'xeps',
             'yeps')
-        idx = model.find(element_name)[0]
+        idx = glb.model.find(element_name)[0]
 
         # 'x' graph
         el, x_res = self.phaseEllipse(d, idx, 'x', r[idx][1], edgecolor='b')
@@ -159,9 +158,8 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
     def filter(self):
         self.element_box.blockSignals(True)
 
-        model = self.graphs.root_graph.model
         self.element_box.clear()
-        elements = model.get_element(name=model.get_all_names())
+        elements = glb.model.get_element(name=glb.model.get_all_names())
         elements = elements[1:]  # skip header
         for element in elements:
             n = element['properties']['name']
@@ -184,8 +182,7 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
             self.element_box.removeItem(
                 self.element_box.findText(
                     self.element_box.currentText()))
-            model = self.graphs.root_graph.model
-            names = model.get_all_names()
+            names = glb.model.get_all_names()
             self.element_box.setCurrentText(
                 names[1])  # skip header (0th) element
             x_res, y_res = self.graphs.plotElement(
@@ -203,21 +200,19 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
             self.table_view.setItem(i, 2, y_item)
 
     def open(self):
-        model = self.graphs.root_graph.model
         self.element_box.blockSignals(True)
 
         self.setElementBox()
-        if len(model.get_all_names()[1:]) != 0:
+        if len(glb.model.get_all_names()[1:]) != 0:
             self.plotCurrentElement()
         self.show()
 
         self.element_box.blockSignals(False)
 
     def setElementBox(self):
-        model = self.graphs.root_graph.model
         self.element_box.blockSignals(True)
         self.element_box.clear()
-        names = model.get_all_names()
+        names = glb.model.get_all_names()
         names = names[1:]
         self.element_box.addItems(names)
         if len(names) != 0:

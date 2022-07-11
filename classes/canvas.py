@@ -4,6 +4,8 @@ from flame_utils import ModelFlame, PlotLat
 from matplotlib.lines import Line2D
 import matplotlib.patches as mpatches
 import numpy as np
+import classes.globals as glb
+import matplotlib.pyplot as plt
 
 
 class FmMplLine(Line2D):
@@ -16,7 +18,6 @@ class FmMplLine(Line2D):
 class FmMplCanvas(FigureCanvas):
     def __init__(self, parent=None, filename=None):
         super(FigureCanvas, self).__init__(parent)
-        self.model = None
         self.model_history = []
         self.undo_history = []
         self.axes = []
@@ -30,14 +31,11 @@ class FmMplCanvas(FigureCanvas):
         self.param_tree = param_tree
         self.main_window = main_window
 
-    def setModel(self, model):
-        self.model = model
-
     def updateLines(self):
         active_items = self.param_tree.getCheckedItems()
-        r, s = self.model.run(monitor='all')
+        r, s = glb.model.run(monitor='all')
         for item in active_items:
-            data = self.model.collect_data(r, 'pos', item.kwrd)
+            data = glb.model.collect_data(r, 'pos', item.kwrd)
             item.line.set_data(data['pos'], data[item.kwrd])
 
         self._removeLocation()
@@ -212,7 +210,7 @@ class FmMplCanvas(FigureCanvas):
                 yscl_eq = 1 * 0.09
 
             lattice = PlotLat(
-                self.model.machine,
+                glb.model.machine,
                 auto_scaling=False,
                 starting_offset=0)
             lattice.generate(
@@ -252,15 +250,31 @@ class FmMplCanvas(FigureCanvas):
 
     def copyModelToHistory(self):
         self.model_history.append(ModelFlame(
-            machine=self.model.clone_machine()))
+            machine=glb.model.clone_machine()))
         self.undo_history.clear()
         self.main_window.menu_bar.handleUndoRedoEnabling()
 
     def _assignLine(self, item):
-        r, s = self.model.run(monitor='all')
-        data = self.model.collect_data(r, 'pos', item.kwrd)
+        r, s = glb.model.run(monitor='all')
+        data = glb.model.collect_data(r, 'pos', item.kwrd)
         item.line = FmMplLine(data['pos'], data[item.kwrd], item)
         item.line.set_label(item.kwrd)
         if item.dashed:
             item.line.set_linestyle('dashed')
         self._setLineColor(item.line)
+
+    def refresh(self):
+        self.figure.clear()
+        self.axes.clear()
+        self.base_ax = None
+
+        active_items = self.param_tree.getCheckedItems()
+        for item in active_items:
+            self.plotItem(item)
+        
+        for ax in self.axes:
+            ax.relim()
+            ax.autoscale()
+            
+        self.figure.tight_layout()
+        self.draw_idle()

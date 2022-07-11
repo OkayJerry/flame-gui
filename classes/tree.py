@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore, QtGui
+import classes.globals as glb
 
 
 class DoubleDelegate(QStyledItemDelegate):
@@ -53,8 +54,8 @@ class LatTree(QTreeWidget):
         val_i = self.headers.index('Value')
         unit_i = self.headers.index('Unit')
 
-        elements = self.graph.model.get_element(
-            name=self.graph.model.get_all_names())
+        elements = glb.model.get_element(
+            name=glb.model.get_all_names())
         elements = elements[1:]
 
         for element in elements:
@@ -138,7 +139,7 @@ class LatTree(QTreeWidget):
         else:
             val = selected.text(val_i)
 
-        self.graph.model.reconfigure(element, {attribute: val})
+        glb.model.reconfigure(element, {attribute: val})
         self.workspace.refresh()
 
     def _handle_edits(self, item, col):
@@ -217,7 +218,7 @@ class LatTree(QTreeWidget):
     def removeElement(self):
         index_i = self.headers.index('Index')
         item = self.currentItem()
-        self.graph.model.pop_element(int(item.text(index_i)))
+        glb.model.pop_element(int(item.text(index_i)))
         self.workspace.refresh()
 
 
@@ -521,9 +522,9 @@ class LatElementConfig(QWidget):
         i = self.index_spin.value()
 
         if self.edit_mode:
-            self.graph.model.pop_element(index=i)
+            glb.model.pop_element(index=i)
 
-        self.graph.model.insert_element(index=i, element=d)
+        glb.model.insert_element(index=i, element=d)
 
         self.workspace.refresh()
         self.lat_editor.setCurrentItem(None)

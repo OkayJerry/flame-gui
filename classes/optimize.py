@@ -2,6 +2,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 import numpy as np
 from scipy.optimize import minimize, differential_evolution
 from concurrent.futures import ThreadPoolExecutor
+import classes.globals as glb
 
 
 def _differential_evolution(func, x0, args, workers):
@@ -29,7 +30,7 @@ class ComboBox(QtWidgets.QComboBox):
 
     def _setx0Nelder(self, text):
         item = QtWidgets.QTableWidgetItem()
-        val = self.graph.model.get_element(
+        val = glb.model.get_element(
             name=self.element)[0]['properties'][text]
         item.setText(str(val))
         if text not in self.original_vals:
@@ -40,7 +41,7 @@ class ComboBox(QtWidgets.QComboBox):
     def _setx0Evo(self, text):
         low_item = QtWidgets.QTableWidgetItem()
         high_item = QtWidgets.QTableWidgetItem()
-        val = self.graph.model.get_element(
+        val = glb.model.get_element(
             name=self.element)[0]['properties'][text]
 
         if val > 0:
@@ -220,7 +221,6 @@ class OptimizationWindow(QtWidgets.QWidget):
     def optimize(self):
         self.graph.copyModelToHistory()
         knob = {}
-        model = self.graph.model
         target = self.target_label.text()
         obj = {
             'location': target[target.find(' ') + 1:],
@@ -231,8 +231,8 @@ class OptimizationWindow(QtWidgets.QWidget):
 
         def _costGeneric(x, k, o):
             for i, n in enumerate(k.keys()):
-                model.reconfigure(n, {k[n]: x[i]})
-            r, s = model.run(to_element=o['location'])
+                glb.model.reconfigure(n, {k[n]: x[i]})
+            r, s = glb.model.run(to_element=o['location'])
             dif = []
             t = o['target']
             for n, v in zip(t.keys(), t.values()):
@@ -254,7 +254,7 @@ class OptimizationWindow(QtWidgets.QWidget):
         executor = ThreadPoolExecutor(max_workers=3)
 
         if self.tabs.tabText(self.tabs.currentIndex()) == 'Nelder-Mead':
-            x0 = np.array([model.get_element(name=n)[0]
+            x0 = np.array([glb.model.get_element(name=n)[0]
                            ['properties'][knob[n]] for n in knob])
             ans = executor.submit(minimize, fun=_costGeneric, x0=x0, args=(knob, obj), method='Nelder-Mead')
             ans = ans.result()
@@ -293,7 +293,7 @@ class OptimizationWindow(QtWidgets.QWidget):
             popup.close()
 
     def open(self):
-        self.select_window.fill(self.graph.model)
+        self.select_window.fill()
         self.show()
 
     def updateElementTable(self):
@@ -323,7 +323,7 @@ class OptimizationWindow(QtWidgets.QWidget):
                 nelder_item.setText(item.text())
                 evo_item.setText(item.text())
 
-                element = self.graph.model.get_element(name=item.text())[0]
+                element = glb.model.get_element(name=item.text())[0]
                 nelder_combo = ComboBox(
                     element['properties']['name'],
                     self.nelder_table.rowCount(),
@@ -462,7 +462,7 @@ class OptimizationWindow(QtWidgets.QWidget):
         # target
         target = self.target_label.text()
         target = target[target.find(' ') + 1:]
-        if target not in self.graph.model.get_all_names()[
+        if target not in glb.model.get_all_names()[
                 1:] or self.select_window.checked['target'][1] is None:
             self.target_label.setText('Target: --')
 
@@ -473,7 +473,7 @@ class OptimizationWindow(QtWidgets.QWidget):
                 element = item.text()
             except BaseException:
                 continue
-            if element not in self.graph.model.get_all_names()[1:]:
+            if element not in glb.model.get_all_names()[1:]:
                 self.nelder_table.removeRow(self.nelder_table.row(item))
             else:
                 nelder_combo = self.nelder_table.cellWidget(i, 1)
@@ -486,7 +486,7 @@ class OptimizationWindow(QtWidgets.QWidget):
                 element = item.text()
             except BaseException:
                 continue
-            if element not in self.graph.model.get_all_names()[1:]:
+            if element not in glb.model.get_all_names()[1:]:
                 self.evo_table.removeRow(self.evo_table.row(item))
             else:
                 evo_combo = self.evo_table.cellWidget(i, 1)
@@ -499,7 +499,7 @@ class OptimizationWindow(QtWidgets.QWidget):
                 element = item.text()
             except BaseException:
                 continue
-            if element not in self.graph.model.get_all_names()[1:]:
+            if element not in glb.model.get_all_names()[1:]:
                 self.select_window.table.removeRow(
                     self.select_window.table.row(item))  # remove from checked items
                 try:
@@ -517,12 +517,11 @@ class OptimizationWindow(QtWidgets.QWidget):
         self.evo_table.blockSignals(False)
 
     def updateModel(self, row):
-        model = self.graph.model
         element = self.nelder_table.item(row, 0).text()
         attr = self.nelder_table.cellWidget(row, 1).currentText()
         val = float(self.nelder_table.item(row, 2).text())
 
-        model.reconfigure(element, {attr: val})
+        glb.model.reconfigure(element, {attr: val})
         self.workspace.refresh()
 
     def getKnobs(self):
@@ -564,16 +563,15 @@ class SelectWindow(QtWidgets.QWidget):
 
         self.setLayout(layout)
 
-    def fill(self, model):
-        model = self.graph.model
+    def fill(self):
         while self.table.rowCount() > 0:
             self.table.removeRow(0)
 
-        names = model.get_all_names()
+        names = glb.model.get_all_names()
         names = names[1:]
         for i in range(len(names)):
             name = names[i]
-            element = model.get_element(name=name)[0]
+            element = glb.model.get_element(name=name)[0]
 
             knob_widget = QtWidgets.QWidget()
             knob_check = QtWidgets.QCheckBox()
@@ -607,12 +605,11 @@ class SelectWindow(QtWidgets.QWidget):
             self.table.setItem(self.table.rowCount() - 1, 2, item)
 
     def handleTargetKnobs(self):
-        model = self.graph.model
         checkbox = QtWidgets.QApplication.focusWidget()
         checkbox.blockSignals(True)
         index = self.table.indexAt(checkbox.parent().pos())
         element_name = self.table.item(index.row(), 2).text()
-        element_index = model.get_index_by_name(
+        element_index = glb.model.get_index_by_name(
             name=element_name)[element_name][0]
         if index.column() == 0:
             if self.checked['target'][0]:
