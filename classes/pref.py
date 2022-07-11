@@ -1,29 +1,44 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
+import classes.globals as glb
+import matplotlib
 
 
 class PreferenceWindow(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, parent=None):
         super().__init__()
         layout = QtWidgets.QGridLayout()
+        self.menubar = parent
 
-        self.app_fsize_scroll = QtWidgets.QSlider(QtCore.Qt.Horizontal)
-        self.plt_fsize_scroll = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        apply_button = QtWidgets.QPushButton()
+        self.app_fsize_spin = QtWidgets.QSpinBox()
+        self.plt_fsize_spin = QtWidgets.QSpinBox()
         self.tree_dec_spin = QtWidgets.QSpinBox()
-
-        self.app_fsize_scroll.setTickInterval(1)
-        self.plt_fsize_scroll.setTickInterval(1)
-        self.app_fsize_scroll.setTickPosition(QtWidgets.QSlider.TicksBelow)
-        self.plt_fsize_scroll.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        
+        self.app_fsize_spin.setValue(9)
+        self.plt_fsize_spin.setValue(10)
 
         app_fsize_label = QtWidgets.QLabel('Application Font Size:')
         plt_fsize_label = QtWidgets.QLabel('Plot Font Size:')
         tree_dec_label = QtWidgets.QLabel('Element Tree View Significant Figures:')
 
+        apply_button.setText('Apply')
+        apply_button.clicked.connect(self._apply)
+
         layout.addWidget(app_fsize_label, 0, 0)
         layout.addWidget(plt_fsize_label, 1, 0)
         layout.addWidget(tree_dec_label, 2, 0)
-        layout.addWidget(self.app_fsize_scroll, 0, 1)
-        layout.addWidget(self.plt_fsize_scroll, 1, 1)
+        layout.addWidget(self.app_fsize_spin, 0, 1)
+        layout.addWidget(self.plt_fsize_spin, 1, 1)
         layout.addWidget(self.tree_dec_spin, 2, 1)
+        layout.addWidget(apply_button, 3, 1)
 
         self.setLayout(layout)
+
+    def _apply(self):
+        # application font size
+        glb.app.setStyleSheet("QWidget {font-size: " + str(self.app_fsize_spin.value()) + "pt;}")
+        
+        # graph font size
+        graph = self.menubar.main_window.workspace.graph
+        matplotlib.rc('font', size=self.plt_fsize_spin.value())
+        graph.refresh()

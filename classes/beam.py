@@ -1,5 +1,6 @@
 from PyQt5 import QtWidgets, QtCore
 import numpy as np
+import classes.globals as glb
 
 
 class BeamStateSpinBox(QtWidgets.QDoubleSpinBox):
@@ -117,9 +118,9 @@ class BeamStateWindow(QtWidgets.QWidget):
 
     def update(self):
         # universal section
-        qa_val = self.graph.model.bmstate.ref_IonZ
-        energy_val = self.graph.model.bmstate.ref_IonEk
-        mr_val = self.graph.model.bmstate.ref_Brho
+        qa_val = glb.model.bmstate.ref_IonZ
+        energy_val = glb.model.bmstate.ref_IonEk
+        mr_val = glb.model.bmstate.ref_Brho
 
         self.qa_spin.setValue(qa_val)
         self.energy_spin.setValue(energy_val)
@@ -132,16 +133,16 @@ class BeamStateWindow(QtWidgets.QWidget):
         self._updateVariableDependant()
 
         if kwrd1 == 'beam size [mm]':
-            kwrd1_val = self.graph.model.bmstate.xrms
+            kwrd1_val = glb.model.bmstate.xrms
         else:
-            kwrd1_val = self.graph.model.bmstate.xtwsb
+            kwrd1_val = glb.model.bmstate.xtwsb
 
         if kwrd2 == 'geom. emittance [mm-mrad]':
-            kwrd2_val = self.graph.model.bmstate.xeps
+            kwrd2_val = glb.model.bmstate.xeps
         else:
-            kwrd2_val = self.graph.model.bmstate.xepsn
+            kwrd2_val = glb.model.bmstate.xepsn
 
-        self.alpha_spin.setValue(self.graph.model.bmstate.xtwsa)
+        self.alpha_spin.setValue(glb.model.bmstate.xtwsa)
         self.kwrd1_spin.setValue(kwrd1_val)
         self.kwrd2_spin.setValue(kwrd2_val)
 
@@ -149,20 +150,20 @@ class BeamStateWindow(QtWidgets.QWidget):
         var = self.var_box.currentText()
 
         if var == 'x':
-            pos_val = self.graph.model.bmstate.xcen
-            mom_val = self.graph.model.bmstate.xpcen
+            pos_val = glb.model.bmstate.xcen
+            mom_val = glb.model.bmstate.xpcen
         elif var == 'y':
-            pos_val = self.graph.model.bmstate.ycen
-            mom_val = self.graph.model.bmstate.ypcen
+            pos_val = glb.model.bmstate.ycen
+            mom_val = glb.model.bmstate.ypcen
         elif var == 'z':
-            pos_val = self.graph.model.bmstate.zcen
-            mom_val = self.graph.model.bmstate.zpcen
+            pos_val = glb.model.bmstate.zcen
+            mom_val = glb.model.bmstate.zpcen
 
         self.pos_spin.setValue(pos_val)
         self.mom_spin.setValue(mom_val)
 
     def _updateTwin(self, twin):
-        bmstate = self.graph.model.bmstate.clone()
+        bmstate = glb.model.bmstate.clone()
         if twin is self.energy_spin:
             self.energy_spin.blockSignals(True)
             bmstate.ref_Brho = self.mr_spin.value()
@@ -183,30 +184,30 @@ class BeamStateWindow(QtWidgets.QWidget):
         kwrd1_val = self.kwrd1_spin.value()
         kwrd2_val = self.kwrd2_spin.value()
 
-        self.graph.model.bmstate.ref_IonZ = qa_val
-        self.graph.model.bmstate.ref_IonEk = energy_val
-        self.graph.model.bmstate.ref_Brho = mr_val
+        glb.model.bmstate.ref_IonZ = qa_val
+        glb.model.bmstate.ref_IonEk = energy_val
+        glb.model.bmstate.ref_Brho = mr_val
 
-        self.graph.model.bmstate.IonZ = np.array(
-            [qa_val for _ in range(len(self.graph.model.bmstate.IonZ))])
-        self.graph.model.bmstate.IonEk = np.array(
-            [qa_val for _ in range(len(self.graph.model.bmstate.IonEk))])
-        self.graph.model.bmstate.Brho = np.array(
-            [qa_val for _ in range(len(self.graph.model.bmstate.Brho))])
+        glb.model.bmstate.IonZ = np.array(
+            [qa_val for _ in range(len(glb.model.bmstate.IonZ))])
+        glb.model.bmstate.IonEk = np.array(
+            [qa_val for _ in range(len(glb.model.bmstate.IonEk))])
+        glb.model.bmstate.Brho = np.array(
+            [qa_val for _ in range(len(glb.model.bmstate.Brho))])
 
         if self.kwrd1_box.currentText() == 'beam size [mm]':
             if self.kwrd2_box.currentText() == 'geom. emittance [mm-mrad]':
-                self.graph.model.bmstate.set_twiss(
+                glb.model.bmstate.set_twiss(
                     var, rmssize=kwrd1_val, alpha=alpha_val, emittance=kwrd2_val)
             else:
-                self.graph.model.bmstate.set_twiss(
+                glb.model.bmstate.set_twiss(
                     var, rmssize=kwrd1_val, alpha=alpha_val, nemittance=kwrd2_val)
         else:
             if self.kwrd2_box.currentText() == 'geom. emittance [mm-mrad]':
-                self.graph.model.bmstate.set_twiss(
+                glb.model.bmstate.set_twiss(
                     var, beta=kwrd1_val, alpha=alpha_val, emittance=kwrd2_val)
             else:
-                self.graph.model.bmstate.set_twiss(
+                glb.model.bmstate.set_twiss(
                     var, beta=kwrd1_val, alpha=alpha_val, nemittance=kwrd2_val)
 
         self.workspace.refresh()

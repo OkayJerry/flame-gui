@@ -10,6 +10,7 @@ import flame
 from collections import OrderedDict
 import numpy as np
 import os
+import classes.globals as glb
 
 
 class MenuBar(QtWidgets.QMenuBar):
@@ -23,7 +24,7 @@ class MenuBar(QtWidgets.QMenuBar):
         self.bmstate_window = BeamStateWindow()
         self.phase_window = PhaseSpaceWindow()
         self.opt_window = OptimizationWindow()
-        self.pref_window = PreferenceWindow()
+        self.pref_window = PreferenceWindow(self)
 
         # menus
         file_menu = self.addMenu('File')
@@ -106,17 +107,16 @@ class MenuBar(QtWidgets.QMenuBar):
 
         self.main_window.setWindowTitle("FLAME: " + self.filename)
 
-        model = ModelFlame(self.filename)
-        if 'Eng_Data_Dir' not in model.machine.conf().keys():
-            n_conf = model.machine.conf()
+        glb.model = ModelFlame(self.filename)
+        if 'Eng_Data_Dir' not in glb.model.machine.conf().keys():
+            n_conf = glb.model.machine.conf()
             n_conf['Eng_Data_Dir'] = flame.__file__.replace(
                 '__init__.py', 'test/data')
-            model = ModelFlame(machine=Machine(n_conf))
-        graph.setModel(model)
+            glb.model = ModelFlame(machine=Machine(n_conf))
         graph.updateLines()
         self.bmstate_window.update()
         lat_editor.populate()
-        opt_window.select_window.fill(graph.model)
+        opt_window.select_window.fill()
 
         for i in range(len(lat_editor.header())):
             lat_editor.resizeColumnToContents(i)
@@ -124,35 +124,31 @@ class MenuBar(QtWidgets.QMenuBar):
         self.phase_window.setElementBox()
 
     def save(self):
-        model = self.main_window.workspace.graph.model
-        model.generate_latfile(latfile=self.filename)
+        glb.model.generate_latfile(latfile=self.filename)
 
     def saveAs(self):
-        model = self.main_window.workspace.graph.model
         name = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File')
         name = name[0]  # previously tuple
-        model.generate_latfile(latfile=name)
+        glb.model.generate_latfile(latfile=name)
 
     def undoModels(self):
-        crnt = self.main_window.workspace.graph.model
         model_history = self.main_window.workspace.graph.model_history
         undo_history = self.main_window.workspace.graph.undo_history
 
-        undo_history.append(crnt)
+        undo_history.append(model)
         prev = model_history.pop(-1)
-        self.main_window.workspace.graph.model = prev
+        glb.model = prev
         self.main_window.workspace.refresh()
 
         self.handleUndoRedoEnabling()
 
     def redoModels(self):
-        crnt = self.main_window.workspace.graph.model
         model_history = self.main_window.workspace.graph.model_history
         undo_history = self.main_window.workspace.graph.undo_history
 
-        model_history.append(crnt)
+        model_history.append(glb.model)
         subsequent = undo_history.pop(-1)
-        self.main_window.workspace.graph.model = subsequent
+        glb.model = subsequent
         self.main_window.workspace.refresh()
 
         self.handleUndoRedoEnabling()
@@ -227,6 +223,6 @@ class Window(QtWidgets.QMainWindow):
             ('Eng_Data_Dir', os.getcwd() + '/FLAME/python/flame/test/data')
         ])
 
-        self.workspace.graph.model = ModelFlame(machine=Machine(conf))
+        glb.model = ModelFlame(machine=Machine(conf))
         self.menu_bar.opt_window.link(self.workspace)
         self.menu_bar.bmstate_window.update()
