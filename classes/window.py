@@ -32,11 +32,11 @@ class MenuBar(QtWidgets.QMenuBar):
         view_menu = self.addMenu('View')
 
         # actions
+        new_action = QtWidgets.QAction('&New', main_window)
         open_action = QtWidgets.QAction('&Open...', main_window)
         save_action = QtWidgets.QAction('&Save', main_window)
         save_as_action = QtWidgets.QAction('&Save As...', main_window)
         exit_action = QtWidgets.QAction('&Exit', main_window)
-        pref_action = QtWidgets.QAction('&Preferences', main_window)
 
         self.undo_action = QtWidgets.QAction('&Undo', main_window)
         self.redo_action = QtWidgets.QAction('&Redo', main_window)
@@ -44,8 +44,10 @@ class MenuBar(QtWidgets.QMenuBar):
         self.opt_action = QtWidgets.QAction('&Optimization', main_window)
 
         phase_action = QtWidgets.QAction('&Phase Space', main_window)
+        pref_action = QtWidgets.QAction('&Preferences', main_window)
 
         # set shortcuts
+        new_action.setShortcut(QtGui.QKeySequence.New)
         open_action.setShortcut(QtGui.QKeySequence.Open)
         save_action.setShortcut(QtGui.QKeySequence.Save)
         save_as_action.setShortcut(QtGui.QKeySequence.SaveAs)
@@ -55,12 +57,11 @@ class MenuBar(QtWidgets.QMenuBar):
         self.redo_action.setShortcut(QtGui.QKeySequence.Redo)
 
         # set trigger
+        new_action.triggered.connect(self.new)
         open_action.triggered.connect(self.open)
         save_action.triggered.connect(self.save)
         save_as_action.triggered.connect(self.saveAs)
         exit_action.triggered.connect(QtWidgets.qApp.quit)
-        pref_action.triggered.connect(
-            lambda: self.pref_window.show())
 
         self.undo_action.triggered.connect(self.undoModels)
         self.redo_action.triggered.connect(self.redoModels)
@@ -69,13 +70,15 @@ class MenuBar(QtWidgets.QMenuBar):
         self.opt_action.triggered.connect(self.opt_window.open)
 
         phase_action.triggered.connect(self.phase_window.open)
+        pref_action.triggered.connect(
+            lambda: self.pref_window.show())
 
         # link
+        file_menu.addAction(new_action)
         file_menu.addAction(open_action)
         file_menu.addAction(save_action)
         file_menu.addAction(save_as_action)
         file_menu.addAction(exit_action)
-        file_menu.addAction(pref_action)
 
         edit_menu.addAction(self.undo_action)
         edit_menu.addAction(self.redo_action)
@@ -83,9 +86,14 @@ class MenuBar(QtWidgets.QMenuBar):
         edit_menu.addAction(self.opt_action)
 
         view_menu.addAction(phase_action)
+        view_menu.addAction(pref_action)
 
         self.handleUndoRedoEnabling()
 
+    def new(self):
+        glb.model = glb.createModel()
+        self.main_window.workspace.refresh()
+        
     def open(self):
         graph = self.main_window.workspace.graph
         lat_editor = self.main_window.workspace.lat_editor
@@ -135,7 +143,7 @@ class MenuBar(QtWidgets.QMenuBar):
         model_history = self.main_window.workspace.graph.model_history
         undo_history = self.main_window.workspace.graph.undo_history
 
-        undo_history.append(model)
+        undo_history.append(glb.model)
         prev = model_history.pop(-1)
         glb.model = prev
         self.main_window.workspace.refresh()

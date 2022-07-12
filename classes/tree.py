@@ -10,7 +10,6 @@ class DoubleDelegate(QStyledItemDelegate):
 
     def createEditor(self, parent, option, index):
         line_edit = QLineEdit(parent)
-        print(type(parent))
         if index.sibling(index.row(), 5).data(
         ) is None:  # if corresponding unit is none
             return line_edit
@@ -408,8 +407,11 @@ class LatElementConfig(QWidget):
         attr = QTableWidgetItem()
         val = QTableWidgetItem()
 
-        attr.setText(top_level_item.text(attr_i))
-        val.setText(top_level_item.text(val_i))
+        attr_text = top_level_item.text(attr_i)
+        attr.setText(attr_text)
+        val.setText(str(glb.model.get_element(name=elem_name)[0]['properties'][attr_text]))
+        self.attr_table.setRowCount(0)
+        self.attr_table.insertRow(0)
 
         self.attr_table.setItem(0, 0, attr)
         self.attr_table.setItem(0, 1, val)
@@ -422,8 +424,9 @@ class LatElementConfig(QWidget):
             attr = QTableWidgetItem()
             val = QTableWidgetItem()
 
-            attr.setText(child.text(attr_i))
-            val.setText(child.text(val_i))
+            attr_text = child.text(attr_i)
+            attr.setText(attr_text)
+            val.setText(str(glb.model.get_element(name=elem_name)[0]['properties'][attr_text]))
 
             self.attr_table.setItem(i + 1, 0, attr)
             self.attr_table.setItem(i + 1, 1, val)

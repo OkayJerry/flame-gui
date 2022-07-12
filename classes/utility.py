@@ -16,3 +16,4 @@ class ItemWrapper(QTreeWidgetItem):
         self.description = None  # PyQt Tool Tip
         self.text_repr = None  # within QTreeWidget
         self.dashed = False
+        self.given_color = None

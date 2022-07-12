@@ -1,4 +1,4 @@
-from matplotlib.backends.backend_qtagg import FigureCanvas
+from matplotlib.backends.backend_qtagg import FigureCanvas, NavigationToolbar2QT
 from matplotlib.figure import Figure
 from flame_utils import ModelFlame, PlotLat
 from matplotlib.lines import Line2D
@@ -6,6 +6,7 @@ import matplotlib.patches as mpatches
 import numpy as np
 import classes.globals as glb
 import matplotlib.pyplot as plt
+from PyQt5.QtWidgets import QColorDialog, QWidget, QVBoxLayout, QComboBox, QPushButton
 
 
 class FmMplLine(Line2D):
@@ -15,6 +16,56 @@ class FmMplLine(Line2D):
         self.parent_item = parent_item
 
 
+class NavigationToolbar(NavigationToolbar2QT):
+    def __init__(self, canvas, parent):
+        self.toolitems = (('Home', 'Reset original view', 'home', 'home'),
+        ('Back', 'Back to previous view', 'back', 'back'),
+        ('Forward', 'Forward to next view', 'forward', 'forward'),
+        (None, None, None, None),
+        ('Pan', 'Left button pans, Right button zooms\nx/y fixes axis, CTRL fixes aspect', 'move', 'pan'),
+        ('Zoom', 'Zoom to rectangle\nx/y fixes axis', 'zoom_to_rect', 'zoom'),
+        ('Subplots', 'Configure plot', 'subplots', 'configure_subplots'),
+        ('Color', 'Select line color', "qt4_editor_options", 'select_line_color'), # new
+        (None, None, None, None),
+        ('Save', 'Save the figure', 'filesave', 'save_figure'),
+        )
+        NavigationToolbar2QT.__init__(self, canvas, parent)
+        self.update()
+
+        self.line_combo = QComboBox()
+        select_button = QPushButton()
+
+        select_button.setText('Select Current Line')
+        select_button.clicked.connect(self._choose_color)
+
+        self.select_window = QWidget()
+        self.select_window.setWindowTitle('Line Select')
+        self.select_window.setLayout(QVBoxLayout())
+        self.select_window.layout().addWidget(self.line_combo)
+        self.select_window.layout().addWidget(select_button)
+
+
+    def select_line_color(self):
+        self.line_combo.clear()
+        items = []
+        for item in self.canvas.param_tree.getCheckedItems():
+            self.line_combo.addItem(item.line.get_label())
+            items.append(item)
+
+        self.select_window.show()
+
+    def _choose_color(self):
+        self.select_window.close()
+
+        for item in self.canvas.param_tree.getCheckedItems():
+            if self.line_combo.currentText() == item.kwrd:
+                color = QColorDialog.getColor().name()
+                item.given_color = color
+                item.line.set_color(color)
+                self.canvas.refresh()
+                break
+            
+        
 class FmMplCanvas(FigureCanvas):
     def __init__(self, parent=None, filename=None):
         super(FigureCanvas, self).__init__(parent)
@@ -86,11 +137,15 @@ class FmMplCanvas(FigureCanvas):
         taken = []
         for ax in self.axes:
             for ln in ax.lines:
-                if isinstance(ln, FmMplLine):  # filters out locational plot
+                if isinstance(ln, FmMplLine) and ln.parent_item.given_color == None:  # filters out locational plot
                     taken.append(ln.get_color())
         available = list(set(self.colors) - set(taken))
         n_color = available[0]
-        line.set_color(n_color)
+
+        if line.parent_item.given_color == None:
+            line.set_color(n_color)
+        else:
+            line.set_color(line.parent_item.given_color)
 
     def _getAxisWithYLabel(self, ylabel):
         for ax in self.axes:

@@ -24,7 +24,7 @@ class BeamStateSpinBox(QtWidgets.QDoubleSpinBox):
 class BeamStateWindow(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Beam State Editor')
+        self.setWindowTitle('Initial Beam State Editor')
         layout = QtWidgets.QGridLayout()
 
         # universal section
