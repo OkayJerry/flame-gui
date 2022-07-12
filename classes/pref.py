@@ -45,7 +45,7 @@ class PreferenceWindow(QtWidgets.QWidget):
         # graph font size
         graph = self.menubar.main_window.workspace.graph
         matplotlib.rc('font', size=self.plt_fsize_spin.value())
-        graph._refresh()
+        graph.refresh()
 
         # (LatTree) Sig Figs
         glb.num_sigfigs = self.tree_dec_spin.value()
