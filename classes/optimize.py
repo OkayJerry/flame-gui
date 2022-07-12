@@ -568,7 +568,6 @@ class SelectWindow(QtWidgets.QWidget):
             self.table.removeRow(0)
 
         names = glb.model.get_all_names()
-        names = names[1:]
         for i in range(len(names)):
             name = names[i]
             element = glb.model.get_element(name=name)[0]
@@ -597,11 +596,12 @@ class SelectWindow(QtWidgets.QWidget):
             item.setText(name)
 
             self.table.insertRow(self.table.rowCount())
-            if len(element['properties']) > 2:
+            if len(element['properties']) > 2 or element['properties']['name'] == 'S':
                 self.table.setCellWidget(
                     self.table.rowCount() - 1, 0, knob_widget)
-            self.table.setCellWidget(
-                self.table.rowCount() - 1, 1, target_widget)
+            if element['properties']['name'] != 'S':
+                self.table.setCellWidget(
+                    self.table.rowCount() - 1, 1, target_widget)
             self.table.setItem(self.table.rowCount() - 1, 2, item)
 
     def handleTargetKnobs(self):
@@ -642,7 +642,7 @@ class SelectWindow(QtWidgets.QWidget):
                     self.checked['target'][1] = None
                 else:
                     target_checkbox = self.table.cellWidget(
-                        self.checked['target'][0] - 1, 1).children()[1]
+                        self.checked['target'][0], 1).children()[1]
                     target_checkbox.blockSignals(True)
                     target_checkbox.setCheckState(QtCore.Qt.Unchecked)
                     self.checked['target'][0] = element_index
