@@ -1,5 +1,4 @@
 from PyQt5 import QtWidgets
-from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from classes.tree import *
 from classes.canvas import *
 from classes.legend import *
@@ -245,6 +244,13 @@ class Workspace(QtWidgets.QWidget):
         self.lat_editor = LatTree(self)
         self.config_window = LatElementConfig(self)
 
+        actions = self.toolbar.findChildren(QtWidgets.QAction)
+        for a in actions:
+            if a.text() == 'Customize':
+                print(a.icon())
+                self.toolbar.removeAction(a)
+                break
+
         self.param_tree = Legend()
 
         # linking objects
@@ -267,8 +273,10 @@ class Workspace(QtWidgets.QWidget):
 
         # components
         layout = QtWidgets.QHBoxLayout()
-        layout.addWidget(ws1, 3)
-        layout.addWidget(ws2, 1)
+        splitter = QtWidgets.QSplitter()
+        splitter.addWidget(ws1)
+        splitter.addWidget(ws2)
+        layout.addWidget(splitter)
         self.setLayout(layout)
 
     def link(self, phase_window, opt_window):
