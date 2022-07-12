@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore, QtGui
 import classes.globals as glb
+from sigfig import round
 
 
 class DoubleDelegate(QStyledItemDelegate):
@@ -9,6 +10,7 @@ class DoubleDelegate(QStyledItemDelegate):
 
     def createEditor(self, parent, option, index):
         line_edit = QLineEdit(parent)
+        print(type(parent))
         if index.sibling(index.row(), 5).data(
         ) is None:  # if corresponding unit is none
             return line_edit
@@ -21,6 +23,33 @@ class Item(QTreeWidgetItem):
     def __init__(self):
         super().__init__()
         self.setFlags(self.flags() | QtCore.Qt.ItemIsEditable)
+        
+        self.actual_val = None
+        self.sigfig_val = None
+        self.sci_val = None
+        
+    def setValue(self, column, value, num_sigfigs):
+        self.actual_val = float(value)
+        self.sigfig_val = float(round(value, sigfigs=num_sigfigs))
+
+        if num_sigfigs == 1:
+            self.sci_val = "{:.0e}".format(self.sigfig_val)
+        elif num_sigfigs == 2:
+            self.sci_val = "{:.1e}".format(self.sigfig_val)
+        elif num_sigfigs == 3:
+            self.sci_val = "{:.2e}".format(self.sigfig_val)
+        elif num_sigfigs == 4:
+            self.sci_val = "{:.3e}".format(self.sigfig_val)
+        elif num_sigfigs == 5:
+            self.sci_val = "{:.4e}".format(self.sigfig_val)
+        elif num_sigfigs == 6:
+            self.sci_val = "{:.5e}".format(self.sigfig_val)
+        elif num_sigfigs == 7:
+            self.sci_val = "{:.6e}".format(self.sigfig_val)
+        elif num_sigfigs == 8:
+            self.sci_val = "{:.7e}".format(self.sigfig_val)
+            
+        self.setText(column, self.sci_val)
 
 
 class LatTree(QTreeWidget):
@@ -71,15 +100,18 @@ class LatTree(QTreeWidget):
                     if item.text(
                             attr_i) == '' and 'L' not in element['properties'].keys():
                         item.setText(attr_i, key)
-                        item.setText(val_i, val)
+                        # item.setText(val_i, val)
+                        item.setValue(val_i, val, glb.num_sigfigs)
                     elif item.text(attr_i) == '' and key == 'L':
                         item.setText(attr_i, key)
-                        item.setText(val_i, val)
+                        # item.setText(val_i, val)
+                        item.setValue(val_i, val, glb.num_sigfigs)
                     else:  # children are just attribute-value-unit tuples
                         child = Item()
                         item.addChild(child)
                         child.setText(attr_i, key)
-                        child.setText(val_i, val)
+                        # child.setText(val_i, val)
+                        child.setValue(val_i, val, glb.num_sigfigs)
                         self._setUnit(child)
                 self._setUnit(item)
             self.addTopLevelItem(item)
