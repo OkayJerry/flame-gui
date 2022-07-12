@@ -404,6 +404,7 @@ class OptimizationWindow(QtWidgets.QWidget):
         cpl.setText(0, "couple")
 
         for param in [ion_ek, phis]:
+            param.setText(2, '1')
             param.setTextAlignment(1, QtCore.Qt.AlignCenter)
             param.setTextAlignment(2, QtCore.Qt.AlignCenter)
             param.setFlags(
@@ -420,6 +421,7 @@ class OptimizationWindow(QtWidgets.QWidget):
             for var in ["x", "y", "z", "x'", "y'", "z'"]:
                 item = QtWidgets.QTreeWidgetItem()
                 item.setText(0, var)
+                item.setText(2, '1')
                 item.setTextAlignment(1, QtCore.Qt.AlignCenter)
                 item.setTextAlignment(2, QtCore.Qt.AlignCenter)
                 item.setFlags(
@@ -433,6 +435,7 @@ class OptimizationWindow(QtWidgets.QWidget):
             for var in ["x", "y", "z"]:
                 item = QtWidgets.QTreeWidgetItem()
                 item.setText(0, var)
+                item.setText(2, '1')
                 item.setTextAlignment(1, QtCore.Qt.AlignCenter)
                 item.setTextAlignment(2, QtCore.Qt.AlignCenter)
                 item.setFlags(
@@ -444,6 +447,7 @@ class OptimizationWindow(QtWidgets.QWidget):
         for var in ["x-y", "x'-y", "x-y'", "x'-y'"]:
             item = QtWidgets.QTreeWidgetItem()
             item.setText(0, var)
+            item.setText(2, '1')
             item.setTextAlignment(1, QtCore.Qt.AlignCenter)
             item.setTextAlignment(2, QtCore.Qt.AlignCenter)
             item.setFlags(
