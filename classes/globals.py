@@ -39,6 +39,8 @@ def createModel():
 
 global app
 global model
+global num_sigfigs
 
 app = QApplication(argv)
 model = createModel()
+num_sigfigs = 3
