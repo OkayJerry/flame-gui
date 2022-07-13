@@ -1,22 +1,25 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 import classes.globals as glb
 import matplotlib
-
+from configparser import ConfigParser
 
 class PreferenceWindow(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super().__init__()
         layout = QtWidgets.QGridLayout()
         self.menubar = parent
+        
+        self.config = ConfigParser()
+        settings = self._getSettings()
 
         apply_button = QtWidgets.QPushButton()
         self.app_fsize_spin = QtWidgets.QSpinBox()
         self.plt_fsize_spin = QtWidgets.QSpinBox()
         self.tree_dec_spin = QtWidgets.QSpinBox()
         
-        self.app_fsize_spin.setValue(9)
-        self.plt_fsize_spin.setValue(10)
-        self.tree_dec_spin.setValue(3)
+        self.app_fsize_spin.setValue(settings['AppFontSize'])
+        self.plt_fsize_spin.setValue(settings['PlotFontSize'])
+        self.tree_dec_spin.setValue(settings['LatTreeSigFigs'])
         self.app_fsize_spin.setRange(1, 28)
         self.plt_fsize_spin.setRange(1, 20)
         self.tree_dec_spin.setRange(1, 8)
@@ -37,6 +40,23 @@ class PreferenceWindow(QtWidgets.QWidget):
         layout.addWidget(apply_button, 3, 1)
 
         self.setLayout(layout)
+            
+    def _getSettings(self):
+        self.config.read('settings.ini')
+        app_fsize = self.config.getint('main', 'AppFontSize')
+        plt_fsize = self.config.getint('main', 'PlotFontSize')
+        lattree_sigfigs = self.config.getint('main', 'LatTreeSigFigs')
+        return {'AppFontSize': app_fsize,
+                'PlotFontSize': plt_fsize,
+                'LatTreeSigFigs': lattree_sigfigs} 
+
+    def _setSettings(self):
+        self.config.read('settings.ini')
+        self.config.set('main', 'AppFontSize', str(self.app_fsize_spin.value()))
+        self.config.set('main', 'PlotFontSize', str(self.plt_fsize_spin.value()))
+        self.config.set('main', 'LatTreeSigFigs', str(self.tree_dec_spin.value()))
+        with open("settings.ini","w") as f:
+            self.config.write(f)
 
     def _apply(self):
         # application font size
@@ -54,3 +74,5 @@ class PreferenceWindow(QtWidgets.QWidget):
         lat_editor.clear()
         lat_editor.populate()
         lat_editor.typeFilter(filters.combo_box.currentText())
+
+        self._setSettings()
