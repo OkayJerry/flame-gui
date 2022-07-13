@@ -69,6 +69,10 @@ class LatTree(QTreeWidget):
         self.itemDoubleClicked.connect(self._handle_edits)
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.itemChanged.connect(self.updateModel)
+        self.header().setSectionResizeMode(QHeaderView.ResizeToContents)
+        # self.header().setSectionResizeMode(self.headers.index('Name'), QHeaderView.Stretch)
+        # self.header().setSectionResizeMode(self.headers.index('Value'), QHeaderView.Stretch)
+        # self.header().setStretchLastSection(False)
 
     def link(self, graph, lat_config):
         self.graph = graph
@@ -99,17 +103,14 @@ class LatTree(QTreeWidget):
                     if item.text(
                             attr_i) == '' and 'L' not in element['properties'].keys():
                         item.setText(attr_i, key)
-                        # item.setText(val_i, val)
                         item.setValue(val_i, val, glb.num_sigfigs)
                     elif item.text(attr_i) == '' and key == 'L':
                         item.setText(attr_i, key)
-                        # item.setText(val_i, val)
                         item.setValue(val_i, val, glb.num_sigfigs)
                     else:  # children are just attribute-value-unit tuples
                         child = Item()
                         item.addChild(child)
                         child.setText(attr_i, key)
-                        # child.setText(val_i, val)
                         child.setValue(val_i, val, glb.num_sigfigs)
                         self._setUnit(child)
                 self._setUnit(item)

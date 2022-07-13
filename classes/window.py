@@ -20,7 +20,6 @@ class MenuBar(QtWidgets.QMenuBar):
         self.model_history = []
         self.undo_history = []
         self.filename = None
-
         self.bmstate_window = BeamStateWindow()
         self.phase_window = PhaseSpaceWindow()
         self.opt_window = OptimizationWindow()
@@ -99,45 +98,47 @@ class MenuBar(QtWidgets.QMenuBar):
         lat_editor = self.main_window.workspace.lat_editor
         opt_window = self.main_window.menu_bar.opt_window
 
-        self.filename = QtWidgets.QFileDialog.getOpenFileName(
-            self.main_window, 'Open File')
-        self.filename = self.filename[0]  # previously tuple
-        if ".lat" not in self.filename:
-            warning = QtWidgets.QMessageBox()
-            warning.setIcon(QtWidgets.QMessageBox.Critical)
-            warning.setText("Didn't select a .lat file")
-            warning.setWindowTitle("ERROR")
-            warning.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        while True:
+            self.filename = QtWidgets.QFileDialog.getOpenFileName(
+                self.main_window, 'Open File', filter="Lattice File (*.lat)")[0]  # previously tuple
+            if self.filename: 
+                if ".lat" not in self.filename:
+                    warning = QtWidgets.QMessageBox()
+                    warning.setIcon(QtWidgets.QMessageBox.Critical)
+                    warning.setText("Didn't select a .lat file")
+                    warning.setWindowTitle("ERROR")
+                    warning.setStandardButtons(QtWidgets.QMessageBox.Ok)
 
-            if warning.exec() == QtWidgets.QMessageBox.Ok:
-                warning.close()
-                return
+                    if warning.exec() == QtWidgets.QMessageBox.Ok:
+                        warning.close()
+                        continue
 
-        self.main_window.setWindowTitle("FLAME: " + self.filename)
+                self.main_window.setWindowTitle("FLAME: " + self.filename)
 
-        glb.model = ModelFlame(self.filename)
-        if 'Eng_Data_Dir' not in glb.model.machine.conf().keys():
-            n_conf = glb.model.machine.conf()
-            n_conf['Eng_Data_Dir'] = flame.__file__.replace(
-                '__init__.py', 'test/data')
-            glb.model = ModelFlame(machine=Machine(n_conf))
-        graph.updateLines()
-        self.bmstate_window.update()
-        lat_editor.populate()
-        opt_window.select_window.fill()
+                glb.model = ModelFlame(self.filename)
+                if 'Eng_Data_Dir' not in glb.model.machine.conf().keys():
+                    n_conf = glb.model.machine.conf()
+                    n_conf['Eng_Data_Dir'] = flame.__file__.replace(
+                        '__init__.py', 'test/data')
+                    glb.model = ModelFlame(machine=Machine(n_conf))
+                graph.updateLines()
+                self.bmstate_window.update()
+                lat_editor.populate()
+                opt_window.select_window.fill()
 
-        for i in range(len(lat_editor.header())):
-            lat_editor.resizeColumnToContents(i)
+                for i in range(len(lat_editor.header())):
+                    lat_editor.resizeColumnToContents(i)
 
-        self.phase_window.setElementBox()
+                self.phase_window.setElementBox()
+            break
 
     def save(self):
         glb.model.generate_latfile(latfile=self.filename)
 
     def saveAs(self):
-        name = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File')
-        name = name[0]  # previously tuple
-        glb.model.generate_latfile(latfile=name)
+        filename = QtWidgets.QFileDialog.getSaveFileName(self, "Save File", "model.lat", "Lattice File (*.lat)")[0]  # previously tuple
+        if filename:
+            glb.model.generate_latfile(latfile=filename)
 
     def undoModels(self):
         model_history = self.main_window.workspace.graph.model_history
