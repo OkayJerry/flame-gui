@@ -279,9 +279,10 @@ class Workspace(QtWidgets.QWidget):
         layout.addWidget(splitter)
         self.setLayout(layout)
 
-    def link(self, phase_window, opt_window):
+    def link(self, phase_window, opt_window, bmstate_window):
         self.phase_window = phase_window
         self.opt_window = opt_window
+        self.bmstate_window = bmstate_window
 
     def refresh(self):
         # .lat editor
@@ -312,6 +313,9 @@ class Workspace(QtWidgets.QWidget):
 
         # optimization window
         self.opt_window.updateElements()
+        
+        # beamstate window
+        self.bmstate_window.update()
 
     def _createItems(self):
         object_dict = {

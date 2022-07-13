@@ -202,7 +202,8 @@ class Window(QtWidgets.QMainWindow):
         self.menu_bar.opt_window.link(self.workspace)
         self.workspace.link(
             self.menu_bar.phase_window,
-            self.menu_bar.opt_window)
+            self.menu_bar.opt_window,
+            self.menu_bar.bmstate_window)
 
         self._createModel()
 
