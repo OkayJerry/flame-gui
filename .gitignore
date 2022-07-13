@@ -1,6 +1,5 @@
 # ignore ALL files with the following extension...
-# *.gitignore
-# *.pyc
+*.ini
 
 # ignore ALL files in ANY directory named...
 classes/__pycache__
