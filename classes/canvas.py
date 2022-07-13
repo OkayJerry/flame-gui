@@ -163,13 +163,13 @@ class FmMplCanvas(FigureCanvas):
             axis.yaxis.set_label_position('right')
         elif len(self.axes) == 2:
             axis.yaxis.set_ticks_position('left')
-            axis.spines.left.set_position(('outward', 60))
+            axis.spines.left.set_position(('outward', 70))
             axis.spines.right.set_position(('outward', 0))
             axis.yaxis.set_label_position("left")
         else:
             axis.yaxis.set_ticks_position('right')
             axis.spines.left.set_position(('outward', 0))
-            axis.spines.right.set_position(('outward', 60))
+            axis.spines.right.set_position(('outward', 70))
             axis.yaxis.set_label_position('right')
 
     def _updateAxisLocation(self):
@@ -187,13 +187,13 @@ class FmMplCanvas(FigureCanvas):
                 axis.yaxis.set_label_position('right')
             elif i == 2:
                 axis.yaxis.set_ticks_position('left')
-                axis.spines.left.set_position(('outward', 60))
+                axis.spines.left.set_position(('outward', 70))
                 axis.spines.right.set_position(('outward', 0))
                 axis.yaxis.set_label_position("left")
             else:
                 axis.yaxis.set_ticks_position('right')
                 axis.spines.left.set_position(('outward', 0))
-                axis.spines.right.set_position(('outward', 60))
+                axis.spines.right.set_position(('outward', 70))
                 axis.yaxis.set_label_position('right')
 
     def _createLegend(self):
@@ -205,7 +205,8 @@ class FmMplCanvas(FigureCanvas):
                     patch = mpatches.Patch(
                         color=ln.get_color(), label=ln.get_label())
                     patches.append(patch)
-        topmost_ax.legend(handles=patches, loc='upper left')
+        legend = topmost_ax.legend(handles=patches, loc='upper left')
+        legend.set_draggable(True)
 
     def _removeLegend(self):
         if len(self.axes) > 1:  # new axis just added
