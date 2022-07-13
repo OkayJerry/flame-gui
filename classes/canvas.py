@@ -59,10 +59,11 @@ class NavigationToolbar(NavigationToolbar2QT):
 
         for item in self.canvas.param_tree.getCheckedItems():
             if self.line_combo.currentText() == item.kwrd:
-                color = QColorDialog.getColor().name()
-                item.given_color = color
-                item.line.set_color(color)
-                self.canvas.refresh()
+                color = QColorDialog.getColor()
+                if color.isValid():
+                    item.given_color = color.name()
+                    item.line.set_color(color.name())
+                    self.canvas.refresh()
                 break
             
         
@@ -158,13 +159,16 @@ class FmMplCanvas(FigureCanvas):
         if len(self.axes) == 1:
             axis.yaxis.set_ticks_position('right')
             axis.spines.left.set_position(('outward', 0))
+            axis.spines.right.set_position(('outward', 0))
             axis.yaxis.set_label_position('right')
         elif len(self.axes) == 2:
             axis.yaxis.set_ticks_position('left')
             axis.spines.left.set_position(('outward', 60))
+            axis.spines.right.set_position(('outward', 0))
             axis.yaxis.set_label_position("left")
         else:
             axis.yaxis.set_ticks_position('right')
+            axis.spines.left.set_position(('outward', 0))
             axis.spines.right.set_position(('outward', 60))
             axis.yaxis.set_label_position('right')
 
@@ -174,17 +178,21 @@ class FmMplCanvas(FigureCanvas):
             if i == 0:
                 axis.yaxis.set_ticks_position('left')
                 axis.spines.left.set_position(('outward', 0))
+                axis.spines.right.set_position(('outward', 0))
                 axis.yaxis.set_label_position('left')
             elif i == 1:
                 axis.yaxis.set_ticks_position('right')
+                axis.spines.left.set_position(('outward', 0))
                 axis.spines.right.set_position(('outward', 0))
                 axis.yaxis.set_label_position('right')
             elif i == 2:
                 axis.yaxis.set_ticks_position('left')
                 axis.spines.left.set_position(('outward', 60))
+                axis.spines.right.set_position(('outward', 0))
                 axis.yaxis.set_label_position("left")
             else:
                 axis.yaxis.set_ticks_position('right')
+                axis.spines.left.set_position(('outward', 0))
                 axis.spines.right.set_position(('outward', 60))
                 axis.yaxis.set_label_position('right')
 

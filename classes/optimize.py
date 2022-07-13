@@ -128,8 +128,10 @@ class OptimizationWindow(QtWidgets.QWidget):
             QtWidgets.QAbstractItemView.NoEditTriggers)
         self.param_tree.itemChanged.connect(self._handleTargetParam)
         self.fillParamTree()
-        self.param_tree.header().resizeSection(1, 165)
-        self.param_tree.header().resizeSection(2, 90)
+        self.param_tree.header().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+        self.param_tree.header().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
+        self.param_tree.header().setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
+        self.param_tree.header().setStretchLastSection(False)
         self.param_tree.header().setDefaultAlignment(QtCore.Qt.AlignCenter)
 
         self.opt_button.setText('Optimize')
@@ -146,8 +148,10 @@ class OptimizationWindow(QtWidgets.QWidget):
         ws2.layout().addWidget(self.param_tree)
         ws2.layout().addWidget(self.opt_button)
 
-        layout.addWidget(ws1)  # , 7)
-        layout.addWidget(ws2)  # , 5)
+        splitter = QtWidgets.QSplitter()
+        splitter.addWidget(ws1)
+        splitter.addWidget(ws2)
+        layout.addWidget(splitter)
         self.setLayout(layout)
 
     def link(self, workspace):
