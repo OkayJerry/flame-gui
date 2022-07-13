@@ -6,6 +6,7 @@ from configparser import ConfigParser
 class PreferenceWindow(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super().__init__()
+        self.setWindowTitle('Preferences')
         layout = QtWidgets.QGridLayout()
         self.menubar = parent
         
@@ -20,8 +21,8 @@ class PreferenceWindow(QtWidgets.QWidget):
         self.app_fsize_spin.setValue(settings['AppFontSize'])
         self.plt_fsize_spin.setValue(settings['PlotFontSize'])
         self.tree_dec_spin.setValue(settings['LatTreeSigFigs'])
-        self.app_fsize_spin.setRange(1, 28)
-        self.plt_fsize_spin.setRange(1, 20)
+        self.app_fsize_spin.setRange(1, 20)
+        self.plt_fsize_spin.setRange(1, 15)
         self.tree_dec_spin.setRange(1, 8)
 
         app_fsize_label = QtWidgets.QLabel('Application Font Size:')
