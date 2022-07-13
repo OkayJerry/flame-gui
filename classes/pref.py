@@ -40,6 +40,7 @@ class PreferenceWindow(QtWidgets.QWidget):
         layout.addWidget(apply_button, 3, 1)
 
         self.setLayout(layout)
+        self._apply()
             
     def _getSettings(self):
         self.config.read('settings.ini')
