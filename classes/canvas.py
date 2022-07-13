@@ -40,6 +40,7 @@ class NavigationToolbar(NavigationToolbar2QT):
 
         self.select_window = QWidget()
         self.select_window.setWindowTitle('Line Select')
+        self.select_window.setMinimumWidth(200)
         self.select_window.setLayout(QVBoxLayout())
         self.select_window.layout().addWidget(self.line_combo)
         self.select_window.layout().addWidget(select_button)
@@ -59,7 +60,7 @@ class NavigationToolbar(NavigationToolbar2QT):
 
         for item in self.canvas.param_tree.getCheckedItems():
             if self.line_combo.currentText() == item.kwrd:
-                color = QColorDialog.getColor()
+                color = QColorDialog.getColor(title=item.kwrd)
                 if color.isValid():
                     item.given_color = color.name()
                     item.line.set_color(color.name())
