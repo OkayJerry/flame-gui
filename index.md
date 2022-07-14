@@ -61,6 +61,7 @@ Used for selecting which parameters to [graph](#canvas) (limited to four). Found
 
 Displays the graph of the figure model. Found central of the main page.
 ### Control
+- Click & drag the legend to move it
 - Add/Remove lines using the [Parameter Tree](#parameter-tree)
 - Advanced control using the [Canvas Toolbar](#canvas-toolbar)
 
@@ -91,11 +92,24 @@ Set values for the initial beam state using this window. Accessed from `Edit` on
 
 Optimize the model using selected knobs and target location. Accessed from `Edit` on the menubar.
 
+### Optimization Methods
+- [Nelder-Mead](https://en.wikipedia.org/wiki/Nelder%E2%80%93Mead_method)
+- [Differential Evolution](https://en.wikipedia.org/wiki/Differential_evolution)
+
+### How To Use
+1. [Select Elements](#select-element-window)
+2. Set x0 values
+3. Set target value and weight (in relation to other parameters)
+4. `Optimize`
+
 
 ## Select Element Window
 ![select](https://user-images.githubusercontent.com/70593138/179074968-f8cf59d9-5d35-4616-8537-c7d32f86ecd2.JPG)
 
 Choose the knobs and target location for [optimization](#optimization-window).
+### How To Use
+1. Choose from model elements any number of knobs and a target. This target must be at or beyond all knobs, otherwise your selection will be rejected and a pop-up will inform you of your error.
+2. `Confirm`
 
 
 ## Phase Space Window
