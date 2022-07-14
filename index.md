@@ -1,12 +1,12 @@
 ---
 theme: default
 ---
-# Index
-## About This Site
-Welcome to **flame-gui**'s official user documentation! This quick index is here to help find the things you may be interested in.
+# About This Site
 
-## Flame-Gui
-### Getting Started
+
+# Flame-Gui
+Welcome to **flame-gui**'s official user documentation! Use the quick index below to help find the things that may interest you.
+## Getting Started
 - Preparing a .lat and data file
 - Inserting, editing, and removing model elements
 - Graphing elements
@@ -15,3 +15,19 @@ Welcome to **flame-gui**'s official user documentation! This quick index is here
 - Optimizing model
 - Viewing model element phase space
 - Settings
+
+## Preparing a .lat and data file
+
+## Inserting, editing, and removing model elements
+
+## Graphing elements
+
+## Using the canvas toolbar
+
+## Configuring initial beam state
+
+## Optimizing model
+
+## Viewing model element phase space3
+
+## Settings
