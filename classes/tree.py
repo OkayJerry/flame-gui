@@ -584,5 +584,5 @@ class LatElementConfig(QWidget):
         col = self.attr_table.columnCount() - 1
         bottom_item_col1 = self.attr_table.item(row, col - 1)
         bottom_item_col2 = self.attr_table.item(row, col)
-        if bottom_item_col1 is not None and bottom_item_col2 is not None:
+        if bottom_item_col1.text() != "" and bottom_item_col2.text() != "":
             self.attr_table.insertRow(row + 1)
