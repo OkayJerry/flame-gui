@@ -1,6 +1,8 @@
 ---
 theme: default
 ---
+![full-window](https://user-images.githubusercontent.com/70593138/179077638-50ea34cd-571c-4c3b-a363-9715c1f14ef3.JPG)
+
 Welcome to **flame-gui**'s official user documentation! Use the quick index below to help find the things that may interest you.
 
 
