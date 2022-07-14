@@ -14,6 +14,7 @@ class PreferenceWindow(QtWidgets.QWidget):
         settings = self._getSettings()
 
         apply_button = QtWidgets.QPushButton()
+        default_button = QtWidgets.QPushButton()
         self.app_fsize_spin = QtWidgets.QSpinBox()
         self.plt_fsize_spin = QtWidgets.QSpinBox()
         self.tree_dec_spin = QtWidgets.QSpinBox()
@@ -31,10 +32,13 @@ class PreferenceWindow(QtWidgets.QWidget):
 
         apply_button.setText('Apply')
         apply_button.clicked.connect(self._apply)
+        default_button.setText('Default')
+        default_button.clicked.connect(self._default)
 
         layout.addWidget(app_fsize_label, 0, 0)
         layout.addWidget(plt_fsize_label, 1, 0)
         layout.addWidget(tree_dec_label, 2, 0)
+        layout.addWidget(default_button, 3, 0)
         layout.addWidget(self.app_fsize_spin, 0, 1)
         layout.addWidget(self.plt_fsize_spin, 1, 1)
         layout.addWidget(self.tree_dec_spin, 2, 1)
@@ -43,6 +47,11 @@ class PreferenceWindow(QtWidgets.QWidget):
         self.setLayout(layout)
         self._apply()
             
+    def _default(self):
+        self.app_fsize_spin.setValue(9)
+        self.plt_fsize_spin.setValue(10)
+        self.tree_dec_spin.setValue(3)
+        
     def _getSettings(self):
         self.config.read('settings.ini')
         app_fsize = self.config.getint('main', 'AppFontSize')
