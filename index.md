@@ -32,7 +32,7 @@ Welcome to **flame-gui**'s official user documentation! Use the quick index belo
 
 Located at the bottom of the main page is the **Element View**.
 ### Expanding Elements
-By pressing the `▶` button found within the index column, the element belonging to that index will be expanding -- bringing into the rest of its attributes into view.
+By pressing the `▶` button found within the index column, the element belonging to that index will be expand -- bringing into the rest of its attributes into view.
 ### Insert, Edit, and Remove Elements
 By right-clicking the **Element View**, you will be presented with three options:
 1. [Insert Element](#inserting-elements)
@@ -89,10 +89,16 @@ Set values for the initial beam state using this window. Accessed from `Edit` on
 ## Optimization Window
 ![optimize](https://user-images.githubusercontent.com/70593138/179074856-99d45297-1a48-4c3c-ae81-29042b37eebc.JPG)
 
-Optimize the model using selected knobs and target location.
+Optimize the model using selected knobs and target location. Accessed from `Edit` on the menubar.
 
 
 ## Select Element Window
 ![select](https://user-images.githubusercontent.com/70593138/179074968-f8cf59d9-5d35-4616-8537-c7d32f86ecd2.JPG)
 
 Choose the knobs and target location for [optimization](#optimization-window).
+
+
+## Phase Space Window
+![phase](https://user-images.githubusercontent.com/70593138/179078891-05c49e81-c019-41a3-82e2-03cad5b46f31.JPG)
+
+View the phase space plot for an element. Accessed from `View` on the menubar.
