@@ -73,8 +73,21 @@ class PreferenceWindow(QtWidgets.QWidget):
         glb.num_sigfigs = self.tree_dec_spin.value()
         lat_editor = self.menubar.main_window.workspace.lat_editor
         filters = self.menubar.main_window.workspace.filters
+        name_i = lat_editor.headers.index('Name')
+        
+        expanded_elements = []
+        for i in range(lat_editor.topLevelItemCount()):
+            element = lat_editor.topLevelItem(i)
+            if element.isExpanded():
+                expanded_elements.append(element.text(name_i))
+        
         lat_editor.clear()
         lat_editor.populate()
         lat_editor.typeFilter(filters.combo_box.currentText())
+        
+        for element in expanded_elements:
+            item = lat_editor.findItems(
+                element, QtCore.Qt.MatchExactly, name_i)[0]
+            item.setExpanded(True)
 
         self._setSettings()

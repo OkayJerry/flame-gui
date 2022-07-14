@@ -151,11 +151,9 @@ class LatTree(QTreeWidget):
 
     def updateModel(self, item):
         name_i = self.headers.index('Name')
-        type_i = self.headers.index('Type')
         attr_i = self.headers.index('Attribute')
         val_i = self.headers.index('Value')
         unit_i = self.headers.index('Unit')
-        item_is_expanded = False
 
         selected = self.currentItem()
         attribute = selected.text(attr_i)
