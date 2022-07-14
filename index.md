@@ -17,12 +17,12 @@ Welcome to **flame-gui**'s official user documentation! Use the quick index belo
 - [Viewing model element phase space](#viewing-model-element-phase-space)
 
 ## General
- - [Element View]
- - [Element Configuration Window]
- - [Parameter Tree]
  - [Canvas]
  - [Canvas Toolbar]
+ - [Element View]
+ - [Element Configuration Window]
  - [Initial Beam State Window]
+ - [Parameter Tree]
  - [Select Element Window]
 
 ---
@@ -79,6 +79,11 @@ Advanced controls for the [Canvas](#canvas). Found central of the main page.
 - **Configure plot** -- Manually configure borders/spacings
 - **Select Line Color** -- Manually change the color of a line
 - **Save** -- Save a screenshot of the canvas
+
+## Color Dialog
+![color](https://user-images.githubusercontent.com/70593138/179085434-c13e0ce2-9a57-48bb-8f41-4bf3f3280d23.JPG)
+
+Helps you select a line color for the [canvas](#canvas). Accessed from the `Select Line Color` action within the [canvas toolbar](#canvas-toolbar)
 
 
 ## Initial Beam State Window
