@@ -1,3 +1,8 @@
+---
+title: index
+layout: template
+filename: index.md
+---
 # Index
 ## About This Site
 Welcome to flame-gui's official user documentation! This quick index is here to help find the things you may be interested in.
