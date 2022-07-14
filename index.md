@@ -6,7 +6,7 @@ Welcome to **flame-gui**'s official user documentation! Use the quick index belo
 ## Getting Started
 - [Preparing a .lat and data file](#preparing-a-lat-and-data-file)
 - [Inserting, editing, and removing model elements](#insert-edit-and-remove-elements)
-- [Graphing elements](#graphing-elements)
+- [Graphing elements](#parameter-tree)
 - [Using the canvas toolbar](#using-the-canvas-toolbar)
 - [Configuring initial beam state](#configuring-initial-beam-state)
 - [Optimizing model](#optimizing-model)
@@ -32,15 +32,20 @@ By right-clicking the **Element View**, you will be presented with three options
 
 Used for inserting new and editing current elements. Accessed by right-clicking the **Element View**.
 ### Inserting Elements
-After selecting 'Insert Element' from [Element View](#element-view)'s right-click menu, you will be find an element's blank template. The element that you create here will be inserted at your selected index. Choose from each element type and required attributes and default values (such as the `phi`'s value) will be filled automatically.
+After selecting `Insert Element` from [Element View](#element-view)'s right-click menu, you will be find an element's blank template. The element that you create here will be inserted at your selected index. Choose from each element type and required attributes and default values (such as the `phi`'s value) will be filled automatically.
 ### Editing Elements
-After choosing 'Edit Selected Element' from [Element View](#element-view)'s right-click menu, the element will be opened -- making its attributes and their associated values available for edit. *Note: element index, name, and type are unavailable for change.*
+After choosing `Edit Selected Element` from [Element View](#element-view)'s right-click menu, the element will be opened -- making its attributes and their associated values available for edit. *Note: element index, name, and type are unavailable for change.*
 
 
-## Graphing elements
+## Parameter Tree
+![param-tree](https://user-images.githubusercontent.com/70593138/179061034-e22a5115-af4f-4ec6-b96c-7900a0522a2f.JPG)
+
+Used for selecting which parameters to graph (limited to four). Found on the main page to the right.
+
+## Canvas
+![canvas](https://user-images.githubusercontent.com/70593138/179062082-c722e1a0-bb04-41a3-b475-4e7d61a8a37c.jpeg)
 
 
-## Using the canvas toolbar
 
 
 ## Configuring initial beam state
