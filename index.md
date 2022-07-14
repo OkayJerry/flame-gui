@@ -2,6 +2,8 @@
 theme: default
 ---
 Welcome to **flame-gui**'s official user documentation! Use the quick index below to help find the things that may interest you.
+
+
 # Index
 ## Getting Started
 - [Preparing a .lat and data file](#preparing-a-lat-and-data-file)
@@ -11,8 +13,17 @@ Welcome to **flame-gui**'s official user documentation! Use the quick index belo
 - [Configuring initial beam state](#configuring-initial-beam-state)
 - [Optimizing model](#optimizing-model)
 - [Viewing model element phase space](#viewing-model-element-phase-space)
-- [Settings](#settings)
 
+## General
+ - [Element View]
+ - [Element Configuration Window]
+ - [Parameter Tree]
+ - [Canvas]
+ - [Canvas Toolbar]
+ - [Initial Beam State Window]
+ - [Select Element Window]
+
+---
 # Documentation
 ## Element View
 ![element-editor](https://user-images.githubusercontent.com/70593138/179042616-fbfdb8b7-124c-465e-a787-f0106e001ddf.JPG)
@@ -42,6 +53,7 @@ After choosing `Edit Selected Element` from [Element View](#element-view)'s righ
 
 Used for selecting which parameters to [graph](#canvas) (limited to four). Found on the main page to the right.
 
+
 ## Canvas
 ![canvas](https://user-images.githubusercontent.com/70593138/179066057-11835b27-46a3-43cd-8498-265e6f5dea01.jpeg)
 
@@ -49,6 +61,7 @@ Displays the graph of the figure model. Found central of the main page.
 ### Control
 - Add/Remove lines using the [Parameter Tree](#parameter-tree)
 - Advanced control using the [Canvas Toolbar](#canvas-toolbar)
+
 
 ## Canvas Toolbar
 ![toolbar](https://user-images.githubusercontent.com/70593138/179065995-c8792319-e730-4929-a2b6-fdca37133b38.JPG)
@@ -64,14 +77,20 @@ Advanced controls for the [Canvas](#canvas). Found central of the main page.
 - **Select Line Color** -- Manually change the color of a line
 - **Save** -- Save a screenshot of the canvas
 
-## Configuring initial beam state
+
+## Initial Beam State Window
+![bmstate](https://user-images.githubusercontent.com/70593138/179074477-5ce875df-07a1-48cd-b1d9-3776b0483e66.JPG)
+
+Set values for the initial beam state using this window. Accessed from `Edit` on the menubar.
 
 
-## Optimizing model
+## Optimization Window
+![optimize](https://user-images.githubusercontent.com/70593138/179074856-99d45297-1a48-4c3c-ae81-29042b37eebc.JPG)
+
+Optimize the model using selected knobs and target location.
 
 
-## Viewing model element phase space3
+## Select Element Window
+![select](https://user-images.githubusercontent.com/70593138/179074968-f8cf59d9-5d35-4616-8537-c7d32f86ecd2.JPG)
 
-
-## Settings
-
+Choose the knobs and target location for [optimization](#optimization-window).
