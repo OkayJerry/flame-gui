@@ -40,13 +40,29 @@ After choosing `Edit Selected Element` from [Element View](#element-view)'s righ
 ## Parameter Tree
 ![param-tree](https://user-images.githubusercontent.com/70593138/179061034-e22a5115-af4f-4ec6-b96c-7900a0522a2f.JPG)
 
-Used for selecting which parameters to graph (limited to four). Found on the main page to the right.
+Used for selecting which parameters to [graph](#canvas) (limited to four). Found on the main page to the right.
 
 ## Canvas
-![canvas](https://user-images.githubusercontent.com/70593138/179062082-c722e1a0-bb04-41a3-b475-4e7d61a8a37c.jpeg)
+![canvas](https://user-images.githubusercontent.com/70593138/179066057-11835b27-46a3-43cd-8498-265e6f5dea01.jpeg)
 
+Displays the graph of the figure model. Found central of the main page.
+### Control
+- Add/Remove lines using the [Parameter Tree](#parameter-tree)
+- Advanced control using the [Canvas Toolbar](#canvas-toolbar)
 
+## Canvas Toolbar
+![toolbar](https://user-images.githubusercontent.com/70593138/179065995-c8792319-e730-4929-a2b6-fdca37133b38.JPG)
 
+Advanced controls for the [Canvas](#canvas). Found central of the main page.
+### Actions
+- Home -- Reset to original view
+- Back -- Back to previous view
+- Forward -- Forward to next view
+- Pan -- Pan throughout plot
+- Zoom -- Zoom into plot
+- Configure plot -- Manually configure borders/spacings
+- Select Line Color -- Manually change the color of a line
+- Save -- Save a screenshot of the canvas
 
 ## Configuring initial beam state
 
