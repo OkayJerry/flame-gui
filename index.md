@@ -16,12 +16,18 @@ Welcome to **flame-gui**'s official user documentation! Use the quick index belo
 # Documentation
 ## Preparing a .lat and data file
 
-## Lattice Editor
-![lat-editor](https://user-images.githubusercontent.com/70593138/179042616-fbfdb8b7-124c-465e-a787-f0106e001ddf.JPG)
+## Element View
+![element-editor](https://user-images.githubusercontent.com/70593138/179042616-fbfdb8b7-124c-465e-a787-f0106e001ddf.JPG)
 
-
-Inserting, editing, and removing model elements
-
+Located at the bottom of the main page is the **Element View**.
+### Expanding Elements
+By pressing the `▶` button found within the index column, the element belonging to that index will be expanding -- bringing into the rest of its properties into view.
+### Element Config Window
+Accessed by right-clicking the **Element View**.
+#### Inserting Elements
+After selecting 'Insert Element', you will be find an element's blank template in **Element Config Window**. 
+#### Editing Elements
+#### Removing Elements
 
 ## Graphing elements
 
