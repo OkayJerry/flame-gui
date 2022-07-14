@@ -55,14 +55,14 @@ Displays the graph of the figure model. Found central of the main page.
 
 Advanced controls for the [Canvas](#canvas). Found central of the main page.
 ### Actions
-- Home -- Reset to original view
-- Back -- Back to previous view
-- Forward -- Forward to next view
-- Pan -- Pan throughout plot
-- Zoom -- Zoom into plot
-- Configure plot -- Manually configure borders/spacings
-- Select Line Color -- Manually change the color of a line
-- Save -- Save a screenshot of the canvas
+- **Home** -- Reset to original view
+- **Back** -- Back to previous view
+- **Forward** -- Forward to next view
+- **Pan** -- Pan throughout plot
+- **Zoom** -- Zoom into plot
+- **Configure plot** -- Manually configure borders/spacings
+- **Select Line Color** -- Manually change the color of a line
+- **Save** -- Save a screenshot of the canvas
 
 ## Configuring initial beam state
 
