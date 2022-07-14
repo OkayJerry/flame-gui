@@ -2,6 +2,7 @@
 title: index
 layout: page
 filename: index.md
+theme: jekyll-theme-minimal
 --- 
 # Index
 ## About This Site
