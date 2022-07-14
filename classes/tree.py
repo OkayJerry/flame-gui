@@ -376,6 +376,7 @@ class LatElementConfig(QWidget):
             self.attr_table.removeRow(index.row())
 
     def insertItem(self, index):
+        self.index_spin.setRange(1, len(glb.model.get_all_names()))
         self.index_spin.setValue(int(index))
         self._setRequiredProperties()
 
