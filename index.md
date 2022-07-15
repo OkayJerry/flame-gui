@@ -8,12 +8,11 @@ Welcome to **flame-gui**'s official user documentation! Use the quick index belo
 
 # Index
 ## Getting Started
-- [Preparing a .lat and data file](#preparing-a-lat-and-data-file)
+- [Preparing a .lat and data file]()
 - [Inserting, editing, and removing model elements](#insert-edit-and-remove-elements)
 - [Graphing elements](#parameter-tree)
-- [Using the canvas toolbar](#using-the-canvas-toolbar)
-- [Configuring initial beam state](#configuring-initial-beam-state)
-- [Optimizing model](#optimizing-model)
+- [Configuring initial beam state](#how-to-use-2)
+- [Optimizing model](#how-to-use-1)
 - [Viewing model element phase space](#viewing-model-element-phase-space)
 
 ## General
@@ -34,8 +33,10 @@ Welcome to **flame-gui**'s official user documentation! Use the quick index belo
    - [How To Use](#how-to-use-2)
  - [Parameter Tree](#parameter-tree)
    - [How To Use](#how-to-use-3)
- - [Select Element Window](#select-element-window)
+ - [Phase Space Window](#phase-space-window)
    - [How To Use](#how-to-use-4)
+ - [Select Element Window](#select-element-window)
+   - [How To Use](#how-to-use-5)
 
 ---
 # Documentation
