@@ -49,6 +49,7 @@ Displays the graph of the figure model.
 - Click & drag the legend to move it
 - Add/Remove lines using the [Parameter Tree](#parameter-tree)
 - Advanced control using the [Canvas Toolbar](#canvas-toolbar)
+
 ### Default Colors
 - ![#d62728](https://via.placeholder.com/15/d62728/d62728.png) `#d62728`
 - ![#1f77b4](https://via.placeholder.com/15/1f77b4/1f77b4.png) `#1f77b4`
