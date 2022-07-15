@@ -1,10 +1,11 @@
 ---
 theme: default
 ---
+<p align="center">
+ Welcome to <b>flame-gui</b>'s official user documentation! Use the quick index below to help find the things that may interest you.
+</p>
+
 ![full-window](https://user-images.githubusercontent.com/70593138/179078107-8cbdae9f-5568-45e0-993d-e4003dd80489.JPG)
-
-Welcome to **flame-gui**'s official user documentation! Use the quick index below to help find the things that may interest you.
-
 
 # Index
 ## Getting Started
@@ -51,7 +52,7 @@ Displays the graph of the figure model. Found central of the main page.
 
 
 ## Canvas Toolbar
-![toolbar](https://user-images.githubusercontent.com/70593138/179065995-c8792319-e730-4929-a2b6-fdca37133b38.JPG)
+<img src="https://user-images.githubusercontent.com/70593138/179065995-c8792319-e730-4929-a2b6-fdca37133b38.JPG" width="50%"/>
 
 Advanced controls/commands for the [Canvas](#canvas). Found central of the main page.
 ### Actions
@@ -119,7 +120,7 @@ Optimize the model using selected knobs and target location. Accessed from `Edit
 
 
 ## Parameter Tree
-![param-tree](https://user-images.githubusercontent.com/70593138/179061034-e22a5115-af4f-4ec6-b96c-7900a0522a2f.JPG)
+<img src="https://user-images.githubusercontent.com/70593138/179061034-e22a5115-af4f-4ec6-b96c-7900a0522a2f.JPG" width="30%"/>
 
 Used for selecting which parameters to [graph](#canvas) (limited to four). After startup, the **Parameter Tree** will be completely collapsed. Found on the main page to the right.
 
