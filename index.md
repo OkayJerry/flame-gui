@@ -17,16 +17,56 @@ Welcome to **flame-gui**'s official user documentation! Use the quick index belo
 - [Viewing model element phase space](#viewing-model-element-phase-space)
 
 ## General
- - [Canvas]
- - [Canvas Toolbar]
- - [Element View]
- - [Element Configuration Window]
- - [Initial Beam State Window]
- - [Parameter Tree]
- - [Select Element Window]
+ - [Canvas](#canvas)
+   - [Control](#control)
+ - [Canvas Toolbar](#canvas-toolbar)
+   - [Actions](#actions)
+ - [Element View](#element-view)
+   - [Expanding Elements](#expanding-elements)
+   - [Insert, Edit, and Remove Elements](#insert-edit-and-remove-elements)
+ - [Element Configuration Window](#element-config-window)
+   - [Inserting Elements](#inserting-elements)
+   - [Editing Elements](#editing-elements)
+ - [Optimization Window](#optimization-window)
+   - [Optimization Methods](#optimization-methods)
+   - [How To Use](#how-to-use)
+ - [Initial Beam State Window](#initial-beam-state-window)
+ - [Parameter Tree](#parameter-tree)
+ - [Select Element Window](#select-element-window)
+   - [How To Use](#how-to-use-1)
 
 ---
 # Documentation
+## Canvas
+![canvas](https://user-images.githubusercontent.com/70593138/179066057-11835b27-46a3-43cd-8498-265e6f5dea01.jpeg)
+
+Displays the graph of the figure model. Found central of the main page.
+### Control
+- Click & drag the legend to move it
+- Add/Remove lines using the [Parameter Tree](#parameter-tree)
+- Advanced control using the [Canvas Toolbar](#canvas-toolbar)
+
+
+## Canvas Toolbar
+![toolbar](https://user-images.githubusercontent.com/70593138/179065995-c8792319-e730-4929-a2b6-fdca37133b38.JPG)
+
+Advanced controls/commands for the [Canvas](#canvas). Found central of the main page.
+### Actions
+- **Home** -- Reset to original view
+- **Back** -- Back to previous view
+- **Forward** -- Forward to next view
+- **Pan** -- Pan throughout plot
+- **Zoom** -- Zoom into plot
+- **Configure plot** -- Manually configure borders/spacings
+- **Select Line Color** -- Manually change the color of a line
+- **Save** -- Save a screenshot of the canvas
+
+## Color Dialog
+![color](https://user-images.githubusercontent.com/70593138/179085434-c13e0ce2-9a57-48bb-8f41-4bf3f3280d23.JPG)
+
+Helps you select a line color for the [canvas](#canvas). Accessed from the `Select Line Color` action within the [canvas toolbar](#canvas-toolbar)
+
+
 ## Element View
 ![element-editor](https://user-images.githubusercontent.com/70593138/179042616-fbfdb8b7-124c-465e-a787-f0106e001ddf.JPG)
 
@@ -48,42 +88,6 @@ Used for inserting new and editing current elements. Accessed by right-clicking 
 After selecting `Insert Element` from [Element View](#element-view)'s right-click menu, you will be find an element's blank template. The element that you create here will be inserted at your selected index. Choose from each element type and required attributes and default values (such as the `phi`'s value) will be filled automatically.
 ### Editing Elements
 After choosing `Edit Selected Element` from [Element View](#element-view)'s right-click menu, the element will be opened -- making its attributes and their associated values available for edit. *Note: element index, name, and type are unavailable for change.*
-
-
-## Parameter Tree
-![param-tree](https://user-images.githubusercontent.com/70593138/179061034-e22a5115-af4f-4ec6-b96c-7900a0522a2f.JPG)
-
-Used for selecting which parameters to [graph](#canvas) (limited to four). Found on the main page to the right.
-
-
-## Canvas
-![canvas](https://user-images.githubusercontent.com/70593138/179066057-11835b27-46a3-43cd-8498-265e6f5dea01.jpeg)
-
-Displays the graph of the figure model. Found central of the main page.
-### Control
-- Click & drag the legend to move it
-- Add/Remove lines using the [Parameter Tree](#parameter-tree)
-- Advanced control using the [Canvas Toolbar](#canvas-toolbar)
-
-
-## Canvas Toolbar
-![toolbar](https://user-images.githubusercontent.com/70593138/179065995-c8792319-e730-4929-a2b6-fdca37133b38.JPG)
-
-Advanced controls for the [Canvas](#canvas). Found central of the main page.
-### Actions
-- **Home** -- Reset to original view
-- **Back** -- Back to previous view
-- **Forward** -- Forward to next view
-- **Pan** -- Pan throughout plot
-- **Zoom** -- Zoom into plot
-- **Configure plot** -- Manually configure borders/spacings
-- **Select Line Color** -- Manually change the color of a line
-- **Save** -- Save a screenshot of the canvas
-
-## Color Dialog
-![color](https://user-images.githubusercontent.com/70593138/179085434-c13e0ce2-9a57-48bb-8f41-4bf3f3280d23.JPG)
-
-Helps you select a line color for the [canvas](#canvas). Accessed from the `Select Line Color` action within the [canvas toolbar](#canvas-toolbar)
 
 
 ## Initial Beam State Window
@@ -108,6 +112,18 @@ Optimize the model using selected knobs and target location. Accessed from `Edit
 4. `Optimize`
 
 
+## Parameter Tree
+![param-tree](https://user-images.githubusercontent.com/70593138/179061034-e22a5115-af4f-4ec6-b96c-7900a0522a2f.JPG)
+
+Used for selecting which parameters to [graph](#canvas) (limited to four). Found on the main page to the right.
+
+
+## Phase Space Window
+![phase](https://user-images.githubusercontent.com/70593138/179078891-05c49e81-c019-41a3-82e2-03cad5b46f31.JPG)
+
+View the phase space plot for an element. Accessed from `View` on the menubar.
+
+
 ## Select Element Window
 ![select](https://user-images.githubusercontent.com/70593138/179074968-f8cf59d9-5d35-4616-8537-c7d32f86ecd2.JPG)
 
@@ -115,9 +131,3 @@ Choose the knobs and target location for [optimization](#optimization-window).
 ### How To Use
 1. Choose from model elements any number of knobs and a target. This target must be at or beyond all knobs, otherwise your selection will be rejected and a pop-up will inform you of your error.
 2. `Confirm`
-
-
-## Phase Space Window
-![phase](https://user-images.githubusercontent.com/70593138/179078891-05c49e81-c019-41a3-82e2-03cad5b46f31.JPG)
-
-View the phase space plot for an element. Accessed from `View` on the menubar.
