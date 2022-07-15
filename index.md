@@ -118,7 +118,7 @@ Optimize the model using selected knobs and target location. Accessed from `Edit
 
 
 ## Parameter Tree
-![param-tree](https://user-images.githubusercontent.com/70593138/179061034-e22a5115-af4f-4ec6-b96c-7900a0522a2f.JPG){: style="float: left" alt="Parameter Tree"}
+![param-tree](https://user-images.githubusercontent.com/70593138/179061034-e22a5115-af4f-4ec6-b96c-7900a0522a2f.JPG){: alt="Parameter Tree"}
 Used for selecting which parameters to [graph](#canvas) (limited to four). After startup, the **Parameter Tree** will be completely collapsed. Found on the main page to the right.
 
 ### How To Use
