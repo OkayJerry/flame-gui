@@ -18,7 +18,7 @@ Welcome to **flame-gui**'s official user documentation! Use the quick index belo
 
 ## General
  - [Canvas](#canvas)
-   - [Control](#control)
+   - [How To Use](#how-to-use)
  - [Canvas Toolbar](#canvas-toolbar)
    - [Actions](#actions)
  - [Element View](#element-view)
@@ -29,11 +29,13 @@ Welcome to **flame-gui**'s official user documentation! Use the quick index belo
    - [Editing Elements](#editing-elements)
  - [Optimization Window](#optimization-window)
    - [Optimization Methods](#optimization-methods)
-   - [How To Use](#how-to-use)
- - [Initial Beam State Window](#initial-beam-state-window)
- - [Parameter Tree](#parameter-tree)
- - [Select Element Window](#select-element-window)
    - [How To Use](#how-to-use-1)
+ - [Initial Beam State Window](#initial-beam-state-window)
+   - [How To Use](#how-to-use-2)
+ - [Parameter Tree](#parameter-tree)
+   - [How To Use](#how-to-use-3)
+ - [Select Element Window](#select-element-window)
+   - [How To Use](#how-to-use-4)
 
 ---
 # Documentation
@@ -41,7 +43,7 @@ Welcome to **flame-gui**'s official user documentation! Use the quick index belo
 ![canvas](https://user-images.githubusercontent.com/70593138/179066057-11835b27-46a3-43cd-8498-265e6f5dea01.jpeg)
 
 Displays the graph of the figure model. Found central of the main page.
-### Control
+### How To Use
 - Click & drag the legend to move it
 - Add/Remove lines using the [Parameter Tree](#parameter-tree)
 - Advanced control using the [Canvas Toolbar](#canvas-toolbar)
@@ -94,6 +96,9 @@ After choosing `Edit Selected Element` from [Element View](#element-view)'s righ
 ![bmstate](https://user-images.githubusercontent.com/70593138/179074477-5ce875df-07a1-48cd-b1d9-3776b0483e66.JPG)
 
 Set values for the initial beam state using this window. Accessed from `Edit` on the menubar.
+## How To Use
+- Set any values
+- `Apply`
 
 
 ## Optimization Window
@@ -115,13 +120,22 @@ Optimize the model using selected knobs and target location. Accessed from `Edit
 ## Parameter Tree
 ![param-tree](https://user-images.githubusercontent.com/70593138/179061034-e22a5115-af4f-4ec6-b96c-7900a0522a2f.JPG)
 
-Used for selecting which parameters to [graph](#canvas) (limited to four). Found on the main page to the right.
+Used for selecting which parameters to [graph](#canvas) (limited to four). After startup, the **Parameter Tree** will be completely collapsed. Found on the main page to the right.
+
+### How To Use
+- To expand a category: use the `▶` button
+- To collapse a category: use the `▼` button
+- To select a parameter to [graph](#canvas): use the `☐` button
+- To remove a parameter from the [graph](#canvas): use the `☑` button
 
 
 ## Phase Space Window
 ![phase](https://user-images.githubusercontent.com/70593138/179078891-05c49e81-c019-41a3-82e2-03cad5b46f31.JPG)
 
 View the phase space plot for an element. Accessed from `View` on the menubar.
+### How To Use
+- To select an element: use the box in the top-left
+- To filter the selectable elements: use the box in the top-right
 
 
 ## Select Element Window
