@@ -52,14 +52,14 @@ Displays the graph of the figure model. Found central of the main page.
 
 Advanced controls/commands for the [Canvas](#canvas). Found central of the main page.
 ### Actions
-- **Home** -- Reset to original view
-- **Back** -- Back to previous view
-- **Forward** -- Forward to next view
-- **Pan** -- Pan throughout plot
-- **Zoom** -- Zoom into plot
-- **Configure plot** -- Manually configure borders/spacings
-- **Select Line Color** -- Manually change the color of a line
-- **Save** -- Save a screenshot of the canvas
+- `Home` -- Reset to original view
+- `Back` -- Back to previous view
+- `Forward` -- Forward to next view
+- `Pan` -- Pan throughout plot
+- `Zoom` -- Zoom into plot
+- `Configure plot` -- Manually configure borders/spacings
+- `Select Line Color` -- Manually change the color of a line
+- `Save` -- Save a screenshot of the canvas
 
 ## Color Dialog
 ![color](https://user-images.githubusercontent.com/70593138/179085434-c13e0ce2-9a57-48bb-8f41-4bf3f3280d23.JPG)
@@ -77,7 +77,7 @@ By pressing the `▶` button found within the index column, the element belongin
 By right-clicking the **Element View**, you will be presented with three options:
 1. [Insert Element](#inserting-elements)
 2. [Edit Selected Element](#editing-elements)
-3. Remove Element
+3. `Remove Element`
 
 
 ## Element Config Window
@@ -107,8 +107,8 @@ Optimize the model using selected knobs and target location. Accessed from `Edit
 
 ### How To Use
 1. [Select Elements](#select-element-window)
-2. Set x0 values
-3. Set target value and weight (in relation to other parameters)
+2. Set `x0` values
+3. Set `Target Value` and `Weight` (in relation to other parameters)
 4. `Optimize`
 
 
