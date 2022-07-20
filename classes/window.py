@@ -66,7 +66,7 @@ class MenuBar(QtWidgets.QMenuBar):
         self.redo_action.triggered.connect(self.redoModels)
         self.bmstate_action.triggered.connect(
             lambda: self.bmstate_window.show())
-        self.opt_action.triggered.connect(self.opt_window.open)
+        self.opt_action.triggered.connect(lambda: self.opt_window.show())
 
         phase_action.triggered.connect(self.phase_window.open)
         pref_action.triggered.connect(
@@ -91,6 +91,7 @@ class MenuBar(QtWidgets.QMenuBar):
 
     def new(self):
         glb.model = glb.createModel()
+        # self.main_window.menu_bar.opt_window.clear()
         self.main_window.workspace.refresh()
         
     def open(self):
@@ -124,7 +125,9 @@ class MenuBar(QtWidgets.QMenuBar):
                 graph.updateLines()
                 self.bmstate_window.update()
                 lat_editor.populate()
-                opt_window.select_window.fill()
+                opt_window.clear()
+                opt_window.select_window.setKnobs()
+                # opt_window.select_window.fill()
 
                 for i in range(len(lat_editor.header())):
                     lat_editor.resizeColumnToContents(i)
@@ -234,5 +237,5 @@ class Window(QtWidgets.QMainWindow):
         ])
 
         glb.model = ModelFlame(machine=Machine(conf))
-        self.menu_bar.opt_window.link(self.workspace)
+        # self.menu_bar.opt_window.link(self.workspace)
         self.menu_bar.bmstate_window.update()
