@@ -312,8 +312,9 @@ class Workspace(QtWidgets.QWidget):
         self.phase_window.element_box.setCurrentText(element)
 
         # optimization window
-        self.opt_window.updateElements()
-        
+        self.opt_window.select_window.refresh()
+        self.opt_window.fillTables()
+
         # beamstate window
         self.bmstate_window.update()
 

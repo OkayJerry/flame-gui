@@ -127,11 +127,12 @@ class BeamStateWindow(QtWidgets.QWidget):
         self.mr_spin.setValue(mr_val)
 
         # variable section
+        var = self.var_box.currentText()
         kwrd1 = self.kwrd1_box.currentText()
         kwrd2 = self.kwrd2_box.currentText()
 
         self._updateVariableDependant()
-
+            
         if kwrd1 == 'beam size [mm]':
             kwrd1_val = glb.model.bmstate.xrms
         else:
@@ -180,6 +181,8 @@ class BeamStateWindow(QtWidgets.QWidget):
         qa_val = self.qa_spin.value()
         energy_val = self.energy_spin.value()
         mr_val = self.mr_spin.value()
+        pos_val = self.pos_spin.value()
+        mom_val = self.mom_spin.value()
         alpha_val = self.alpha_spin.value()
         kwrd1_val = self.kwrd1_spin.value()
         kwrd2_val = self.kwrd2_spin.value()
@@ -191,10 +194,20 @@ class BeamStateWindow(QtWidgets.QWidget):
         glb.model.bmstate.IonZ = np.array(
             [qa_val for _ in range(len(glb.model.bmstate.IonZ))])
         glb.model.bmstate.IonEk = np.array(
-            [qa_val for _ in range(len(glb.model.bmstate.IonEk))])
+            [energy_val for _ in range(len(glb.model.bmstate.IonEk))])
         glb.model.bmstate.Brho = np.array(
-            [qa_val for _ in range(len(glb.model.bmstate.Brho))])
-
+            [mr_val for _ in range(len(glb.model.bmstate.Brho))])
+        
+        if var == 'x':
+            glb.model.bmstate.xcen = pos_val
+            glb.model.bmstate.xpcen = mom_val
+        elif var == 'y':
+            glb.model.bmstate.ycen = pos_val
+            glb.model.bmstate.ypcen = mom_val
+        elif var == 'z':
+            glb.model.bmstate.zcen = pos_val
+            glb.model.bmstate.zpcen = mom_val
+            
         if self.kwrd1_box.currentText() == 'beam size [mm]':
             if self.kwrd2_box.currentText() == 'geom. emittance [mm-mrad]':
                 glb.model.bmstate.set_twiss(

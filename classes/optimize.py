@@ -1,241 +1,260 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
-import numpy as np
-from scipy.optimize import minimize, differential_evolution
 from concurrent.futures import ThreadPoolExecutor
+
+import numpy as np
+from PyQt5.QtCore import *
+from PyQt5.QtGui import QDoubleValidator
+from PyQt5.QtWidgets import *
+from scipy.optimize import differential_evolution, minimize
+
 import classes.globals as glb
 
 
-def _differential_evolution(func, x0, args, workers):
+def _differential_evolution(func, x0, args, workers): # wrapper
     return differential_evolution(_costGeneric, x0, args=args, workers=workers)
 
-class DoubleDelegate(QtWidgets.QStyledItemDelegate):
+class DoubleDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         super().__init__(parent)
 
     def createEditor(self, parent, option, index):
-        line_edit = QtWidgets.QLineEdit(parent)
-        validator = QtGui.QDoubleValidator(line_edit)
+        line_edit = QLineEdit(parent)
+        validator = QDoubleValidator(line_edit)
         line_edit.setValidator(validator)
         return line_edit
+    
 
-
-class ComboBox(QtWidgets.QComboBox):
-    def __init__(self, element_name, row_num, table, graph):
+class OptComboBox(QComboBox):
+    def __init__(self, element, nelder_table, row_num):
         super().__init__()
-        self.element = element_name
-        self.graph = graph
+        self.element = element
+        self.table = nelder_table
         self.row_num = row_num
-        self.table = table
+        
         self.original_vals = {}
+        self.bmstate_components = {'Q/A': glb.model.bmstate.ref_IonZ,
+                                   'energy': glb.model.bmstate.ref_IonEk,
+                                   'magnetic rigidity': glb.model.bmstate.ref_Brho,
+                                   'x-position': glb.model.bmstate.xcen,
+                                   'y-position': glb.model.bmstate.ycen,
+                                   'z-position': glb.model.bmstate.zcen,
+                                   'x-momentum': glb.model.bmstate.xpcen,
+                                   'y-momentum': glb.model.bmstate.ypcen,
+                                   'z-momentum': glb.model.bmstate.zpcen}
+        
+        if type(self.element) is str: # is a bmstate element
+            self.setEnabled(False)
+        else: # is a model element
+            if len(self.element['properties']) == 3: # 'name' and 'type' with an attribute
+                self.setEnabled(False)
 
-    def _setx0Nelder(self, text):
-        item = QtWidgets.QTableWidgetItem()
-        val = glb.model.get_element(
-            name=self.element)[0]['properties'][text]
+            for key in self.element['properties'].keys():
+                if key != 'name' and key != 'type':
+                    self.addItem(key)
+        
+            
+
+    def setx0Nelder(self, attr=''):
+        if type(self.element) == dict: # is a model element
+            val = self.element['properties'][attr]
+        else: # is a bmstate element
+            attr = self.element
+            val = self.bmstate_components[attr]
+
+        item = QTableWidgetItem()
         item.setText(str(val))
-        if text not in self.original_vals:
-            self.original_vals[text] = str(val)
-        item.setToolTip('Original Value: ' + self.original_vals[text])
+        if attr not in self.original_vals:
+            self.original_vals[attr] = str(val)
+        item.setToolTip('Original Value: ' + self.original_vals[attr])
         self.table.setItem(self.row_num, 2, item)
 
-    def _setx0Evo(self, text):
-        low_item = QtWidgets.QTableWidgetItem()
-        high_item = QtWidgets.QTableWidgetItem()
-        val = glb.model.get_element(
-            name=self.element)[0]['properties'][text]
-
+    def setx0Evo(self, attr=''):
+        if type(self.element) == dict: # is a model element
+            val = self.element['properties'][attr]
+        else: # is a bmstate element
+            attr = self.element
+            val = self.bmstate_components[attr]
+            
+        low_item = QTableWidgetItem()
+        high_item = QTableWidgetItem()
+        
         if val > 0:
             val = np.floor(val * 10)
             low_item.setText('0')
             high_item.setText(str(val))
-            if text not in self.original_vals:
-                self.original_vals[text] = ['0', str(val)]
+            if attr not in self.original_vals:
+                self.original_vals[attr] = ['0', str(val)]
         elif val < 0:
             val = np.ceil(val * 10)
             low_item.setText(str(val))
             high_item.setText('0')
-            if text not in self.original_vals:
-                self.original_vals[text] = [str(val), '0']
+            if attr not in self.original_vals:
+                self.original_vals[attr] = [str(val), '0']
         else:
             low_item.setText('0')
             high_item.setText('10')
-            if text not in self.original_vals:
-                self.original_vals[text] = ['0', '10']
+            if attr not in self.original_vals:
+                self.original_vals[attr] = ['0', '10']
 
-        low_item.setToolTip('Original Value: ' + self.original_vals[text][0])
-        high_item.setToolTip('Original Value: ' + self.original_vals[text][1])
+        low_item.setToolTip('Original Value: ' + self.original_vals[attr][0])
+        high_item.setToolTip('Original Value: ' + self.original_vals[attr][1])
 
         self.table.setItem(self.row_num, 2, low_item)
         self.table.setItem(self.row_num, 3, high_item)
+        
+        
 
-
-class OptimizationWindow(QtWidgets.QWidget):
+class OptimizationWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Optimization')
         self.setMinimumSize(1200, 500)
-
+        self.setLayout(QHBoxLayout())
+        self.select_window = SelectWindow(self)
         self.target_params = {}
 
-        layout = QtWidgets.QHBoxLayout()
-        self.tabs = QtWidgets.QTabWidget()
-        tab1 = QtWidgets.QWidget()
-        tab2 = QtWidgets.QWidget()
-        tab1.setLayout(QtWidgets.QVBoxLayout())
-        tab2.setLayout(QtWidgets.QVBoxLayout())
-        ws1 = QtWidgets.QWidget()
-        ws2 = QtWidgets.QWidget()
-        ws1.setLayout(QtWidgets.QVBoxLayout())
-        ws2.setLayout(QtWidgets.QVBoxLayout())
+        # layout components
+        ws1 = QWidget()
+        ws2 = QWidget()
+        nelder_tab = QWidget()
+        evo_tab = QWidget()
+        self.tabs = QTabWidget()
+        ws1.setLayout(QVBoxLayout())
+        ws2.setLayout(QVBoxLayout())
+        nelder_tab.setLayout(QVBoxLayout())
+        evo_tab.setLayout(QVBoxLayout())
 
-        self.nelder_table = QtWidgets.QTableWidget(0, 3)
-        self.evo_table = QtWidgets.QTableWidget(0, 4)
-        self.select_button = QtWidgets.QPushButton()
-        self.target_label = QtWidgets.QLabel()
-        self.param_tree = QtWidgets.QTreeWidget()
-        self.opt_button = QtWidgets.QPushButton()
-        self.select_window = SelectWindow(self)
+        # workspace 1 : top-bottom
+        self.target_label = QLabel('Target: --')
+        self.nelder_table = QTableWidget(0, 3)
+        self.evo_table = QTableWidget(0, 4)
+        select_button = QPushButton('Select Elements')
 
         self.nelder_table.setAlternatingRowColors(True)
-        self.nelder_table.setHorizontalHeaderLabels(
-            ['Name', 'Attribute', 'x0'])
-        self.nelder_table.horizontalHeader().setSectionResizeMode(
-            QtWidgets.QHeaderView.Stretch)
+        self.nelder_table.setHorizontalHeaderLabels(['Name', 'Attribute', 'x0'])
+        self.nelder_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.nelder_table.verticalHeader().hide()
-        self.nelder_table.cellChanged.connect(self.updateModel)
 
         self.evo_table.setAlternatingRowColors(True)
-        self.evo_table.setHorizontalHeaderLabels(
-            ['Name', 'Attribute', 'x0-Low', 'x0-High'])
-        self.evo_table.horizontalHeader().setSectionResizeMode(
-            QtWidgets.QHeaderView.Stretch)
+        self.evo_table.setHorizontalHeaderLabels(['Name', 'Attribute', 'x0-Low', 'x0-High'])
+        self.evo_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.evo_table.verticalHeader().hide()
-        # self.evo_table.cellChanged.connect(self.updateModel)
 
-        self.select_button.setText('Select Elements')
-        self.select_button.clicked.connect(lambda: self.select_window.show())
+        select_button.clicked.connect(lambda: self.select_window.show())
 
-        self.target_label.setText('Target: --')
-
-        self.param_tree.setAlternatingRowColors(True)
-        self.param_tree.setHeaderLabels(
-            ['Parameter', 'Target Value', 'Weight'])
-        self.param_tree.setColumnCount(3)
-        self.param_tree.setItemDelegateForColumn(1, DoubleDelegate(self))
-        self.param_tree.setItemDelegateForColumn(2, DoubleDelegate(self))
-        self.param_tree.itemDoubleClicked.connect(self._handle_edits)
-        self.param_tree.setEditTriggers(
-            QtWidgets.QAbstractItemView.NoEditTriggers)
-        self.param_tree.itemChanged.connect(self._handleTargetParam)
-        self.fillParamTree()
-        self.param_tree.header().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
-        self.param_tree.header().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
-        self.param_tree.header().setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
-        self.param_tree.header().setStretchLastSection(False)
-        self.param_tree.header().setDefaultAlignment(QtCore.Qt.AlignCenter)
-
-        self.opt_button.setText('Optimize')
-        self.opt_button.clicked.connect(self.optimize)
-
-        tab1.layout().addWidget(self.nelder_table)
-        tab2.layout().addWidget(self.evo_table)
-        self.tabs.addTab(tab1, 'Nelder-Mead')
-        self.tabs.addTab(tab2, 'Differential Evolution')
-
+        nelder_tab.layout().addWidget(self.nelder_table)
+        evo_tab.layout().addWidget(self.evo_table)
+        self.tabs.addTab(nelder_tab, 'Nelder-Mead')
+        self.tabs.addTab(evo_tab, 'Differential Evolution')
         ws1.layout().addWidget(self.target_label)
         ws1.layout().addWidget(self.tabs)
-        ws1.layout().addWidget(self.select_button)
-        ws2.layout().addWidget(self.param_tree)
-        ws2.layout().addWidget(self.opt_button)
+        ws1.layout().addWidget(select_button)
 
-        splitter = QtWidgets.QSplitter()
+        # workspace 2 : top-bottom
+        self.param_tree = QTreeWidget()
+        opt_button = QPushButton('Optimize')
+
+        self.param_tree.setAlternatingRowColors(True)
+        self.param_tree.setItemDelegateForColumn(1, DoubleDelegate(self))
+        self.param_tree.setItemDelegateForColumn(2, DoubleDelegate(self))
+        self.param_tree.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.param_tree.itemDoubleClicked.connect(self._handleEdits)
+        # self.param_tree.itemChanged.connect(self._handleTargetParam)
+        self.param_tree.setHeaderLabels(['Parameter', 'Target Value', 'Weight'])
+        self.param_tree.setColumnCount(3)
+        self.param_tree.header().setSectionResizeMode(0, QHeaderView.Stretch)
+        self.param_tree.header().setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        self.param_tree.header().setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        self.param_tree.header().setDefaultAlignment(Qt.AlignCenter)
+        self.param_tree.header().setStretchLastSection(False)
+        self.fillParamTree()
+        
+        opt_button.clicked.connect(self.optimize)
+
+        ws2.layout().addWidget(self.param_tree)
+        ws2.layout().addWidget(opt_button)
+
+        # finalizing
+        splitter = QSplitter()
         splitter.addWidget(ws1)
         splitter.addWidget(ws2)
-        layout.addWidget(splitter)
-        self.setLayout(layout)
+        self.layout().addWidget(splitter)
+
+    def clear(self):
+        self.nelder_table.setRowCount(0)
+        self.evo_table.setRowCount(0)
 
     def link(self, workspace):
-        self.graph = workspace.graph
         self.workspace = workspace
-        self.select_window.graph = workspace.graph
-
-    def _handle_edits(self, item, col):
-        if col == 0:  # odd logic, but others didn't work?
-            return
-        self.param_tree.editItem(item, col)
-
-    def _handleTargetParam(self, item):
-        parent = item.parent()
-        val = item.text(1)
-
-        if parent.text(0) == "Reference":
-            if item.text(0) == "IonEk":
-                param = "ref_IonEk"
-            elif item.text(0) == "Phis":
-                param = "ref_phis"
-        else:
-            if item.text(0) == "x":
-                param = "x"
-            elif item.text(0) == "y":
-                param = "y"
-            elif item.text(0) == "z":
-                param = "z"
-            elif item.text(0) == "x'":
-                param = "xp"
-            elif item.text(0) == "y'":
-                param = "yp"
-            elif item.text(0) == "z'":
-                param = "zp"
-
-            if parent.text(0) == "cen":
-                param += "cen"
-            elif parent.text(0) == "rms":
-                param += "rms"
-            elif parent.text(0) == "alpha":
-                param += "twiss_alpha"
-            elif parent.text(0) == "beta":
-                param += "twiss_beta"
-            elif parent.text(0) == "gamma":
-                param += "twiss_gamma"
-            elif parent.text(0) == "couple":
-                param = "couple_"
-                if item.text(0) == "x-y":
-                    param += "xy"
-                elif item.text(0) == "x'-y":
-                    param += "xpy"
-                elif item.text(0) == "x-y'":
-                    param += "xyp"
-                elif item.text(0) == "x'-y'":
-                    param += "xpyp"
-
-        if item.checkState(0) == QtCore.Qt.Checked:
-            try:
-                self.target_params[param] = [
-                    float(
-                        item.text(1)), float(
-                        item.text(2))]
-            except BaseException:
-                self.target_params[param] = None
-        else:
-            try:
-                self.target_params.pop(param)
-            except BaseException:
-                return
+        self.graph = workspace.graph
 
     def optimize(self):
-        self.graph.copyModelToHistory()
-        knob = {}
-        target = self.target_label.text()
-        obj = {
-            'location': target[target.find(' ') + 1:],
-            'target': self.target_params
-        }
-
+        self.fillTargetParams(self.param_tree.invisibleRootItem())
+        
+        if len(self.target_params) == 0:
+            warning = QMessageBox()
+            warning.setIcon(QMessageBox.Critical)
+            warning.setText("No checked parameters.")
+            warning.setWindowTitle("ERROR")
+            warning.setStandardButtons(QMessageBox.Ok)
+            if warning.exec() == QMessageBox.Ok:
+                warning.close()
+                return
+            
+        for val in self.target_params.values(): 
+            if val == None:
+                warning = QMessageBox()
+                warning.setIcon(QMessageBox.Critical)
+                warning.setText("All checked parameters must have a target value and weight.")
+                warning.setWindowTitle("ERROR")
+                warning.setStandardButtons(QMessageBox.Ok)
+                if warning.exec() == QMessageBox.Ok:
+                    warning.close()
+                    return
+                
+        knobs = {}
+        bmstate = {'Q/A': 'ref_IonZ',
+                   'energy': 'ref_IonEk',
+                   'magnetic rigidity': 'ref_Brho',
+                   'x-position': 'xcen',
+                   'y-position': 'ycen',
+                   'z-position': 'zcen',
+                   'x-momentum': 'xpcen',
+                   'y-momentum': 'ypcen',
+                   'z-momentum': 'zpcen'}
+        obj = {'location': self.select_window.data['target'],
+               'target': self.target_params}
+        
+        if self.tabs.tabText(self.tabs.currentIndex()) == 'Nelder-Mead':
+            current_table = self.nelder_table
+        else: # tab is 'Differential Evolution'
+            current_table = self.evo_table
+            
+        for i in range(current_table.rowCount()):
+            name = current_table.item(i, 0).text()
+            if name not in bmstate.keys():
+                attr = current_table.cellWidget(i, 1).currentText()
+            else:
+                attr = bmstate[name]
+            knobs[name] = attr
+            
+        if len(knobs) == 0 or obj['location'] == None:
+            warning = QMessageBox()
+            warning.setIcon(QMessageBox.Critical)
+            warning.setText("Must select knobs and a target.")
+            warning.setWindowTitle("ERROR")
+            warning.setStandardButtons(QMessageBox.Ok)
+            if warning.exec() == QMessageBox.Ok:
+                warning.close()
+                return
+            
         global _costGeneric  # for pickle
-
         def _costGeneric(x, k, o):
+            
             for i, n in enumerate(k.keys()):
-                glb.model.reconfigure(n, {k[n]: x[i]})
+                if n in bmstate.keys():
+                    setattr(glb.model.bmstate, k[n], x[i]) 
+                else:
+                    glb.model.reconfigure(n, {k[n]: x[i]})
             r, s = glb.model.run(to_element=o['location'])
             dif = []
             t = o['target']
@@ -249,18 +268,20 @@ class OptimizationWindow(QtWidgets.QWidget):
                 dif.append(val)
             dif = np.asarray(dif)
             return sum(dif * dif)
-
-        for i in range(self.nelder_table.rowCount()):
-            name = self.nelder_table.item(i, 0).text()
-            attr = self.nelder_table.cellWidget(i, 1).currentText()
-            knob[name] = attr
-
+        
+        self.graph.copyModelToHistory()
         executor = ThreadPoolExecutor(max_workers=3)
-
-        if self.tabs.tabText(self.tabs.currentIndex()) == 'Nelder-Mead':
-            x0 = np.array([glb.model.get_element(name=n)[0]
-                           ['properties'][knob[n]] for n in knob])
-            ans = executor.submit(minimize, fun=_costGeneric, x0=x0, args=(knob, obj), method='Nelder-Mead')
+        
+        if current_table is self.nelder_table:
+            array = []
+            for n in knobs.keys():
+                if n not in bmstate.keys():
+                    array.append(glb.model.get_element(name=n)[0]['properties'][knobs[n]])
+                else:
+                    array.append(getattr(glb.model.bmstate, knobs[n]))
+                    
+            x0 = np.array(array)
+            ans = executor.submit(minimize, fun=_costGeneric, x0=x0, args=(knobs, obj), method='Nelder-Mead')
             ans = ans.result()
         else:
             x0 = []
@@ -269,134 +290,94 @@ class OptimizationWindow(QtWidgets.QWidget):
                 high = float(self.evo_table.item(i, 3).text())
                 x0.append((low, high))
 
-            ans = executor.submit(_differential_evolution, func=_costGeneric, x0=x0, args=(knob, obj), workers=-1)
+            ans = executor.submit(_differential_evolution, func=_costGeneric, x0=x0, args=(knobs, obj), workers=-1)
             ans = ans.result()
-            # ans = differential_evolution(
-            #     _costGeneric, x0, args=(
-            #         knob, obj), workers=-1)
-
-        self.nelder_table.cellWidget(i, 1).original_vals = {}
-        self.evo_table.cellWidget(i, 1).original_vals = {}
+            
         self.workspace.refresh()
-        self.select_window.checkPrevCheckedItems()
 
-        popup = QtWidgets.QMessageBox()
-        popup.setIcon(QtWidgets.QMessageBox.Information)
+        popup = QMessageBox()
+        popup.setIcon(QMessageBox.Information)
         popup.setText("Model has been optimized.")
         popup.setDetailedText(str(ans))
         popup.setWindowTitle("SUCCESS")
-        popup.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        popup.setStandardButtons(QMessageBox.Ok)
 
-        te = popup.findChild(QtWidgets.QTextEdit)
-        te.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
+        te = popup.findChild(QTextEdit)
+        te.setLineWrapMode(QTextEdit.NoWrap)
         width = te.document().idealWidth() + te.document().documentMargin() + \
             te.verticalScrollBar().width()
         te.parent().setFixedWidth(width)
 
-        if popup.exec() == QtWidgets.QMessageBox.Ok:
+        if popup.exec() == QMessageBox.Ok:
             popup.close()
 
-    def open(self):
-        self.select_window.fill()
-        self.show()
-
-    def updateElementTable(self):
-        self.nelder_table.blockSignals(True)
-        self.evo_table.blockSignals(True)
-
-        while self.nelder_table.rowCount() > 0:
-            self.nelder_table.removeRow(0)
-        while self.evo_table.rowCount() > 0:
-            self.evo_table.removeRow(0)
-
-        select_table = self.select_window.table
-        present_knobs = self.getKnobs()
-        self.target_label.setText('Target: --')
-
-        for i in range(select_table.rowCount()):
-            try:
-                knob_check = select_table.cellWidget(i, 0).children()[1]
-            except BaseException:
-                knob_check = QtWidgets.QCheckBox()
-                knob_check.setCheckState(QtCore.Qt.Unchecked)
-            target_check = select_table.cellWidget(i, 1).children()[1]
-            item = select_table.item(i, 2)
-            if knob_check.checkState() == QtCore.Qt.Checked and item.text() not in present_knobs:
-                nelder_item = QtWidgets.QTableWidgetItem()
-                evo_item = QtWidgets.QTableWidgetItem()
-                nelder_item.setText(item.text())
-                evo_item.setText(item.text())
-
-                element = glb.model.get_element(name=item.text())[0]
-                nelder_combo = ComboBox(
-                    element['properties']['name'],
-                    self.nelder_table.rowCount(),
-                    self.nelder_table,
-                    self.graph)
-                evo_combo = ComboBox(
-                    element['properties']['name'],
-                    self.evo_table.rowCount(),
-                    self.evo_table,
-                    self.graph)
-                for key, val in element['properties'].items():
-                    if key != 'name' and key != 'type':
-                        nelder_combo.addItem(key)
-                        evo_combo.addItem(key)
-
-                nelder_combo.currentTextChanged.connect(
-                    nelder_combo._setx0Nelder)
-                self.nelder_table.insertRow(self.nelder_table.rowCount())
-                self.nelder_table.setItem(
-                    self.nelder_table.rowCount() - 1, 0, nelder_item)
-                self.nelder_table.setCellWidget(
-                    self.nelder_table.rowCount() - 1, 1, nelder_combo)
-                nelder_combo._setx0Nelder(nelder_combo.currentText())
-
-                evo_combo.currentTextChanged.connect(evo_combo._setx0Evo)
-                self.evo_table.insertRow(self.evo_table.rowCount())
-                self.evo_table.setItem(
-                    self.evo_table.rowCount() - 1, 0, evo_item)
-                self.evo_table.setCellWidget(
-                    self.evo_table.rowCount() - 1, 1, evo_combo)
-                evo_combo._setx0Evo(evo_combo.currentText())
-
-                if len(element['properties']) == 3:
-                    nelder_combo.setEnabled(False)
-                    evo_combo.setEnabled(False)
-
-            if target_check.checkState() == QtCore.Qt.Checked:
-                self.target_label.setText('Target: ' + item.text())
-
-        if select_table.rowCount() != 0:
-            self.nelder_table.horizontalHeader().setSectionResizeMode(
-                QtWidgets.QHeaderView.ResizeToContents)
-            self.nelder_table.horizontalHeader().setStretchLastSection(True)
-
-            self.evo_table.horizontalHeader().setSectionResizeMode(
-                QtWidgets.QHeaderView.ResizeToContents)
-            self.evo_table.horizontalHeader().setStretchLastSection(True)
-
+        
+    def fillTables(self):
         self.select_window.close()
-        self.nelder_table.blockSignals(False)
-        self.evo_table.blockSignals(False)
+        self.clear()
+        target_index = self.select_window.data['target']
+        bmstate = self.select_window.data['knobs']['bmstate']
+        element_indexes = sorted(self.select_window.data['knobs']['elements'])
+        if target_index:
+            target = glb.model.get_element(index=target_index)[0]['properties']['name']
+
+        knobs = []
+        for component in bmstate:
+            knobs.append(component)
+        for i in element_indexes:
+            element = glb.model.get_element(index=i)[0] # ['properties']['name']
+            knobs.append(element)
+
+        if target_index:
+            self.target_label.setText('Target: ' + target)
+        else:
+            self.target_label.setText('Target: --')
+        
+        for knob in knobs:
+            final_row_index = self.nelder_table.rowCount()
+            nelder_combo = OptComboBox(knob, self.nelder_table, final_row_index)
+            evo_combo = OptComboBox(knob, self.evo_table, final_row_index)
+
+            nelder_item = QTableWidgetItem()
+            evo_item = QTableWidgetItem()
+
+            if knob in bmstate:
+                nelder_item.setText(knob)
+                evo_item.setText(knob)
+            else:
+                nelder_item.setText(knob['properties']['name'])
+                evo_item.setText(knob['properties']['name'])
+            
+            self.nelder_table.insertRow(final_row_index)
+            self.nelder_table.setItem(final_row_index, 0, nelder_item)
+            self.nelder_table.setCellWidget(final_row_index, 1, nelder_combo)
+
+            self.evo_table.insertRow(final_row_index)
+            self.evo_table.setItem(final_row_index, 0, evo_item)
+            self.evo_table.setCellWidget(final_row_index, 1, evo_combo)
+
+            nelder_combo.setx0Nelder(nelder_combo.currentText())
+            evo_combo.setx0Evo(evo_combo.currentText())
+            nelder_combo.currentTextChanged.connect(nelder_combo.setx0Nelder)
+            evo_combo.currentTextChanged.connect(evo_combo.setx0Evo)
 
     def fillParamTree(self):
         # top-level
-        reference = QtWidgets.QTreeWidgetItem()
-        actual = QtWidgets.QTreeWidgetItem()
+        reference = QTreeWidgetItem()
+        actual = QTreeWidgetItem()
         reference.setText(0, "Reference")
         actual.setText(0, "Actual")
 
         # secondary_level
-        ion_ek = QtWidgets.QTreeWidgetItem()
-        phis = QtWidgets.QTreeWidgetItem()
-        cen = QtWidgets.QTreeWidgetItem()
-        rms = QtWidgets.QTreeWidgetItem()
-        tws = QtWidgets.QTreeWidgetItem()
-        tws_a = QtWidgets.QTreeWidgetItem()
-        tws_b = QtWidgets.QTreeWidgetItem()
-        tws_g = QtWidgets.QTreeWidgetItem()
-        cpl = QtWidgets.QTreeWidgetItem()
+        ion_ek = QTreeWidgetItem()
+        phis = QTreeWidgetItem()
+        cen = QTreeWidgetItem()
+        rms = QTreeWidgetItem()
+        tws = QTreeWidgetItem()
+        tws_a = QTreeWidgetItem()
+        tws_b = QTreeWidgetItem()
+        tws_g = QTreeWidgetItem()
+        cpl = QTreeWidgetItem()
         ion_ek.setText(0, "IonEk")
         phis.setText(0, "Phis")
         cen.setText(0, "cen")
@@ -409,11 +390,11 @@ class OptimizationWindow(QtWidgets.QWidget):
 
         for param in [ion_ek, phis]:
             param.setText(2, '1')
-            param.setTextAlignment(1, QtCore.Qt.AlignCenter)
-            param.setTextAlignment(2, QtCore.Qt.AlignCenter)
+            param.setTextAlignment(1, Qt.AlignCenter)
+            param.setTextAlignment(2, Qt.AlignCenter)
             param.setFlags(
-                param.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEditable)
-            param.setCheckState(0, QtCore.Qt.Unchecked)
+                param.flags() | Qt.ItemIsUserCheckable | Qt.ItemIsEditable)
+            param.setCheckState(0, Qt.Unchecked)
             reference.addChild(param)
 
         actual.addChild(cen)
@@ -423,266 +404,313 @@ class OptimizationWindow(QtWidgets.QWidget):
 
         for param in [cen, rms]:
             for var in ["x", "y", "z", "x'", "y'", "z'"]:
-                item = QtWidgets.QTreeWidgetItem()
+                item = QTreeWidgetItem()
                 item.setText(0, var)
                 item.setText(2, '1')
-                item.setTextAlignment(1, QtCore.Qt.AlignCenter)
-                item.setTextAlignment(2, QtCore.Qt.AlignCenter)
+                item.setTextAlignment(1, Qt.AlignCenter)
+                item.setTextAlignment(2, Qt.AlignCenter)
                 item.setFlags(
-                    item.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEditable)
-                item.setCheckState(0, QtCore.Qt.Unchecked)
+                    item.flags() | Qt.ItemIsUserCheckable | Qt.ItemIsEditable)
+                item.setCheckState(0, Qt.Unchecked)
 
                 param.addChild(item)
 
         for radiation_type in [tws_a, tws_b, tws_g]:
             tws.addChild(radiation_type)
             for var in ["x", "y", "z"]:
-                item = QtWidgets.QTreeWidgetItem()
+                item = QTreeWidgetItem()
                 item.setText(0, var)
                 item.setText(2, '1')
-                item.setTextAlignment(1, QtCore.Qt.AlignCenter)
-                item.setTextAlignment(2, QtCore.Qt.AlignCenter)
+                item.setTextAlignment(1, Qt.AlignCenter)
+                item.setTextAlignment(2, Qt.AlignCenter)
                 item.setFlags(
-                    item.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEditable)
-                item.setCheckState(0, QtCore.Qt.Unchecked)
+                    item.flags() | Qt.ItemIsUserCheckable | Qt.ItemIsEditable)
+                item.setCheckState(0, Qt.Unchecked)
 
                 radiation_type.addChild(item)
 
         for var in ["x-y", "x'-y", "x-y'", "x'-y'"]:
-            item = QtWidgets.QTreeWidgetItem()
+            item = QTreeWidgetItem()
             item.setText(0, var)
             item.setText(2, '1')
-            item.setTextAlignment(1, QtCore.Qt.AlignCenter)
-            item.setTextAlignment(2, QtCore.Qt.AlignCenter)
+            item.setTextAlignment(1, Qt.AlignCenter)
+            item.setTextAlignment(2, Qt.AlignCenter)
             item.setFlags(
-                item.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEditable)
-            item.setCheckState(0, QtCore.Qt.Unchecked)
+                item.flags() | Qt.ItemIsUserCheckable | Qt.ItemIsEditable)
+            item.setCheckState(0, Qt.Unchecked)
 
             cpl.addChild(item)
 
         self.param_tree.addTopLevelItem(reference)
         self.param_tree.addTopLevelItem(actual)
+        
+    def _handleEdits(self, item, col):
+        if col == 0:  # odd logic, but others didn't work?
+            return
+        self.param_tree.editItem(item, col)
+        
+    def fillTargetParams(self, item):
+        if item.childCount() == 0:
+            parent = item.parent()
+            val = item.text(1)
 
-    def updateElements(self):
-        self.nelder_table.blockSignals(True)
-        self.evo_table.blockSignals(True)
-
-        # target
-        target = self.target_label.text()
-        target = target[target.find(' ') + 1:]
-        if target not in glb.model.get_all_names()[
-                1:] or self.select_window.checked['target'][1] is None:
-            self.target_label.setText('Target: --')
-
-        # nelder-mead table
-        for i in range(self.nelder_table.rowCount()):
-            item = self.nelder_table.item(i, 0)
-            try:
-                element = item.text()
-            except BaseException:
-                continue
-            if element not in glb.model.get_all_names()[1:]:
-                self.nelder_table.removeRow(self.nelder_table.row(item))
+            if parent.text(0) == "Reference":
+                if item.text(0) == "IonEk":
+                    param = "ref_IonEk"
+                elif item.text(0) == "Phis":
+                    param = "ref_phis"
             else:
-                nelder_combo = self.nelder_table.cellWidget(i, 1)
-                nelder_combo._setx0Nelder(nelder_combo.currentText())
+                if item.text(0) == "x":
+                    param = "x"
+                elif item.text(0) == "y":
+                    param = "y"
+                elif item.text(0) == "z":
+                    param = "z"
+                elif item.text(0) == "x'":
+                    param = "xp"
+                elif item.text(0) == "y'":
+                    param = "yp"
+                elif item.text(0) == "z'":
+                    param = "zp"
 
-        # differential evolution table
-        for i in range(self.evo_table.rowCount()):
-            item = self.evo_table.item(i, 0)
-            try:
-                element = item.text()
-            except BaseException:
-                continue
-            if element not in glb.model.get_all_names()[1:]:
-                self.evo_table.removeRow(self.evo_table.row(item))
-            else:
-                evo_combo = self.evo_table.cellWidget(i, 1)
-                evo_combo._setx0Evo(evo_combo.currentText())
+                if parent.text(0) == "cen":
+                    param += "cen"
+                elif parent.text(0) == "rms":
+                    param += "rms"
+                elif parent.text(0) == "alpha":
+                    param += "twiss_alpha"
+                elif parent.text(0) == "beta":
+                    param += "twiss_beta"
+                elif parent.text(0) == "gamma":
+                    param += "twiss_gamma"
+                elif parent.text(0) == "couple":
+                    param = "couple_"
+                    if item.text(0) == "x-y":
+                        param += "xy"
+                    elif item.text(0) == "x'-y":
+                        param += "xpy"
+                    elif item.text(0) == "x-y'":
+                        param += "xyp"
+                    elif item.text(0) == "x'-y'":
+                        param += "xpyp"
 
-        # select window table
-        for i in range(self.select_window.table.rowCount()):
-            item = self.select_window.table.item(i, 2)
-            try:
-                element = item.text()
-            except BaseException:
-                continue
-            if element not in glb.model.get_all_names()[1:]:
-                self.select_window.table.removeRow(
-                    self.select_window.table.row(item))  # remove from checked items
+            if item.checkState(0) == Qt.Checked:
+                target_val = item.text(1)
+                weight = item.text(2)
                 try:
-                    element_i = self.select_window.checked['knobs'][0].index(
-                        element)
-                    self.select_window.checked['knobs'][0].pop(element_i)
-                    self.select_window.checked['knobs'][1].pop(element_i)
+                    self.target_params[param] = [float(target_val), float(weight)]
                 except ValueError:
-                    pass
-                if element == self.select_window.checked['target'][1]:
-                    self.select_window.checked['target'][0] = None
-                    self.select_window.checked['target'][1] = None
+                    self.target_params[param] = None
+            elif param in self.target_params.keys():
+                self.target_params.pop(param)
+        else:
+            for i in range(item.childCount()):
+                self.fillTargetParams(item.child(i))
 
-        self.nelder_table.blockSignals(False)
-        self.evo_table.blockSignals(False)
-
-    def updateModel(self, row):
-        element = self.nelder_table.item(row, 0).text()
-        attr = self.nelder_table.cellWidget(row, 1).currentText()
-        val = float(self.nelder_table.item(row, 2).text())
-
-        glb.model.reconfigure(element, {attr: val})
-        self.workspace.refresh()
-
-    def getKnobs(self):
-        knobs = []
-        for i in range(self.nelder_table.rowCount()):
-            element = self.nelder_table.item(i, 0).text()
-            knobs.append(element)
-        return knobs
-
-
-class SelectWindow(QtWidgets.QWidget):
+        
+class SelectWindow(QWidget):
     def __init__(self, opt_window):
         super().__init__()
-        self.checked = {
-            'knobs': [[], []],
-            'target': [None, None]
-        }
         self.setWindowTitle('Select Elements')
         self.setMinimumSize(550, 375)
+        self.setLayout(QVBoxLayout())
         self.opt_window = opt_window
-        self.graph = None
-        layout = QtWidgets.QVBoxLayout()
 
-        self.table = QtWidgets.QTableWidget(0, 3)
-        self.button = QtWidgets.QPushButton()
+        self.data = {'knobs': {'bmstate': [],
+                               'elements': []},
+                     'target': None}
+        
+        # workspace : top-bottom
+        self.bmstate_table = QTableWidget(0, 2)
+        self.element_table = QTableWidget(0, 3)
+        confirm_button = QPushButton('Confirm')
 
-        self.table.setAlternatingRowColors(True)
-        self.table.verticalHeader().hide()
-        self.table.setHorizontalHeaderLabels(['Knob', 'Target', 'Name'])
-        self.table.horizontalHeader().setSectionResizeMode(
-            QtWidgets.QHeaderView.ResizeToContents)
-        self.table.horizontalHeader().setStretchLastSection(True)
+        self.bmstate_table.setAlternatingRowColors(True)
+        self.bmstate_table.setHorizontalHeaderLabels(['Knob', 'Name'])
+        self.bmstate_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.bmstate_table.horizontalHeader().setStretchLastSection(True)
+        self.bmstate_table.verticalHeader().hide()
+        self.bmstate_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.bmstate_table.setFocusPolicy(Qt.NoFocus)
+        self.bmstate_table.setSelectionMode(QAbstractItemView.NoSelection)
 
-        self.button.setText('Confirm')
-        self.button.clicked.connect(self.opt_window.updateElementTable)
+        self.element_table.setAlternatingRowColors(True)
+        self.element_table.setHorizontalHeaderLabels(['Knob', 'Target', 'Name'])
+        self.element_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.element_table.horizontalHeader().setStretchLastSection(True)
+        self.element_table.verticalHeader().hide()
+        self.element_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.element_table.setFocusPolicy(Qt.NoFocus)
+        self.element_table.setSelectionMode(QAbstractItemView.NoSelection)
 
-        layout.addWidget(self.table)
-        layout.addWidget(self.button)
+        confirm_button.clicked.connect(self.opt_window.fillTables)
 
-        self.setLayout(layout)
+        # finalizing
+        self.setKnobs()
+        self.layout().addWidget(self.bmstate_table)
+        self.layout().addWidget(self.element_table)
+        self.layout().addWidget(confirm_button)
 
-    def fill(self):
-        while self.table.rowCount() > 0:
-            self.table.removeRow(0)
+    def refresh(self):
+        rows_to_remove = []
+        names = glb.model.get_all_names()[1:]
+        self.data['knobs']['elements'].clear()
+        for i in range(self.element_table.rowCount()):
+            item = self.element_table.item(i, 2)
+            name = item.text()
+            if name not in names:
+                rows_to_remove.append(i)
+                if item.element_index == self.data['target']:
+                    self.data['target'] = None
+            else:
+                n_index = glb.model.get_element(name=name)[0]['index']
+                try:
+                    knob_checkbox = self.element_table.cellWidget(i, 0).children()[1]
+                except: # for items without knobs
+                    knob_checkbox = QCheckBox()
+                    knob_checkbox.setCheckState(Qt.Unchecked)
+                if item.element_index == self.data['target']:
+                    self.data['target'] = n_index
+                if knob_checkbox.checkState() == Qt.Checked:
+                    self.data['knobs']['elements'].append(n_index)
+                item.element_index = n_index
+        
+        for row_num in sorted(rows_to_remove, reverse=True): # reverse so rows numbers don't shift backward
+            self.element_table.removeRow(row_num)
 
-        names = glb.model.get_all_names()
-        for i in range(len(names)):
-            name = names[i]
-            element = glb.model.get_element(name=name)[0]
+    def handleCheckBox(self, state):
+        checkbox = QApplication.focusWidget()
+        center_qwidget = checkbox.parent()
+        row_qwidget = center_qwidget.parent()
+        table = row_qwidget.parent()
+        
+        if table is self.bmstate_table:
+            name_column = 1
+        else:
+            name_column = 2
+            
+        i = table.indexAt(center_qwidget.pos())
+        element_name = table.item(i.row(), name_column).text()
 
-            knob_widget = QtWidgets.QWidget()
-            knob_check = QtWidgets.QCheckBox()
-            target_widget = QtWidgets.QWidget()
-            target_check = QtWidgets.QCheckBox()
-
-            knob_layout = QtWidgets.QHBoxLayout()
-            knob_layout.addWidget(knob_check)
-            knob_layout.setAlignment(QtCore.Qt.AlignCenter)
-            knob_layout.setContentsMargins(0, 0, 0, 0)
-            knob_widget.setLayout(knob_layout)
-
-            target_layout = QtWidgets.QHBoxLayout()
-            target_layout.addWidget(target_check)
-            target_layout.setAlignment(QtCore.Qt.AlignCenter)
-            target_layout.setContentsMargins(0, 0, 0, 0)
-            target_widget.setLayout(target_layout)
-
-            knob_check.stateChanged.connect(self.handleTargetKnobs)
-            target_check.stateChanged.connect(self.handleTargetKnobs)
-
-            item = QtWidgets.QTableWidgetItem()
-            item.setText(name)
-
-            self.table.insertRow(self.table.rowCount())
-            if len(element['properties']) > 2 or element['properties']['name'] == 'S':
-                self.table.setCellWidget(
-                    self.table.rowCount() - 1, 0, knob_widget)
-            if element['properties']['name'] != 'S':
-                self.table.setCellWidget(
-                    self.table.rowCount() - 1, 1, target_widget)
-            self.table.setItem(self.table.rowCount() - 1, 2, item)
-
-    def handleTargetKnobs(self):
-        checkbox = QtWidgets.QApplication.focusWidget()
+        if table is self.element_table:
+            element_index = glb.model.get_index_by_name(name=element_name)[element_name][0]
+        
         checkbox.blockSignals(True)
-        index = self.table.indexAt(checkbox.parent().pos())
-        element_name = self.table.item(index.row(), 2).text()
-        element_index = glb.model.get_index_by_name(
-            name=element_name)[element_name][0]
-        if index.column() == 0:
-            if self.checked['target'][0]:
-                target_index = self.checked['target'][0]
-                if element_index > target_index:
-                    warning = QtWidgets.QMessageBox()
-                    warning.setIcon(QtWidgets.QMessageBox.Critical)
-                    warning.setText("Cannot use knob beyond target location.")
-                    warning.setWindowTitle("ERROR")
-                    warning.setStandardButtons(QtWidgets.QMessageBox.Ok)
-                    if warning.exec() == QtWidgets.QMessageBox.Ok:
-                        warning.close()
-                        checkbox.setCheckState(QtCore.Qt.Unchecked)
-                elif element_index in self.checked['knobs'][0]:
-                    self.checked['knobs'][0].remove(element_index)
-                    self.checked['knobs'][1].remove(element_name)
+        if state == Qt.Unchecked:
+            if i.column() == 0:
+                if table is self.element_table:
+                    self.data['knobs']['elements'].remove(element_index)
                 else:
-                    self.checked['knobs'][0].append(element_index)
-                    self.checked['knobs'][1].append(element_name)
-            elif element_index in self.checked['knobs'][0]:
-                self.checked['knobs'][0].remove(element_index)
-                self.checked['knobs'][1].remove(element_name)
+                    self.data['knobs']['bmstate'].remove(element_name)
             else:
-                self.checked['knobs'][0].append(element_index)
-                self.checked['knobs'][1].append(element_name)
-        elif index.column() == 1:
-            if self.checked['target'][0]:
-                if self.checked['target'][0] == element_index:
-                    self.checked['target'][0] = None
-                    self.checked['target'][1] = None
+                self.data['target'] = None
+        else:
+            if i.column() == 0:
+                if table is self.element_table:
+                    if self.data['target']:
+                        if element_index > self.data['target']:
+                            checkbox.setCheckState(Qt.Unchecked)
+                            warning = QMessageBox()
+                            warning.setIcon(QMessageBox.Critical)
+                            warning.setText("Cannot use knob beyond target location.")
+                            warning.setWindowTitle("ERROR")
+                            warning.setStandardButtons(QMessageBox.Ok)
+                            if warning.exec() == QMessageBox.Ok:
+                                warning.close()
+                                checkbox.blockSignals(False)
+                                return
+                    self.data['knobs']['elements'].append(element_index)
                 else:
-                    target_checkbox = self.table.cellWidget(
-                        self.checked['target'][0], 1).children()[1]
-                    target_checkbox.blockSignals(True)
-                    target_checkbox.setCheckState(QtCore.Qt.Unchecked)
-                    self.checked['target'][0] = element_index
-                    self.checked['target'][1] = element_name
-                    target_checkbox.blockSignals(False)
+                    self.data['knobs']['bmstate'].append(element_name)
             else:
-                self.checked['target'][0] = element_index
-                self.checked['target'][1] = element_name
-
-            for knob_index in self.checked['knobs'][0]:
-                if element_index < knob_index:
-                    warning = QtWidgets.QMessageBox()
-                    warning.setIcon(QtWidgets.QMessageBox.Critical)
-                    warning.setText(
-                        "Target must be beyond all knobs or at then final knob.")
-                    warning.setWindowTitle("ERROR")
-                    warning.setStandardButtons(QtWidgets.QMessageBox.Ok)
-                    if warning.exec() == QtWidgets.QMessageBox.Ok:
-                        warning.close()
-                        checkbox.setCheckState(QtCore.Qt.Unchecked)
-                        if element_index == self.checked['target'][0]:
-                            self.checked['target'][0] = None
-                            self.checked['target'][1] = None
-                    break
+                for knob_index in self.data['knobs']['elements']:
+                    if element_index < knob_index:
+                        checkbox.setCheckState(Qt.Unchecked)
+                        warning = QMessageBox()
+                        warning.setIcon(QMessageBox.Critical)
+                        warning.setText("Target must be at or beyond final knob.")
+                        warning.setWindowTitle("ERROR")
+                        warning.setStandardButtons(QMessageBox.Ok)
+                        if warning.exec() == QMessageBox.Ok:
+                            warning.close()
+                            checkbox.blockSignals(False)
+                            return
+                if self.data['target']:
+                    target_name = glb.model.get_element(index=self.data['target'])[0]['properties']['name']
+                    for i in range(self.element_table.rowCount()):
+                        name = self.element_table.item(i, name_column).text()
+                        if name == target_name:
+                            target_checkbox = self.element_table.cellWidget(i, 1).children()[1]
+                            target_checkbox.blockSignals(True)
+                            target_checkbox.setCheckState(Qt.Unchecked)
+                            target_checkbox.blockSignals(False)
+                        
+                self.data['target'] = element_index
+                    
         checkbox.blockSignals(False)
+        
 
-    def checkPrevCheckedItems(self):
-        for i in range(self.table.rowCount()):
-            element = self.table.item(i, 2).text()
-            if element in self.checked['knobs'][1]:
-                checkbox = self.table.cellWidget(i, 0).children()[1]
-                checkbox.setCheckState(QtCore.Qt.Checked)
-            elif element in self.checked['target'][1]:
-                checkbox = self.table.cellWidget(i, 1).children()[1]
-                checkbox.setCheckState(QtCore.Qt.Checked)
+    def setKnobs(self):
+        names = glb.model.get_all_names()[1:]
+        bmstate_components = ['Q/A', 'energy', 'magnetic rigidity', 
+                              'x-position', 'y-position', 'z-position',
+                              'x-momentum', 'y-momentum', 'z-momentum']
+        
+        # beamstate table
+        for i in range(len(bmstate_components)):
+            component = bmstate_components[i]
+
+            qwidget = QWidget()
+            checkbox = QCheckBox(parent=self.bmstate_table)
+            item = QTableWidgetItem()
+
+            qwidget.setLayout(QHBoxLayout())
+            qwidget.layout().setAlignment(Qt.AlignCenter)
+            qwidget.layout().setContentsMargins(0, 0, 0, 0)
+            qwidget.layout().addWidget(checkbox)
+
+            checkbox.stateChanged.connect(self.handleCheckBox)
+
+            item.setText(component)
+
+            final_row_index = self.bmstate_table.rowCount()
+            self.bmstate_table.insertRow(final_row_index)
+            self.bmstate_table.setCellWidget(final_row_index, 0, qwidget)
+            self.bmstate_table.setItem(final_row_index, 1, item)
+            
+        # element table
+        for name in names:
+            element = glb.model.get_element(name=name)[0]
+            
+            knob_widget = QWidget()
+            target_widget = QWidget()
+            knob_checkbox = QCheckBox()
+            target_checkbox = QCheckBox()
+            item = ItemWrapper(name, element['index'])
+
+            knob_checkbox.stateChanged.connect(self.handleCheckBox)
+
+            knob_widget.setLayout(QHBoxLayout())
+            knob_widget.layout().setAlignment(Qt.AlignCenter)
+            knob_widget.layout().setContentsMargins(0, 0, 0, 0)
+            knob_widget.layout().addWidget(knob_checkbox)
+
+            target_checkbox.stateChanged.connect(self.handleCheckBox)
+
+            target_widget.setLayout(QHBoxLayout())
+            target_widget.layout().setAlignment(Qt.AlignCenter)
+            target_widget.layout().setContentsMargins(0, 0, 0, 0)
+            target_widget.layout().addWidget(target_checkbox)
+
+            final_row_index = self.element_table.rowCount()
+            self.element_table.insertRow(final_row_index)
+            if len(element['properties']) > 2: # always contains 'name' and 'type'
+                self.element_table.setCellWidget(final_row_index, 0, knob_widget)
+            self.element_table.setCellWidget(final_row_index, 1, target_widget)
+            self.element_table.setItem(final_row_index, 2, item)
+            
+class ItemWrapper(QTableWidgetItem):
+    def __init__(self, element_name, element_index):
+        super().__init__()
+        self.setText(element_name)
+        self.element_index = element_index

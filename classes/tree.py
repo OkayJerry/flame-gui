@@ -381,6 +381,7 @@ class LatElementConfig(QWidget):
         self._setRequiredProperties()
 
     def editItem(self, top_level_item):
+        self.index_spin.setRange(1, len(glb.model.get_all_names()))
         self.attr_table.blockSignals(True)
         self.edit_mode = True
 
@@ -584,5 +585,6 @@ class LatElementConfig(QWidget):
         col = self.attr_table.columnCount() - 1
         bottom_item_col1 = self.attr_table.item(row, col - 1)
         bottom_item_col2 = self.attr_table.item(row, col)
-        if bottom_item_col1.text() != "" and bottom_item_col2.text() != "":
-            self.attr_table.insertRow(row + 1)
+        if bottom_item_col1 is not None and bottom_item_col2 is not None:
+            if bottom_item_col1.text() != "" and bottom_item_col2.text() != "":
+                self.attr_table.insertRow(row + 1)
