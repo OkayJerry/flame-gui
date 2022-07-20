@@ -1,4 +1,4 @@
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 import numpy as np
 from PyQt5.QtCore import *
@@ -290,6 +290,7 @@ class OptimizationWindow(QWidget):
                 high = float(self.evo_table.item(i, 3).text())
                 x0.append((low, high))
 
+            # currently executing on the same thread
             ans = executor.submit(_differential_evolution, func=_costGeneric, x0=x0, args=(knobs, obj), workers=-1)
             ans = ans.result()
             
@@ -551,7 +552,12 @@ class SelectWindow(QWidget):
         self.layout().addWidget(self.element_table)
         self.layout().addWidget(confirm_button)
 
+    def clear(self):
+        self.bmstate_table.setRowCount(0)
+        self.element_table.setRowCount(0)
+
     def refresh(self):
+        # element removal
         rows_to_remove = []
         names = glb.model.get_all_names()[1:]
         self.data['knobs']['elements'].clear()
@@ -562,21 +568,75 @@ class SelectWindow(QWidget):
                 rows_to_remove.append(i)
                 if item.element_index == self.data['target']:
                     self.data['target'] = None
-            else:
-                n_index = glb.model.get_element(name=name)[0]['index']
-                try:
-                    knob_checkbox = self.element_table.cellWidget(i, 0).children()[1]
-                except: # for items without knobs
-                    knob_checkbox = QCheckBox()
-                    knob_checkbox.setCheckState(Qt.Unchecked)
-                if item.element_index == self.data['target']:
-                    self.data['target'] = n_index
-                if knob_checkbox.checkState() == Qt.Checked:
-                    self.data['knobs']['elements'].append(n_index)
-                item.element_index = n_index
+                self.adjustDataIndexesBeyond(i + 1)
         
         for row_num in sorted(rows_to_remove, reverse=True): # reverse so rows numbers don't shift backward
             self.element_table.removeRow(row_num)
+            
+        # element addition
+        current_elements = []
+        for i in range(self.element_table.rowCount()):
+            item = self.element_table.item(i, 2)
+            current_elements.append(item.text())
+
+        for name in names:
+            if name not in current_elements:
+                element = glb.model.get_element(name=name)[0]
+                element_index = element['index']
+            
+                knob_widget = QWidget()
+                target_widget = QWidget()
+                knob_checkbox = QCheckBox()
+                target_checkbox = QCheckBox()
+                item = ItemWrapper(name, element_index)
+
+                knob_checkbox.stateChanged.connect(self.handleCheckBox)
+
+                knob_widget.setLayout(QHBoxLayout())
+                knob_widget.layout().setAlignment(Qt.AlignCenter)
+                knob_widget.layout().setContentsMargins(0, 0, 0, 0)
+                knob_widget.layout().addWidget(knob_checkbox)
+
+                target_checkbox.stateChanged.connect(self.handleCheckBox)
+
+                target_widget.setLayout(QHBoxLayout())
+                target_widget.layout().setAlignment(Qt.AlignCenter)
+                target_widget.layout().setContentsMargins(0, 0, 0, 0)
+                target_widget.layout().addWidget(target_checkbox)
+
+                self.element_table.insertRow(element_index - 1)
+                if len(element['properties']) > 2: # always contains 'name' and 'type'
+                    self.element_table.setCellWidget(element_index - 1, 0, knob_widget)
+                self.element_table.setCellWidget(element_index - 1, 1, target_widget)
+                self.element_table.setItem(element_index - 1, 2, item)
+
+                self.adjustDataIndexesBeyond(element_index, removal=True)
+
+                
+        print(self.data)
+
+    def adjustDataIndexesBeyond(self, index, removal=False):
+        if len(glb.model.get_all_names()[1:]) == 0:
+            return
+
+        # In element removal, allows us to adjust data['target'] += 1, without
+        # having to update the item.element_index beforehand. This is necessary
+        # because the next item.element_index would also be equal to data['target].
+        # Note: this is not the case for element addition, hence the boolean.
+        for i in sorted(range(self.element_table.rowCount())[index:], reverse=removal):
+            item = self.element_table.item(i, 2)
+            n_index = glb.model.get_element(name=item.text())[0]['index']
+            try:
+                knob_checkbox = self.element_table.cellWidget(i, 0).children()[1]
+            except: # for items without knobs
+                knob_checkbox = QCheckBox()
+                knob_checkbox.setCheckState(Qt.Unchecked)
+            if item.element_index == self.data['target']:
+                print(item.element_index, self.data['target'])
+                self.data['target'] = n_index
+            if knob_checkbox.checkState() == Qt.Checked:
+                self.data['knobs']['elements'].append(n_index)
+            item.element_index = n_index
 
     def handleCheckBox(self, state):
         checkbox = QApplication.focusWidget()
@@ -647,6 +707,7 @@ class SelectWindow(QWidget):
                         
                 self.data['target'] = element_index
                     
+        print(self.data)
         checkbox.blockSignals(False)
         
 

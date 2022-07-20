@@ -90,9 +90,13 @@ class MenuBar(QtWidgets.QMenuBar):
         self.handleUndoRedoEnabling()
 
     def new(self):
+        opt_window = self.main_window.menu_bar.opt_window
         glb.model = glb.createModel()
-        # self.main_window.menu_bar.opt_window.clear()
+        
         self.main_window.workspace.refresh()
+        opt_window.clear()
+        opt_window.select_window.clear()
+        opt_window.select_window.setKnobs()
         
     def open(self):
         graph = self.main_window.workspace.graph
@@ -126,8 +130,8 @@ class MenuBar(QtWidgets.QMenuBar):
                 self.bmstate_window.update()
                 lat_editor.populate()
                 opt_window.clear()
+                opt_window.select_window.clear()
                 opt_window.select_window.setKnobs()
-                # opt_window.select_window.fill()
 
                 for i in range(len(lat_editor.header())):
                     lat_editor.resizeColumnToContents(i)
