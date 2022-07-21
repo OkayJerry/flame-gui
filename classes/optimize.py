@@ -133,11 +133,19 @@ class OptimizationWindow(QWidget):
         self.nelder_table.setHorizontalHeaderLabels(['Name', 'Attribute', 'x0'])
         self.nelder_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.nelder_table.verticalHeader().hide()
+        self.nelder_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.nelder_table.setFocusPolicy(Qt.NoFocus)
+        self.nelder_table.setSelectionMode(QAbstractItemView.NoSelection)
+        self.nelder_table.itemDoubleClicked.connect(self._handleEditsNelderTable)
 
         self.evo_table.setAlternatingRowColors(True)
         self.evo_table.setHorizontalHeaderLabels(['Name', 'Attribute', 'x0-Low', 'x0-High'])
         self.evo_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.evo_table.verticalHeader().hide()
+        self.evo_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.evo_table.setFocusPolicy(Qt.NoFocus)
+        self.evo_table.setSelectionMode(QAbstractItemView.NoSelection)
+        self.evo_table.itemDoubleClicked.connect(self._handleEditsEvoTable)
 
         select_button.clicked.connect(lambda: self.select_window.show())
 
@@ -157,8 +165,9 @@ class OptimizationWindow(QWidget):
         self.param_tree.setItemDelegateForColumn(1, DoubleDelegate(self))
         self.param_tree.setItemDelegateForColumn(2, DoubleDelegate(self))
         self.param_tree.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.param_tree.itemDoubleClicked.connect(self._handleEdits)
-        # self.param_tree.itemChanged.connect(self._handleTargetParam)
+        self.param_tree.setFocusPolicy(Qt.NoFocus)
+        self.param_tree.setSelectionMode(QAbstractItemView.NoSelection)
+        self.param_tree.itemDoubleClicked.connect(self._handleEditsParamTree)
         self.param_tree.setHeaderLabels(['Parameter', 'Target Value', 'Weight'])
         self.param_tree.setColumnCount(3)
         self.param_tree.header().setSectionResizeMode(0, QHeaderView.Stretch)
@@ -314,7 +323,6 @@ class OptimizationWindow(QWidget):
 
         
     def fillTables(self):
-        print(self.select_window.data)
         self.clear()
         target_index = self.select_window.data['target']
         bmstate = self.select_window.data['knobs']['bmstate']
@@ -445,10 +453,20 @@ class OptimizationWindow(QWidget):
         self.param_tree.addTopLevelItem(reference)
         self.param_tree.addTopLevelItem(actual)
         
-    def _handleEdits(self, item, col):
+    def _handleEditsParamTree(self, item, col):
         if col == 0:  # odd logic, but others didn't work?
             return
         self.param_tree.editItem(item, col)
+        
+    def _handleEditsNelderTable(self, item):
+        if item.column() != 2:
+            return
+        self.nelder_table.editItem(item)
+
+    def _handleEditsEvoTable(self, item):
+        if item.column() != 2 and item.column() != 3:
+            return
+        self.evo_table.editItem(item)
         
     def fillTargetParams(self, item):
         if item.childCount() == 0:
@@ -527,7 +545,7 @@ class SelectWindow(QWidget):
         confirm_button = QPushButton('Confirm')
 
         self.bmstate_table.setAlternatingRowColors(True)
-        self.bmstate_table.setHorizontalHeaderLabels(['Knob', 'Name'])
+        self.bmstate_table.setHorizontalHeaderLabels(['Knob', 'Beamstate Element'])
         self.bmstate_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.bmstate_table.horizontalHeader().setStretchLastSection(True)
         self.bmstate_table.verticalHeader().hide()
@@ -536,7 +554,7 @@ class SelectWindow(QWidget):
         self.bmstate_table.setSelectionMode(QAbstractItemView.NoSelection)
 
         self.element_table.setAlternatingRowColors(True)
-        self.element_table.setHorizontalHeaderLabels(['Knob', 'Target', 'Name'])
+        self.element_table.setHorizontalHeaderLabels(['Knob', 'Target', 'Model Element'])
         self.element_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.element_table.horizontalHeader().setStretchLastSection(True)
         self.element_table.verticalHeader().hide()

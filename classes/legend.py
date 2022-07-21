@@ -1,4 +1,4 @@
-from PyQt5 import QtCore
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QAbstractItemView, QMessageBox, QTreeWidget,
                              QTreeWidgetItem)
 
@@ -11,6 +11,9 @@ class Legend(QTreeWidget):
         self.setHeaderHidden(True)
         self.setSelectionMode(QAbstractItemView.NoSelection)
         self.setAlternatingRowColors(True)
+        self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.setFocusPolicy(Qt.NoFocus)
+        self.setSelectionMode(QAbstractItemView.NoSelection)
 
     def link(self, items, graph):
         self.items = items
@@ -117,8 +120,8 @@ class Legend(QTreeWidget):
         # enabling checkbox
         for lst in self.items.values():
             for item in lst:
-                item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
-                item.setCheckState(0, QtCore.Qt.Unchecked)
+                item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+                item.setCheckState(0, Qt.Unchecked)
 
         self.itemChanged.connect(self.handleCheckBoxes)
 
@@ -131,7 +134,7 @@ class Legend(QTreeWidget):
             self.checked_box_cnt += 1
         else:
             self.blockSignals(True)
-            item.setCheckState(0, QtCore.Qt.Unchecked)
+            item.setCheckState(0, Qt.Unchecked)
             self.blockSignals(False)
 
             warning = QMessageBox()
@@ -147,6 +150,6 @@ class Legend(QTreeWidget):
         checked_items = []
         for lst in self.items.values():
             for item in lst:
-                if item.checkState(0) == QtCore.Qt.Checked:
+                if item.checkState(0) == Qt.Checked:
                     checked_items.append(item)
         return checked_items

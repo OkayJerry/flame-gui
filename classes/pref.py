@@ -1,26 +1,27 @@
 from configparser import ConfigParser
 
 import matplotlib
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import *
 
 import classes.globals as glb
 
 
-class PreferenceWindow(QtWidgets.QWidget):
+class PreferenceWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__()
         self.setWindowTitle('Preferences')
-        layout = QtWidgets.QGridLayout()
+        layout = QGridLayout()
         self.menubar = parent
         
         self.config = ConfigParser()
         settings = self._getSettings()
 
-        apply_button = QtWidgets.QPushButton()
-        default_button = QtWidgets.QPushButton()
-        self.app_fsize_spin = QtWidgets.QSpinBox()
-        self.plt_fsize_spin = QtWidgets.QSpinBox()
-        self.tree_dec_spin = QtWidgets.QSpinBox()
+        apply_button = QPushButton()
+        default_button = QPushButton()
+        self.app_fsize_spin = QSpinBox()
+        self.plt_fsize_spin = QSpinBox()
+        self.tree_dec_spin = QSpinBox()
         
         self.app_fsize_spin.setValue(settings['AppFontSize'])
         self.plt_fsize_spin.setValue(settings['PlotFontSize'])
@@ -29,9 +30,9 @@ class PreferenceWindow(QtWidgets.QWidget):
         self.plt_fsize_spin.setRange(1, 15)
         self.tree_dec_spin.setRange(1, 8)
 
-        app_fsize_label = QtWidgets.QLabel('Application Font Size:')
-        plt_fsize_label = QtWidgets.QLabel('Plot Font Size:')
-        tree_dec_label = QtWidgets.QLabel('Lattice Tree Significant Figures:')
+        app_fsize_label = QLabel('Application Font Size:')
+        plt_fsize_label = QLabel('Plot Font Size:')
+        tree_dec_label = QLabel('Lattice Tree Significant Figures:')
 
         apply_button.setText('Apply')
         apply_button.clicked.connect(self._apply)
@@ -99,7 +100,7 @@ class PreferenceWindow(QtWidgets.QWidget):
         
         for element in expanded_elements:
             item = lat_editor.findItems(
-                element, QtCore.Qt.MatchExactly, name_i)[0]
+                element, Qt.MatchExactly, name_i)[0]
             item.setExpanded(True)
 
         self._setSettings()

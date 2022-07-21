@@ -5,7 +5,8 @@ import flame
 import numpy as np
 from flame import Machine
 from flame_utils import ModelFlame
-from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QKeySequence
 
 import classes.globals as glb
 from classes.beam import *
@@ -15,9 +16,9 @@ from classes.pref import PreferenceWindow
 from classes.workspace import *
 
 
-class MenuBar(QtWidgets.QMenuBar):
+class MenuBar(QMenuBar):
     def __init__(self, main_window):
-        super(QtWidgets.QMenuBar, self).__init__(main_window)
+        super(QMenuBar, self).__init__(main_window)
         self.main_window = main_window
         self.model_history = []
         self.undo_history = []
@@ -33,36 +34,36 @@ class MenuBar(QtWidgets.QMenuBar):
         view_menu = self.addMenu('View')
 
         # actions
-        new_action = QtWidgets.QAction('&New', main_window)
-        open_action = QtWidgets.QAction('&Open...', main_window)
-        save_action = QtWidgets.QAction('&Save', main_window)
-        save_as_action = QtWidgets.QAction('&Save As...', main_window)
-        exit_action = QtWidgets.QAction('&Exit', main_window)
+        new_action = QAction('&New', main_window)
+        open_action = QAction('&Open...', main_window)
+        save_action = QAction('&Save', main_window)
+        save_as_action = QAction('&Save As...', main_window)
+        exit_action = QAction('&Exit', main_window)
 
-        self.undo_action = QtWidgets.QAction('&Undo', main_window)
-        self.redo_action = QtWidgets.QAction('&Redo', main_window)
-        self.bmstate_action = QtWidgets.QAction('&Beam State', main_window)
-        self.opt_action = QtWidgets.QAction('&Optimization', main_window)
+        self.undo_action = QAction('&Undo', main_window)
+        self.redo_action = QAction('&Redo', main_window)
+        self.bmstate_action = QAction('&Beam State', main_window)
+        self.opt_action = QAction('&Optimization', main_window)
 
-        phase_action = QtWidgets.QAction('&Phase Space', main_window)
-        pref_action = QtWidgets.QAction('&Preferences', main_window)
+        phase_action = QAction('&Phase Space', main_window)
+        pref_action = QAction('&Preferences', main_window)
 
         # set shortcuts
-        new_action.setShortcut(QtGui.QKeySequence.New)
-        open_action.setShortcut(QtGui.QKeySequence.Open)
-        save_action.setShortcut(QtGui.QKeySequence.Save)
-        save_as_action.setShortcut(QtGui.QKeySequence.SaveAs)
-        exit_action.setShortcut(QtGui.QKeySequence.Quit)
+        new_action.setShortcut(QKeySequence.New)
+        open_action.setShortcut(QKeySequence.Open)
+        save_action.setShortcut(QKeySequence.Save)
+        save_as_action.setShortcut(QKeySequence.SaveAs)
+        exit_action.setShortcut(QKeySequence.Quit)
 
-        self.undo_action.setShortcut(QtGui.QKeySequence.Undo)
-        self.redo_action.setShortcut(QtGui.QKeySequence.Redo)
+        self.undo_action.setShortcut(QKeySequence.Undo)
+        self.redo_action.setShortcut(QKeySequence.Redo)
 
         # set trigger
         new_action.triggered.connect(self.new)
         open_action.triggered.connect(self.open)
         save_action.triggered.connect(self.save)
         save_as_action.triggered.connect(self.saveAs)
-        exit_action.triggered.connect(QtWidgets.qApp.quit)
+        exit_action.triggered.connect(qApp.quit)
 
         self.undo_action.triggered.connect(self.undoModels)
         self.redo_action.triggered.connect(self.redoModels)
@@ -105,17 +106,17 @@ class MenuBar(QtWidgets.QMenuBar):
         opt_window = self.main_window.menu_bar.opt_window
 
         while True:
-            self.filename = QtWidgets.QFileDialog.getOpenFileName(
+            self.filename = QFileDialog.getOpenFileName(
                 self.main_window, 'Open File', filter="Lattice File (*.lat)")[0]  # previously tuple
             if self.filename: 
                 if ".lat" not in self.filename:
-                    warning = QtWidgets.QMessageBox()
-                    warning.setIcon(QtWidgets.QMessageBox.Critical)
+                    warning = QMessageBox()
+                    warning.setIcon(QMessageBox.Critical)
                     warning.setText("Didn't select a .lat file")
                     warning.setWindowTitle("ERROR")
-                    warning.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                    warning.setStandardButtons(QMessageBox.Ok)
 
-                    if warning.exec() == QtWidgets.QMessageBox.Ok:
+                    if warning.exec() == QMessageBox.Ok:
                         warning.close()
                         continue
 
@@ -144,7 +145,7 @@ class MenuBar(QtWidgets.QMenuBar):
         glb.model.generate_latfile(latfile=self.filename)
 
     def saveAs(self):
-        filename = QtWidgets.QFileDialog.getSaveFileName(self, "Save File", "model.lat", "Lattice File (*.lat)")[0]  # previously tuple
+        filename = QFileDialog.getSaveFileName(self, "Save File", "model.lat", "Lattice File (*.lat)")[0]  # previously tuple
         if filename:
             glb.model.generate_latfile(latfile=filename)
 
@@ -189,7 +190,7 @@ class MenuBar(QtWidgets.QMenuBar):
         self.bmstate_window.show()
         
 
-class Window(QtWidgets.QMainWindow):
+class Window(QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
 
@@ -198,10 +199,10 @@ class Window(QtWidgets.QMainWindow):
         self.setMinimumSize(1366, 768)
 
         # components
-        main = QtWidgets.QWidget()
+        main = QWidget()
         self.workspace = Workspace(self)
         self.menu_bar = MenuBar(self)
-        layout = QtWidgets.QHBoxLayout(main)
+        layout = QHBoxLayout(main)
 
         layout.addWidget(self.workspace)
 
@@ -246,7 +247,6 @@ class Window(QtWidgets.QMainWindow):
         ])
 
         glb.model = ModelFlame(machine=Machine(conf))
-        # self.menu_bar.opt_window.link(self.workspace)
         self.menu_bar.bmstate_window.update()
 
     def closeEvent(self, event):
