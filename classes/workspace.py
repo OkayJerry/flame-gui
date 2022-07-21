@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import *
+from PyQt5.QtCore import Qt
 
 from classes.canvas import *
 from classes.legend import *
@@ -299,7 +300,7 @@ class Workspace(QWidget):
 
         for element in expanded_elements:
             item = self.lat_editor.findItems(
-                element, QtCore.Qt.MatchExactly, name_i)[0]
+                element, Qt.MatchExactly, name_i)[0]
             item.setExpanded(True)
 
         # graph
