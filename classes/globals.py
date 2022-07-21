@@ -1,12 +1,12 @@
 import os
-from sys import argv
 from collections import OrderedDict
+from sys import argv
 
 import numpy as np
-from PyQt5.QtWidgets import QApplication
-from flame_utils import ModelFlame
 from flame import Machine
+from flame_utils import ModelFlame
 from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import QApplication
 
 
 def createModel():

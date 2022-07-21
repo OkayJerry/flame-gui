@@ -1,7 +1,10 @@
-from PyQt5 import QtWidgets, QtGui, QtCore
-import classes.globals as glb
-import matplotlib
 from configparser import ConfigParser
+
+import matplotlib
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+import classes.globals as glb
+
 
 class PreferenceWindow(QtWidgets.QWidget):
     def __init__(self, parent=None):

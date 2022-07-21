@@ -1,5 +1,6 @@
-from PyQt5.QtWidgets import QTreeWidget, QHeaderView, QTreeWidgetItem, QAbstractItemView, QComboBox, QMessageBox
 from PyQt5 import QtCore
+from PyQt5.QtWidgets import (QAbstractItemView, QMessageBox, QTreeWidget,
+                             QTreeWidgetItem)
 
 
 class Legend(QTreeWidget):
