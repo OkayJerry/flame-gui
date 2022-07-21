@@ -1,5 +1,6 @@
-from PyQt5 import QtWidgets, QtCore
 import numpy as np
+from PyQt5 import QtCore, QtWidgets
+
 import classes.globals as glb
 
 

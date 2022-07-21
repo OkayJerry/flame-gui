@@ -1,16 +1,18 @@
-from PyQt5 import QtWidgets
-from classes.workspace import *
-from classes.beam import *
-from classes.phase import PhaseSpaceWindow
-from classes.optimize import OptimizationWindow
-from classes.pref import PreferenceWindow
-from flame_utils import ModelFlame
-from flame import Machine
-import flame
-from collections import OrderedDict
-import numpy as np
 import os
+from collections import OrderedDict
+
+import flame
+import numpy as np
+from flame import Machine
+from flame_utils import ModelFlame
+from PyQt5 import QtWidgets
+
 import classes.globals as glb
+from classes.beam import *
+from classes.optimize import OptimizationWindow
+from classes.phase import PhaseSpaceWindow
+from classes.pref import PreferenceWindow
+from classes.workspace import *
 
 
 class MenuBar(QtWidgets.QMenuBar):

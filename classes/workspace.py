@@ -1,7 +1,8 @@
 from PyQt5 import QtWidgets
-from classes.tree import *
+
 from classes.canvas import *
 from classes.legend import *
+from classes.tree import *
 from classes.utility import ItemWrapper
 
 workspace_one_items = {

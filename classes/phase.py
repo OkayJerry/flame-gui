@@ -1,9 +1,10 @@
-from PyQt5 import QtWidgets
-from matplotlib.backends.qt_compat import QtWidgets
-from matplotlib.backends.backend_qtagg import FigureCanvas
-from matplotlib.figure import Figure
 import matplotlib as mpl
 import numpy as np
+from matplotlib.backends.backend_qtagg import FigureCanvas
+from matplotlib.backends.qt_compat import QtWidgets
+from matplotlib.figure import Figure
+from PyQt5 import QtWidgets
+
 import classes.globals as glb
 
 

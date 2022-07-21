@@ -1,7 +1,8 @@
-from PyQt5.QtWidgets import *
 from PyQt5 import QtCore, QtGui
-import classes.globals as glb
+from PyQt5.QtWidgets import *
 from sigfig import round
+
+import classes.globals as glb
 
 
 class DoubleDelegate(QStyledItemDelegate):

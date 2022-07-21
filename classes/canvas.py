@@ -1,12 +1,15 @@
-from matplotlib.backends.backend_qtagg import FigureCanvas, NavigationToolbar2QT
-from matplotlib.figure import Figure
-from flame_utils import ModelFlame, PlotLat
-from matplotlib.lines import Line2D
 import matplotlib.patches as mpatches
-import numpy as np
-import classes.globals as glb
 import matplotlib.pyplot as plt
-from PyQt5.QtWidgets import QColorDialog, QWidget, QVBoxLayout, QComboBox, QPushButton
+import numpy as np
+from flame_utils import ModelFlame, PlotLat
+from matplotlib.backends.backend_qtagg import (FigureCanvas,
+                                               NavigationToolbar2QT)
+from matplotlib.figure import Figure
+from matplotlib.lines import Line2D
+from PyQt5.QtWidgets import (QColorDialog, QComboBox, QPushButton, QVBoxLayout,
+                             QWidget)
+
+import classes.globals as glb
 
 
 class FmMplLine(Line2D):
