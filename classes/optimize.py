@@ -314,7 +314,7 @@ class OptimizationWindow(QWidget):
 
         
     def fillTables(self):
-        self.select_window.close()
+        print(self.select_window.data)
         self.clear()
         target_index = self.select_window.data['target']
         bmstate = self.select_window.data['knobs']['bmstate']
@@ -544,13 +544,17 @@ class SelectWindow(QWidget):
         self.element_table.setFocusPolicy(Qt.NoFocus)
         self.element_table.setSelectionMode(QAbstractItemView.NoSelection)
 
-        confirm_button.clicked.connect(self.opt_window.fillTables)
+        confirm_button.clicked.connect(self._confirmAction)
 
         # finalizing
         self.setKnobs()
         self.layout().addWidget(self.bmstate_table)
         self.layout().addWidget(self.element_table)
         self.layout().addWidget(confirm_button)
+
+    def _confirmAction(self):
+        self.opt_window.fillTables()
+        self.close()
 
     def clear(self):
         self.bmstate_table.setRowCount(0)
@@ -560,12 +564,14 @@ class SelectWindow(QWidget):
         # element removal
         rows_to_remove = []
         names = glb.model.get_all_names()[1:]
-        self.data['knobs']['elements'].clear()
+        # self.data['knobs']['elements'].clear()
         for i in range(self.element_table.rowCount()):
             item = self.element_table.item(i, 2)
             name = item.text()
             if name not in names:
                 rows_to_remove.append(i)
+                if item.element_index in self.data['knobs']['elements']:
+                    self.data['knobs']['elements'].remove(item.element_index)
                 if item.element_index == self.data['target']:
                     self.data['target'] = None
                 self.adjustDataIndexesBeyond(i + 1)
@@ -631,6 +637,7 @@ class SelectWindow(QWidget):
             if item.element_index == self.data['target']:
                 self.data['target'] = n_index
             if knob_checkbox.checkState() == Qt.Checked:
+                self.data['knobs']['elements'].remove(item.element_index)
                 self.data['knobs']['elements'].append(n_index)
             item.element_index = n_index
 
@@ -764,6 +771,8 @@ class SelectWindow(QWidget):
                 self.element_table.setCellWidget(final_row_index, 0, knob_widget)
             self.element_table.setCellWidget(final_row_index, 1, target_widget)
             self.element_table.setItem(final_row_index, 2, item)
+
+    # def removeAll
             
 class ItemWrapper(QTableWidgetItem):
     def __init__(self, element_name, element_index):
