@@ -85,7 +85,7 @@ Advanced controls/commands for the [Canvas](#canvas).
 ### Color Dialog
 > Accessed from the `Select Line Color` action within the [Canvas Toolbar](#canvas-toolbar)
 
-![color](https://user-images.githubusercontent.com/70593138/179085434-c13e0ce2-9a57-48bb-8f41-4bf3f3280d23.JPG)
+![color](https://user-images.githubusercontent.com/70593138/180307096-684c92b4-b760-4560-bad0-30b8add2e0ad.JPG)
 
 Helps you select a line color for the [Canvas](#canvas). 
 
@@ -117,7 +117,7 @@ After choosing `Edit Selected Element` from [Element View](#element-view)'s righ
 ### Initial Beam State Window
 > Accessed from `Edit` on the menubar.
 
-![bmstate](https://user-images.githubusercontent.com/70593138/179074477-5ce875df-07a1-48cd-b1d9-3776b0483e66.JPG)
+![bmstate](https://user-images.githubusercontent.com/70593138/180307165-db4de398-a46e-493b-a349-2fe09c73710b.JPG)
 
 Set values for the initial beam state using this window.
 #### How To Use
@@ -168,7 +168,7 @@ View the phase space plot for an element.
 ### Select Element Window
 > Accessed from the [Optimization Window](#optimization-window)
 
-![select](https://user-images.githubusercontent.com/70593138/179074968-f8cf59d9-5d35-4616-8537-c7d32f86ecd2.JPG)
+![select](https://user-images.githubusercontent.com/70593138/180307236-cbb7f815-6ef4-4835-a38e-73f99dce5546.JPG)
 
 Choose the knobs and target location for [optimization](#optimization-window).
 #### How To Use
