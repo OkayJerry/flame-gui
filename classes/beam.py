@@ -74,12 +74,12 @@ class BeamStateWindow(QWidget):
         self.kwrd1_spin = BeamStateSpinBox()
         self.alpha_spin = BeamStateSpinBox()
         self.kwrd2_spin = BeamStateSpinBox()
-        self.commit_button = QPushButton()
+        self.reset_button = QPushButton('Reset')
+        self.commit_button = QPushButton('Apply')
 
         self.pos_label.setText('Position:')
         self.mom_label.setText('Momentum:')
         self.alpha_label.setText('Alpha:')
-        self.commit_button.setText('Apply')
 
         for var in ['x', 'y', 'z']:
             self.var_box.addItem(var)
@@ -91,6 +91,7 @@ class BeamStateWindow(QWidget):
         self.var_box.currentTextChanged.connect(self._updateVariableDependant)
         self.kwrd1_box.currentTextChanged.connect(self._updateKwrd1)
         self.kwrd2_box.currentTextChanged.connect(self._updateKwrd2)
+        self.reset_button.clicked.connect(self.update)
         self.commit_button.clicked.connect(self.apply)
 
         self.pos_spin.setRange(-2147483648, 2147483648)
@@ -110,6 +111,7 @@ class BeamStateWindow(QWidget):
         layout.addWidget(self.alpha_spin, 8, 2)
         layout.addWidget(self.kwrd2_box, 9, 1)
         layout.addWidget(self.kwrd2_spin, 9, 2)
+        layout.addWidget(self.reset_button, 10, 1)
         layout.addWidget(self.commit_button, 10, 2)
 
         self.setLayout(layout)
