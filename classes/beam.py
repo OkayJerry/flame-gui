@@ -87,6 +87,8 @@ class BeamStateWindow(QtWidgets.QWidget):
             self.kwrd2_box.addItem(kwrd)
 
         self.var_box.currentTextChanged.connect(self._updateVariableDependant)
+        self.kwrd1_box.currentTextChanged.connect(self._updateKwrd1)
+        self.kwrd2_box.currentTextChanged.connect(self._updateKwrd2)
         self.commit_button.clicked.connect(self.apply)
 
         self.pos_spin.setRange(-2147483648, 2147483648)
@@ -111,6 +113,7 @@ class BeamStateWindow(QtWidgets.QWidget):
         layout.addWidget(self.commit_button, 10, 2)
 
         self.setLayout(layout)
+        self.update()
 
     def link(self, graph, workspace):
         self.graph = graph
@@ -127,25 +130,14 @@ class BeamStateWindow(QtWidgets.QWidget):
         self.mr_spin.setValue(mr_val)
 
         # variable section
-        var = self.var_box.currentText()
+        self._updateVariableDependant()
+        
         kwrd1 = self.kwrd1_box.currentText()
         kwrd2 = self.kwrd2_box.currentText()
-
-        self._updateVariableDependant()
-            
-        if kwrd1 == 'beam size [mm]':
-            kwrd1_val = glb.model.bmstate.xrms
-        else:
-            kwrd1_val = glb.model.bmstate.xtwsb
-
-        if kwrd2 == 'geom. emittance [mm-mrad]':
-            kwrd2_val = glb.model.bmstate.xeps
-        else:
-            kwrd2_val = glb.model.bmstate.xepsn
+        self._updateKwrd1(kwrd1)
+        self._updateKwrd2(kwrd2)
 
         self.alpha_spin.setValue(glb.model.bmstate.xtwsa)
-        self.kwrd1_spin.setValue(kwrd1_val)
-        self.kwrd2_spin.setValue(kwrd2_val)
 
     def _updateVariableDependant(self):
         var = self.var_box.currentText()
@@ -225,3 +217,18 @@ class BeamStateWindow(QtWidgets.QWidget):
 
         self.workspace.refresh()
         self.graph.copyModelToHistory()
+        
+    def _updateKwrd1(self, text):
+        if text == 'beam size [mm]':
+            val = glb.model.bmstate.xrms
+        else:
+            val = glb.model.bmstate.xtwsb
+        self.kwrd1_spin.setValue(val)
+            
+
+    def _updateKwrd2(self, text):
+        if text == 'geom. emittance [mm-mrad]':
+            val = glb.model.bmstate.xeps
+        else:
+            val = glb.model.bmstate.xepsn
+        self.kwrd2_spin.setValue(val)
