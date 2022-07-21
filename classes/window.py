@@ -93,8 +93,12 @@ class MenuBar(QMenuBar):
 
     def new(self):
         opt_window = self.main_window.menu_bar.opt_window
+        filters = self.main_window.workspace.filters
         glb.model = glb.createModel()
         
+        filters.search_bar.setText('')
+        filters.combo_box.setCurrentIndex(0)
+
         self.main_window.workspace.refresh()
         opt_window.clear()
         opt_window.select_window.clear()
@@ -104,6 +108,7 @@ class MenuBar(QMenuBar):
         graph = self.main_window.workspace.graph
         lat_editor = self.main_window.workspace.lat_editor
         opt_window = self.main_window.menu_bar.opt_window
+        filters = self.main_window.workspace.filters
 
         while True:
             self.filename = QFileDialog.getOpenFileName(
@@ -139,7 +144,10 @@ class MenuBar(QMenuBar):
                     lat_editor.resizeColumnToContents(i)
 
                 self.phase_window.setElementBox()
+                filters.search_bar.setText('')
+                filters.combo_box.setCurrentIndex(0)
             break
+        
 
     def save(self):
         glb.model.generate_latfile(latfile=self.filename)
