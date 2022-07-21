@@ -70,9 +70,6 @@ class LatTree(QTreeWidget):
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.itemChanged.connect(self.updateModel)
         self.header().setSectionResizeMode(QHeaderView.ResizeToContents)
-        # self.header().setSectionResizeMode(self.headers.index('Name'), QHeaderView.Stretch)
-        # self.header().setSectionResizeMode(self.headers.index('Value'), QHeaderView.Stretch)
-        # self.header().setStretchLastSection(False)
 
     def link(self, graph, lat_config):
         self.graph = graph
