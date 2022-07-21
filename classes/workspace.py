@@ -297,6 +297,7 @@ class Workspace(QWidget):
         self.lat_editor.clear()
         self.lat_editor.populate()
         self.lat_editor.typeFilter(self.filters.combo_box.currentText())
+        self.filters.nameFilter(self.filters.search_bar.text())
 
         for element in expanded_elements:
             item = self.lat_editor.findItems(
