@@ -30,6 +30,9 @@ class Item(QTreeWidgetItem):
         self.sci_val = None
         
     def setValue(self, column, value, num_sigfigs):
+        if value == '':
+            return
+
         self.actual_val = float(value)
         self.sigfig_val = float(round(value, sigfigs=num_sigfigs))
 
