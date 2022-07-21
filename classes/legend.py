@@ -129,6 +129,10 @@ class Legend(QTreeWidget):
             self.graph.plotItem(item)
             self.checked_box_cnt += 1
         else:
+            self.blockSignals(True)
+            item.setCheckState(0, QtCore.Qt.Unchecked)
+            self.blockSignals(False)
+
             warning = QMessageBox()
             warning.setIcon(QMessageBox.Critical)
             warning.setText("You can only select four parameters at a time")
@@ -137,10 +141,6 @@ class Legend(QTreeWidget):
 
             if warning.exec() == QMessageBox.Ok:
                 warning.close()
-
-            self.blockSignals(True)
-            item.setCheckState(0, QtCore.Qt.Unchecked)
-            self.blockSignals(False)
 
     def getCheckedItems(self):
         checked_items = []
