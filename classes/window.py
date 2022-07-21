@@ -248,3 +248,6 @@ class Window(QtWidgets.QMainWindow):
         glb.model = ModelFlame(machine=Machine(conf))
         # self.menu_bar.opt_window.link(self.workspace)
         self.menu_bar.bmstate_window.update()
+
+    def closeEvent(self, event):
+        QApplication.closeAllWindows()
