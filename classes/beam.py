@@ -1,10 +1,11 @@
 import numpy as np
-from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import QLocale
+from PyQt5.QtWidgets import *
 
 import classes.globals as glb
 
 
-class BeamStateSpinBox(QtWidgets.QDoubleSpinBox):
+class BeamStateSpinBox(QDoubleSpinBox):
     def __init__(self):
         super().__init__()
         self.setDecimals(10)
@@ -19,19 +20,19 @@ class BeamStateSpinBox(QtWidgets.QDoubleSpinBox):
         self.setSingleStep(step_size)
 
     def textFromValue(self, value):
-        return QtCore.QLocale().toString(value, 'g', QtCore.QLocale.FloatingPointShortest)
+        return QLocale().toString(value, 'g', QLocale.FloatingPointShortest)
 
 
-class BeamStateWindow(QtWidgets.QWidget):
+class BeamStateWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Initial Beam State Editor')
-        layout = QtWidgets.QGridLayout()
+        layout = QGridLayout()
 
         # universal section
-        self.qa_label = QtWidgets.QLabel()
-        self.energy_label = QtWidgets.QLabel()
-        self.mr_label = QtWidgets.QLabel()
+        self.qa_label = QLabel()
+        self.energy_label = QLabel()
+        self.mr_label = QLabel()
         self.qa_spin = BeamStateSpinBox()
         self.energy_spin = BeamStateSpinBox()
         self.mr_spin = BeamStateSpinBox()
@@ -56,24 +57,24 @@ class BeamStateWindow(QtWidgets.QWidget):
         layout.addWidget(self.mr_spin, 2, 2)
 
         # separator
-        h_line = QtWidgets.QFrame()
-        h_line.setFrameShape(QtWidgets.QFrame.HLine)
-        h_line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        h_line = QFrame()
+        h_line.setFrameShape(QFrame.HLine)
+        h_line.setFrameShadow(QFrame.Sunken)
         layout.addWidget(h_line, 3, 0, 1, 3)
 
         # variable section
-        self.pos_label = QtWidgets.QLabel()
-        self.mom_label = QtWidgets.QLabel()
-        self.var_box = QtWidgets.QComboBox()
-        self.kwrd1_box = QtWidgets.QComboBox()
-        self.kwrd2_box = QtWidgets.QComboBox()
-        self.alpha_label = QtWidgets.QLabel()
+        self.pos_label = QLabel()
+        self.mom_label = QLabel()
+        self.var_box = QComboBox()
+        self.kwrd1_box = QComboBox()
+        self.kwrd2_box = QComboBox()
+        self.alpha_label = QLabel()
         self.pos_spin = BeamStateSpinBox()
         self.mom_spin = BeamStateSpinBox()
         self.kwrd1_spin = BeamStateSpinBox()
         self.alpha_spin = BeamStateSpinBox()
         self.kwrd2_spin = BeamStateSpinBox()
-        self.commit_button = QtWidgets.QPushButton()
+        self.commit_button = QPushButton()
 
         self.pos_label.setText('Position:')
         self.mom_label.setText('Momentum:')

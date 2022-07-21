@@ -1,4 +1,5 @@
-from PyQt5 import QtCore, QtGui
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QCursor, QDoubleValidator
 from PyQt5.QtWidgets import *
 from sigfig import round
 
@@ -14,7 +15,7 @@ class DoubleDelegate(QStyledItemDelegate):
         if index.sibling(index.row(), 5).data(
         ) is None:  # if corresponding unit is none
             return line_edit
-        validator = QtGui.QDoubleValidator(line_edit)
+        validator = QDoubleValidator(line_edit)
         line_edit.setValidator(validator)
         return line_edit
 
@@ -22,7 +23,7 @@ class DoubleDelegate(QStyledItemDelegate):
 class Item(QTreeWidgetItem):
     def __init__(self):
         super().__init__()
-        self.setFlags(self.flags() | QtCore.Qt.ItemIsEditable)
+        self.setFlags(self.flags() | Qt.ItemIsEditable)
         
         self.actual_val = None
         self.sigfig_val = None
@@ -69,6 +70,8 @@ class LatTree(QTreeWidget):
             DoubleDelegate(self))
         self.itemDoubleClicked.connect(self._handle_edits)
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.setFocusPolicy(Qt.NoFocus)
+        self.setSelectionMode(QAbstractItemView.NoSelection)
         self.itemChanged.connect(self.updateModel)
         self.header().setSectionResizeMode(QHeaderView.ResizeToContents)
 
@@ -218,7 +221,7 @@ class LatTree(QTreeWidget):
         self.menu.addAction(edit_elem)
         self.menu.addAction(rem_elem)
 
-        self.menu.popup(QtGui.QCursor.pos())
+        self.menu.popup(QCursor.pos())
 
     def insElement(self):
         if self.currentItem() is not None:

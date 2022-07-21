@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import *
 
 from classes.canvas import *
 from classes.legend import *
@@ -224,19 +224,19 @@ workspace_one_items = {
 }
 
 
-class Workspace(QtWidgets.QWidget):
+class Workspace(QWidget):
     def __init__(self, parent=None):
-        super(QtWidgets.QWidget, self).__init__(parent)
+        super(QWidget, self).__init__(parent)
 
         self.main_window = parent
         self.items = self._createItems()
 
         # setting up sub-workspaces
-        ws1 = QtWidgets.QWidget(self)
-        ws2 = QtWidgets.QWidget(self)
+        ws1 = QWidget(self)
+        ws2 = QWidget(self)
 
-        ws1.setLayout(QtWidgets.QVBoxLayout())
-        ws2.setLayout(QtWidgets.QVBoxLayout())
+        ws1.setLayout(QVBoxLayout())
+        ws2.setLayout(QVBoxLayout())
 
         # objects
         self.graph = FmMplCanvas()
@@ -245,7 +245,7 @@ class Workspace(QtWidgets.QWidget):
         self.lat_editor = LatTree(self)
         self.config_window = LatElementConfig(self)
 
-        actions = self.toolbar.findChildren(QtWidgets.QAction)
+        actions = self.toolbar.findChildren(QAction)
         for a in actions:
             if a.text() == 'Customize':
                 self.toolbar.removeAction(a)
@@ -272,8 +272,8 @@ class Workspace(QtWidgets.QWidget):
         ws2.layout().addWidget(self.param_tree)
 
         # components
-        layout = QtWidgets.QHBoxLayout()
-        splitter = QtWidgets.QSplitter()
+        layout = QHBoxLayout()
+        splitter = QSplitter()
         splitter.addWidget(ws1)
         splitter.addWidget(ws2)
         layout.addWidget(splitter)

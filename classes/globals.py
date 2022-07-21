@@ -5,7 +5,6 @@ from sys import argv
 import numpy as np
 from flame import Machine
 from flame_utils import ModelFlame
-from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QApplication
 
 

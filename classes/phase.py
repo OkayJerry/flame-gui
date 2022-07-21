@@ -2,8 +2,8 @@ import matplotlib as mpl
 import numpy as np
 from matplotlib.backends.backend_qtagg import FigureCanvas
 from matplotlib.backends.qt_compat import QtWidgets
-from matplotlib.figure import Figure
-from PyQt5 import QtWidgets
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import *
 
 import classes.globals as glb
 
@@ -99,11 +99,11 @@ class FmMplPhaseSpaceCanvas(FigureCanvas):
         return x_res, y_res
 
 
-class PhaseSpaceWindow(QtWidgets.QWidget):
+class PhaseSpaceWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Phase Space Plot')
-        layout = QtWidgets.QVBoxLayout()
+        layout = QVBoxLayout()
         labels = [
             'Centroid Position [mm]',
             'Centroid Momentum [mrad]',
@@ -111,13 +111,13 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
             'Twiss Beta [m/rad]',
             'Geom. Emittance [mm-mrad]']
 
-        search_ws = QtWidgets.QWidget()
-        search_ws.setLayout(QtWidgets.QHBoxLayout())
+        search_ws = QWidget()
+        search_ws.setLayout(QHBoxLayout())
 
-        self.element_box = QtWidgets.QComboBox()
-        self.type_box = QtWidgets.QComboBox()
+        self.element_box = QComboBox()
+        self.type_box = QComboBox()
         self.graphs = FmMplPhaseSpaceCanvas()
-        self.table_view = QtWidgets.QTableWidget(5, 3)
+        self.table_view = QTableWidget(5, 3)
 
         for word in [
             'all',
@@ -134,13 +134,16 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
         self.table_view.setAlternatingRowColors(True)
         self.table_view.setHorizontalHeaderLabels(['', 'x', 'y'])
         self.table_view.horizontalHeader().setSectionResizeMode(
-            QtWidgets.QHeaderView.Stretch)
+            QHeaderView.Stretch)
         self.table_view.setEditTriggers(
-            QtWidgets.QAbstractItemView.NoEditTriggers)
+            QAbstractItemView.NoEditTriggers)
+        self.table_view.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.table_view.setFocusPolicy(Qt.NoFocus)
+        self.table_view.setSelectionMode(QAbstractItemView.NoSelection)
         self.table_view.verticalHeader().hide()
         for i in range(self.table_view.rowCount()):
             label = labels[i]
-            item = QtWidgets.QTableWidgetItem()
+            item = QTableWidgetItem()
             item.setText(label)
             self.table_view.setItem(i, 0, item)
 
@@ -192,8 +195,8 @@ class PhaseSpaceWindow(QtWidgets.QWidget):
         for i in range(self.table_view.rowCount()):
             x_num = x_res[i]
             y_num = y_res[i]
-            x_item = QtWidgets.QTableWidgetItem()
-            y_item = QtWidgets.QTableWidgetItem()
+            x_item = QTableWidgetItem()
+            y_item = QTableWidgetItem()
             x_item.setText(str(x_num))
             y_item.setText(str(y_num))
 
