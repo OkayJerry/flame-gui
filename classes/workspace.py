@@ -247,7 +247,6 @@ class Workspace(QtWidgets.QWidget):
         actions = self.toolbar.findChildren(QtWidgets.QAction)
         for a in actions:
             if a.text() == 'Customize':
-                print(a.icon())
                 self.toolbar.removeAction(a)
                 break
 
