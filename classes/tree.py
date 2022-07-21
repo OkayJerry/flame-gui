@@ -71,7 +71,6 @@ class LatTree(QTreeWidget):
         self.itemDoubleClicked.connect(self._handle_edits)
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.setFocusPolicy(Qt.NoFocus)
-        self.setSelectionMode(QAbstractItemView.NoSelection)
         self.itemChanged.connect(self.updateModel)
         self.header().setSectionResizeMode(QHeaderView.ResizeToContents)
 
@@ -241,14 +240,33 @@ class LatTree(QTreeWidget):
 
     def editElement(self):
         item = self.currentItem()
+        if not item:
+            warning = QMessageBox()
+            warning.setIcon(QMessageBox.Critical)
+            warning.setText("No element selected.")
+            warning.setWindowTitle("ERROR")
+            warning.setStandardButtons(QMessageBox.Ok)
+            if warning.exec() == QMessageBox.Ok:
+                warning.close()
+                return
+
         if item.parent():
             item = item.parent()
         self.config_window.editItem(item)
         self.config_window.show()
 
     def removeElement(self):
-        index_i = self.headers.index('Index')
         item = self.currentItem()
+        if not item:
+            warning = QMessageBox()
+            warning.setIcon(QMessageBox.Critical)
+            warning.setText("No element selected.")
+            warning.setWindowTitle("ERROR")
+            warning.setStandardButtons(QMessageBox.Ok)
+            if warning.exec() == QMessageBox.Ok:
+                warning.close()
+                return
+        index_i = self.headers.index('Index')
         glb.model.pop_element(int(item.text(index_i)))
         self.workspace.refresh()
 
@@ -349,6 +367,8 @@ class LatElementConfig(QWidget):
         self.attr_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.attr_table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.attr_table.itemChanged.connect(self.handleBlankRow)
+        self.attr_table.setFocusPolicy(Qt.NoFocus)
+        self.attr_table.setSelectionMode(QAbstractItemView.NoSelection)
 
         self.rem_attr_button = QPushButton()
         self.commit_button = QPushButton()
