@@ -612,9 +612,6 @@ class SelectWindow(QWidget):
 
                 self.adjustDataIndexesBeyond(element_index, removal=True)
 
-                
-        print(self.data)
-
     def adjustDataIndexesBeyond(self, index, removal=False):
         if len(glb.model.get_all_names()[1:]) == 0:
             return
@@ -632,7 +629,6 @@ class SelectWindow(QWidget):
                 knob_checkbox = QCheckBox()
                 knob_checkbox.setCheckState(Qt.Unchecked)
             if item.element_index == self.data['target']:
-                print(item.element_index, self.data['target'])
                 self.data['target'] = n_index
             if knob_checkbox.checkState() == Qt.Checked:
                 self.data['knobs']['elements'].append(n_index)
@@ -707,7 +703,6 @@ class SelectWindow(QWidget):
                         
                 self.data['target'] = element_index
                     
-        print(self.data)
         checkbox.blockSignals(False)
         
 

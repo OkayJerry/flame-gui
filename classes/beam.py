@@ -97,8 +97,6 @@ class BeamStateWindow(QtWidgets.QWidget):
         self.kwrd1_spin.setRange(0, 2147483648)
         self.kwrd2_spin.setRange(0, 2147483648)
 
-        self.alpha_spin.setValue(0)
-
         layout.addWidget(self.var_box, 4, 0)
         layout.addWidget(self.pos_label, 5, 1)
         layout.addWidget(self.pos_spin, 5, 2)
@@ -130,6 +128,7 @@ class BeamStateWindow(QtWidgets.QWidget):
         self.mr_spin.setValue(mr_val)
 
         # variable section
+        alpha_val = glb.model.bmstate.xtwsa
         self._updateVariableDependant()
         
         kwrd1 = self.kwrd1_box.currentText()
@@ -137,7 +136,7 @@ class BeamStateWindow(QtWidgets.QWidget):
         self._updateKwrd1(kwrd1)
         self._updateKwrd2(kwrd2)
 
-        self.alpha_spin.setValue(glb.model.bmstate.xtwsa)
+        self.alpha_spin.setValue(alpha_val)
 
     def _updateVariableDependant(self):
         var = self.var_box.currentText()
