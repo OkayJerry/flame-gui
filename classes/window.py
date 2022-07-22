@@ -193,6 +193,10 @@ class MenuBar(QMenuBar):
         else:
             self.redo_action.setEnabled(False)
 
+    def saveAs(self):
+        filename = QFileDialog.getSaveFileName(self, "Save File", "model.lat", "Lattice File (*.lat)")[0]  # previously tuple
+        if filename:
+            glb.model.generate_latfile(latfile=filename)
 
 class Window(QMainWindow):
     def __init__(self):
