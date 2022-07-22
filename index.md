@@ -156,7 +156,7 @@ View the phase space plot for an element.
 ### Select Element Window
 > Accessed from the [Optimization Window](#optimization-window)
 
-![select](https://user-images.githubusercontent.com/70593138/180307236-cbb7f815-6ef4-4835-a38e-73f99dce5546.JPG)
+![select](https://user-images.githubusercontent.com/70593138/180481581-db0f2e7b-96a2-44e9-8854-c6fcd4e091f1.JPG)
 
 Choose the knobs and target location for [optimization](#optimization-window).
 #### How To Use
