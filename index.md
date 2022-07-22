@@ -110,6 +110,7 @@ After choosing `Edit Selected Element` from [Element View](#element-view)'s righ
 Set values for the initial beam state using this window.
 #### How To Use
 - Set any values
+- Restore previous values using `Reset`
 - `Apply`
 
 
@@ -160,5 +161,6 @@ View the phase space plot for an element.
 
 Choose the knobs and target location for [optimization](#optimization-window).
 #### How To Use
-1. Choose from model elements any number of knobs and a target. This target must be at or beyond all knobs, otherwise your selection will be rejected and a pop-up will inform you of your error.
-2. `Confirm`
+1. Filter elements by type or name (optional)
+2. Choose from beamstate/model elements any number of knobs and a target. This target must be at or beyond all knobs, otherwise your selection will be rejected and a pop-up will inform you of your error.
+3. `Confirm`
