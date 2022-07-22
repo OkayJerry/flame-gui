@@ -6,6 +6,6 @@ import classes.globals as glb
 
 if __name__ == '__main__':
     window = Window()
-    window.setWindowIcon(QIcon('frib.jpg'))
+    window.setWindowIcon(QIcon('images/frib.jpg'))
     window.show()
     glb.app.exec()
