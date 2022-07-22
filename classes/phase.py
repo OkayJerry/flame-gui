@@ -209,6 +209,9 @@ class PhaseSpaceWindow(QWidget):
         self.setElementBox()
         if len(glb.model.get_all_names()[1:]) != 0:
             self.plotCurrentElement()
+            
+        self.setWindowState(self.windowState() & ~Qt.WindowMinimized | Qt.WindowActive) # restoring to maximized/normal state
+        self.activateWindow()
         self.show()
 
         self.element_box.blockSignals(False)

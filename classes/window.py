@@ -67,8 +67,8 @@ class MenuBar(QMenuBar):
 
         self.undo_action.triggered.connect(self.undoModels)
         self.redo_action.triggered.connect(self.redoModels)
-        self.bmstate_action.triggered.connect(self._openBmstate)
-        self.opt_action.triggered.connect(lambda: self.opt_window.show())
+        self.bmstate_action.triggered.connect(self.bmstate_window.open)
+        self.opt_action.triggered.connect(self.opt_window.open)
 
         phase_action.triggered.connect(self.phase_window.open)
         pref_action.triggered.connect(
@@ -193,10 +193,6 @@ class MenuBar(QMenuBar):
         else:
             self.redo_action.setEnabled(False)
 
-    def _openBmstate(self):
-        self.bmstate_window.update()
-        self.bmstate_window.show()
-        
 
 class Window(QMainWindow):
     def __init__(self):

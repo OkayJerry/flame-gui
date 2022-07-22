@@ -1,5 +1,5 @@
 import numpy as np
-from PyQt5.QtCore import QLocale
+from PyQt5.QtCore import QLocale, Qt
 from PyQt5.QtWidgets import *
 
 import classes.globals as glb
@@ -116,6 +116,12 @@ class BeamStateWindow(QWidget):
 
         self.setLayout(layout)
         self.update()
+
+    def open(self):
+        self.setWindowState(self.windowState() & ~Qt.WindowMinimized | Qt.WindowActive) # restoring to maximized/normal state
+        self.activateWindow()
+        self.update()
+        self.show()
 
     def link(self, graph, workspace):
         self.graph = graph

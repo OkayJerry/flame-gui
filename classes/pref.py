@@ -11,6 +11,7 @@ class PreferenceWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__()
         self.setWindowTitle('Preferences')
+        self.setWindowFlags(Qt.Dialog | Qt.WindowStaysOnTopHint)
         layout = QGridLayout()
         self.menubar = parent
         
@@ -51,6 +52,11 @@ class PreferenceWindow(QWidget):
         self.setLayout(layout)
         self._apply()
             
+    def open(self):
+        self.setWindowState(self.windowState() & ~Qt.WindowMinimized | Qt.WindowActive) # restoring to maximized/normal state
+        self.activateWindow()
+        self.show()
+
     def _default(self):
         self.app_fsize_spin.setValue(9)
         self.plt_fsize_spin.setValue(10)

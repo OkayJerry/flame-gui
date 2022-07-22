@@ -1,7 +1,7 @@
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 import numpy as np
-from PyQt5.QtCore import *
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QDoubleValidator
 from PyQt5.QtWidgets import *
 from scipy.optimize import differential_evolution, minimize
@@ -10,8 +10,7 @@ import classes.globals as glb
 
 
 def _differential_evolution(func, x0, args, workers): # wrapper
-    return differential_evolution(_costGeneric, x0, args=args, workers=workers)
-
+    return differential_evolution(func=_costGeneric, bounds=x0, args=args, workers=workers)
 class DoubleDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -188,6 +187,11 @@ class OptimizationWindow(QWidget):
         splitter.addWidget(ws2)
         self.layout().addWidget(splitter)
 
+    def open(self):
+        self.setWindowState(self.windowState() & ~Qt.WindowMinimized | Qt.WindowActive) # restoring to maximized/normal state
+        self.activateWindow()
+        self.show()
+
     def clear(self):
         self.nelder_table.setRowCount(0)
         self.evo_table.setRowCount(0)
@@ -279,7 +283,7 @@ class OptimizationWindow(QWidget):
             return sum(dif * dif)
         
         self.graph.copyModelToHistory()
-        executor = ThreadPoolExecutor(max_workers=3)
+        executor = ThreadPoolExecutor(max_workers=None)
         
         if current_table is self.nelder_table:
             array = []
@@ -300,7 +304,8 @@ class OptimizationWindow(QWidget):
                 x0.append((low, high))
 
             # currently executing on the same thread
-            ans = executor.submit(_differential_evolution, func=_costGeneric, x0=x0, args=(knobs, obj), workers=-1)
+            #ans = executor.submit(_differential_evolution, func=_costGeneric, x0=x0, args=(knobs, obj), workers=1)
+            ans = executor.submit(differential_evolution, func=_costGeneric, bounds=x0, args=(knobs, obj), workers=-1)
             ans = ans.result()
             
         self.workspace.refresh()
@@ -533,6 +538,7 @@ class SelectWindow(QWidget):
         self.setWindowTitle('Select Elements')
         self.setMinimumSize(550, 375)
         self.setLayout(QVBoxLayout())
+        self.setWindowFlags(Qt.Dialog | Qt.WindowStaysOnTopHint)
         self.opt_window = opt_window
 
         self.data = {'knobs': {'bmstate': [],
@@ -541,6 +547,7 @@ class SelectWindow(QWidget):
         
         # workspace : top-bottom
         self.bmstate_table = QTableWidget(0, 2)
+        self.element_filters = ElementFilters()
         self.element_table = QTableWidget(0, 3)
         confirm_button = QPushButton('Confirm')
 
@@ -552,6 +559,8 @@ class SelectWindow(QWidget):
         self.bmstate_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.bmstate_table.setFocusPolicy(Qt.NoFocus)
         self.bmstate_table.setSelectionMode(QAbstractItemView.NoSelection)
+
+        self.element_filters.link(self.element_table)
 
         self.element_table.setAlternatingRowColors(True)
         self.element_table.setHorizontalHeaderLabels(['Knob', 'Target', 'Model Element'])
@@ -567,6 +576,7 @@ class SelectWindow(QWidget):
         # finalizing
         self.setKnobs()
         self.layout().addWidget(self.bmstate_table)
+        self.layout().addWidget(self.element_filters)
         self.layout().addWidget(self.element_table)
         self.layout().addWidget(confirm_button)
 
@@ -792,6 +802,63 @@ class SelectWindow(QWidget):
 
     # def removeAll
             
+class ElementFilters(QWidget):
+    def __init__(self, parent=None):
+        super(QWidget, self).__init__(parent)
+
+        # components
+        self.parent = parent
+        self.layout = QHBoxLayout()
+        self.combo_box = QComboBox()
+        self.search_bar = QLineEdit()
+
+        for word in ['all', 'magnetic', 'quadrupole', 'drift', 'orbtrim', 'marker', 'sbend']:
+            self.combo_box.addItem(word)
+        self.combo_box.setFixedWidth(150)
+        self.combo_box.currentTextChanged.connect(self.typeFilter)
+
+        self.search_bar.setPlaceholderText('Search Model Element Name')
+        self.search_bar.textChanged.connect(self.nameFilter)
+
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.addWidget(self.combo_box)
+        self.layout.addWidget(self.search_bar)
+
+        self.setLayout(self.layout)
+
+    def link(self, table):
+        self.table = table
+
+    def nameFilter(self, filter_text):
+        self.typeFilter(self.combo_box.currentText())
+
+        for i in range(self.table.rowCount()):
+            item = self.table.item(i, 2)
+            if self.table.isRowHidden(i) == False:
+                if filter_text not in item.text():
+                    self.table.hideRow(i)
+                    # item.setHidden(True)
+                    
+    def typeFilter(self, filter_text):
+        for i in range(self.table.rowCount()):
+            item = self.table.item(i, 2)
+            element_type = glb.model.get_element(name=item.text())[0]['properties']['type']
+            if filter_text == 'all':
+                self.table.showRow(i)
+                continue
+            elif filter_text == 'magnetic':
+                if element_type == 'drift':
+                    self.table.hideRow(i)
+                else:
+                    self.table.showRow(i)
+                continue
+            
+            if element_type != filter_text:
+                self.table.hideRow(i)
+            else:
+                self.table.showRow(i)
+
+                    
 class ItemWrapper(QTableWidgetItem):
     def __init__(self, element_name, element_index):
         super().__init__()
