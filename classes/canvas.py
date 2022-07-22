@@ -4,6 +4,7 @@ from flame_utils import ModelFlame, PlotLat
 from matplotlib.backends.backend_qtagg import (FigureCanvas,
                                                NavigationToolbar2QT)
 from matplotlib.lines import Line2D
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import *
 
 import classes.globals as glb
@@ -41,6 +42,7 @@ class NavigationToolbar(NavigationToolbar2QT):
         self.select_window = QWidget()
         self.select_window.setWindowTitle('Line Select')
         self.select_window.setMinimumWidth(200)
+        self.select_window.setWindowFlags(Qt.Dialog | Qt.WindowStaysOnTopHint)
         self.select_window.setLayout(QVBoxLayout())
         self.select_window.layout().addWidget(self.line_combo)
         self.select_window.layout().addWidget(select_button)
@@ -53,6 +55,19 @@ class NavigationToolbar(NavigationToolbar2QT):
             self.line_combo.addItem(item.line.get_label())
             items.append(item)
 
+        if len(items) == 0:
+            warning = QMessageBox()
+            warning.setIcon(QMessageBox.Critical)
+            warning.setText("No lines visible")
+            warning.setWindowTitle("ERROR")
+            warning.setStandardButtons(QMessageBox.Ok)
+
+            if warning.exec() == QMessageBox.Ok:
+                warning.close()
+                return
+
+        self.select_window.setWindowState(self.windowState() & ~Qt.WindowMinimized | Qt.WindowActive) # restoring to maximized/normal state
+        self.select_window.activateWindow()
         self.select_window.show()
 
     def _choose_color(self):
