@@ -22,18 +22,18 @@ class PreferenceWindow(QWidget):
         default_button = QPushButton()
         self.app_fsize_spin = QSpinBox()
         self.plt_fsize_spin = QSpinBox()
-        self.tree_dec_spin = QSpinBox()
+        self.sigfig_spin = QSpinBox()
         
         self.app_fsize_spin.setValue(settings['AppFontSize'])
         self.plt_fsize_spin.setValue(settings['PlotFontSize'])
-        self.tree_dec_spin.setValue(settings['LatTreeSigFigs'])
+        self.sigfig_spin.setValue(settings['NumSigFigs'])
         self.app_fsize_spin.setRange(1, 20)
         self.plt_fsize_spin.setRange(1, 15)
-        self.tree_dec_spin.setRange(1, 8)
+        self.sigfig_spin.setRange(1, 2147483647)
 
         app_fsize_label = QLabel('Application Font Size:')
         plt_fsize_label = QLabel('Plot Font Size:')
-        tree_dec_label = QLabel('Lattice Tree Significant Figures:')
+        sigfig_label = QLabel('Significant Figures:')
 
         apply_button.setText('Apply')
         apply_button.clicked.connect(self._apply)
@@ -42,11 +42,11 @@ class PreferenceWindow(QWidget):
 
         layout.addWidget(app_fsize_label, 0, 0)
         layout.addWidget(plt_fsize_label, 1, 0)
-        layout.addWidget(tree_dec_label, 2, 0)
+        layout.addWidget(sigfig_label, 2, 0)
         layout.addWidget(default_button, 3, 0)
         layout.addWidget(self.app_fsize_spin, 0, 1)
         layout.addWidget(self.plt_fsize_spin, 1, 1)
-        layout.addWidget(self.tree_dec_spin, 2, 1)
+        layout.addWidget(self.sigfig_spin, 2, 1)
         layout.addWidget(apply_button, 3, 1)
 
         self.setLayout(layout)
@@ -60,22 +60,22 @@ class PreferenceWindow(QWidget):
     def _default(self):
         self.app_fsize_spin.setValue(9)
         self.plt_fsize_spin.setValue(10)
-        self.tree_dec_spin.setValue(3)
+        self.sigfig_spin.setValue(4)
         
     def _getSettings(self):
         self.config.read('settings.ini')
         app_fsize = self.config.getint('main', 'AppFontSize')
         plt_fsize = self.config.getint('main', 'PlotFontSize')
-        lattree_sigfigs = self.config.getint('main', 'LatTreeSigFigs')
+        num_sigfigs = self.config.getint('main', 'NumSigFigs')
         return {'AppFontSize': app_fsize,
                 'PlotFontSize': plt_fsize,
-                'LatTreeSigFigs': lattree_sigfigs} 
+                'NumSigFigs': num_sigfigs} 
 
     def _setSettings(self):
         self.config.read('settings.ini')
         self.config.set('main', 'AppFontSize', str(self.app_fsize_spin.value()))
         self.config.set('main', 'PlotFontSize', str(self.plt_fsize_spin.value()))
-        self.config.set('main', 'LatTreeSigFigs', str(self.tree_dec_spin.value()))
+        self.config.set('main', 'NumSigFigs', str(self.sigfig_spin.value()))
         with open("settings.ini","w") as f:
             self.config.write(f)
 
@@ -89,7 +89,7 @@ class PreferenceWindow(QWidget):
         graph.refresh()
 
         # (LatTree) Sig Figs
-        glb.num_sigfigs = self.tree_dec_spin.value()
+        glb.num_sigfigs = self.sigfig_spin.value()
         lat_editor = self.menubar.main_window.workspace.lat_editor
         filters = self.menubar.main_window.workspace.filters
         name_i = lat_editor.headers.index('Name')

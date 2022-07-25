@@ -3,24 +3,7 @@ from PyQt5.QtCore import QLocale, Qt
 from PyQt5.QtWidgets import *
 
 import classes.globals as glb
-
-
-class BeamStateSpinBox(QDoubleSpinBox):
-    def __init__(self):
-        super().__init__()
-        self.setDecimals(10)
-        self.valueChanged.connect(self.setStep)
-
-    def setStep(self):
-        step_size = self.value() * 0.1
-        if step_size < 0:
-            step_size *= -1
-        elif step_size == 0:
-            step_size = 1
-        self.setSingleStep(step_size)
-
-    def textFromValue(self, value):
-        return QLocale().toString(value, 'g', QLocale.FloatingPointShortest)
+from classes.utility import SigFigLineEdit
 
 
 class BeamStateWindow(QWidget):
@@ -31,36 +14,27 @@ class BeamStateWindow(QWidget):
 
         # universal section
         self.qa_label = QLabel()
-        self.energy_label = QLabel()
-        self.mr_label = QLabel()
-        self.qa_spin = BeamStateSpinBox()
-        self.energy_spin = BeamStateSpinBox()
-        self.mr_spin = BeamStateSpinBox()
+        self.kwrdB_box = QComboBox()
+        self.qa_line = SigFigLineEdit()
+        self.kwrdB_line = SigFigLineEdit()
 
         self.qa_label.setText('Q / A:')
-        self.energy_label.setText('Energy:')
-        self.mr_label.setText('Magnetic Rigidity:')
-        self.qa_spin.setRange(-2147483648, 2147483648)
-        self.energy_spin.setRange(-2147483648, 2147483648)
-        self.mr_spin.setRange(-2147483648, 2147483648)
-
-        self.mr_spin.valueChanged.connect(
-            lambda: self._updateTwin(self.energy_spin))
-        self.energy_spin.valueChanged.connect(
-            lambda: self._updateTwin(self.mr_spin))
+        
+        for kwrd in ['Energy', 'Magnetic Rigidity']:
+            self.kwrdB_box.addItem(kwrd)
+            
+        self.kwrdB_box.currentTextChanged.connect(self._updateBmstateKwrd)
 
         layout.addWidget(self.qa_label, 0, 1)
-        layout.addWidget(self.energy_label, 1, 1)
-        layout.addWidget(self.mr_label, 2, 1)
-        layout.addWidget(self.qa_spin, 0, 2)
-        layout.addWidget(self.energy_spin, 1, 2)
-        layout.addWidget(self.mr_spin, 2, 2)
+        layout.addWidget(self.kwrdB_box, 1, 1)
+        layout.addWidget(self.qa_line, 0, 2)
+        layout.addWidget(self.kwrdB_line, 1, 2)
 
         # separator
         h_line = QFrame()
         h_line.setFrameShape(QFrame.HLine)
         h_line.setFrameShadow(QFrame.Sunken)
-        layout.addWidget(h_line, 3, 0, 1, 3)
+        layout.addWidget(h_line, 2, 0, 1, 3)
 
         # variable section
         self.pos_label = QLabel()
@@ -69,11 +43,11 @@ class BeamStateWindow(QWidget):
         self.kwrd1_box = QComboBox()
         self.kwrd2_box = QComboBox()
         self.alpha_label = QLabel()
-        self.pos_spin = BeamStateSpinBox()
-        self.mom_spin = BeamStateSpinBox()
-        self.kwrd1_spin = BeamStateSpinBox()
-        self.alpha_spin = BeamStateSpinBox()
-        self.kwrd2_spin = BeamStateSpinBox()
+        self.pos_line = SigFigLineEdit()
+        self.mom_line = SigFigLineEdit()
+        self.kwrd1_line = SigFigLineEdit()
+        self.alpha_line = SigFigLineEdit()
+        self.kwrd2_line = SigFigLineEdit()
         self.reset_button = QPushButton('Reset')
         self.commit_button = QPushButton('Apply')
 
@@ -94,25 +68,19 @@ class BeamStateWindow(QWidget):
         self.reset_button.clicked.connect(self.update)
         self.commit_button.clicked.connect(self.apply)
 
-        self.pos_spin.setRange(-2147483648, 2147483648)
-        self.mom_spin.setRange(-2147483648, 2147483648)
-        self.alpha_spin.setRange(-2147483648, 2147483648)
-        self.kwrd1_spin.setRange(0, 2147483648)
-        self.kwrd2_spin.setRange(0, 2147483648)
-
-        layout.addWidget(self.var_box, 4, 0)
-        layout.addWidget(self.pos_label, 5, 1)
-        layout.addWidget(self.pos_spin, 5, 2)
-        layout.addWidget(self.mom_label, 6, 1)
-        layout.addWidget(self.mom_spin, 6, 2)
-        layout.addWidget(self.kwrd1_box, 7, 1)
-        layout.addWidget(self.kwrd1_spin, 7, 2)
-        layout.addWidget(self.alpha_label, 8, 1)
-        layout.addWidget(self.alpha_spin, 8, 2)
-        layout.addWidget(self.kwrd2_box, 9, 1)
-        layout.addWidget(self.kwrd2_spin, 9, 2)
-        layout.addWidget(self.reset_button, 10, 1)
-        layout.addWidget(self.commit_button, 10, 2)
+        layout.addWidget(self.var_box, 3, 0)
+        layout.addWidget(self.pos_label, 4, 1)
+        layout.addWidget(self.pos_line, 4, 2)
+        layout.addWidget(self.mom_label, 5, 1)
+        layout.addWidget(self.mom_line, 5, 2)
+        layout.addWidget(self.kwrd1_box, 6, 1)
+        layout.addWidget(self.kwrd1_line, 6, 2)
+        layout.addWidget(self.alpha_label, 7, 1)
+        layout.addWidget(self.alpha_line, 7, 2)
+        layout.addWidget(self.kwrd2_box, 8, 1)
+        layout.addWidget(self.kwrd2_line, 8, 2)
+        layout.addWidget(self.reset_button, 9, 1)
+        layout.addWidget(self.commit_button, 9, 2)
 
         self.setLayout(layout)
         self.update()
@@ -130,12 +98,11 @@ class BeamStateWindow(QWidget):
     def update(self):
         # universal section
         qa_val = glb.model.bmstate.ref_IonZ
-        energy_val = glb.model.bmstate.ref_IonEk
-        mr_val = glb.model.bmstate.ref_Brho
 
-        self.qa_spin.setValue(qa_val)
-        self.energy_spin.setValue(energy_val)
-        self.mr_spin.setValue(mr_val)
+        self.qa_line.setText(str(qa_val))
+
+        kwrdB = self.kwrdB_box.currentText()
+        self._updateBmstateKwrd(kwrdB)
 
         # variable section
         alpha_val = glb.model.bmstate.xtwsa
@@ -146,7 +113,7 @@ class BeamStateWindow(QWidget):
         self._updateKwrd1(kwrd1)
         self._updateKwrd2(kwrd2)
 
-        self.alpha_spin.setValue(alpha_val)
+        self.alpha_line.setText(str(alpha_val))
 
     def _updateVariableDependant(self):
         var = self.var_box.currentText()
@@ -161,44 +128,29 @@ class BeamStateWindow(QWidget):
             pos_val = glb.model.bmstate.zcen
             mom_val = glb.model.bmstate.zpcen
 
-        self.pos_spin.setValue(pos_val)
-        self.mom_spin.setValue(mom_val)
-
-    def _updateTwin(self, twin):
-        bmstate = glb.model.bmstate.clone()
-        if twin is self.energy_spin:
-            self.energy_spin.blockSignals(True)
-            bmstate.ref_Brho = self.mr_spin.value()
-            self.energy_spin.setValue(bmstate.ref_IonEk)
-            self.energy_spin.blockSignals(False)
-        elif twin is self.mr_spin:
-            self.mr_spin.blockSignals(True)
-            bmstate.ref_IonEk = self.energy_spin.value()
-            self.mr_spin.setValue(bmstate.ref_Brho)
-            self.mr_spin.blockSignals(False)
+        self.pos_line.setText(str(pos_val))
+        self.mom_line.setText(str(mom_val))
 
     def apply(self):
         var = self.var_box.currentText()
-        qa_val = self.qa_spin.value()
-        energy_val = self.energy_spin.value()
-        mr_val = self.mr_spin.value()
-        pos_val = self.pos_spin.value()
-        mom_val = self.mom_spin.value()
-        alpha_val = self.alpha_spin.value()
-        kwrd1_val = self.kwrd1_spin.value()
-        kwrd2_val = self.kwrd2_spin.value()
+        qa_val = float(self.qa_line.text())
+        b_val = float(self.kwrdB_line.text())
+        pos_val = float(self.pos_line.text())
+        mom_val = float(self.mom_line.text())
+        alpha_val = float(self.alpha_line.text())
+        kwrd1_val = float(self.kwrd1_line.text())
+        kwrd2_val = float(self.kwrd2_line.text())
 
         glb.model.bmstate.ref_IonZ = qa_val
-        glb.model.bmstate.ref_IonEk = energy_val
-        glb.model.bmstate.ref_Brho = mr_val
-
-        glb.model.bmstate.IonZ = np.array(
-            [qa_val for _ in range(len(glb.model.bmstate.IonZ))])
-        glb.model.bmstate.IonEk = np.array(
-            [energy_val for _ in range(len(glb.model.bmstate.IonEk))])
-        glb.model.bmstate.Brho = np.array(
-            [mr_val for _ in range(len(glb.model.bmstate.Brho))])
+        glb.model.bmstate.IonZ = np.array([qa_val for _ in range(len(glb.model.bmstate.IonZ))])
         
+        if self.kwrdB_box.currentText() == 'Energy':
+            glb.model.bmstate.ref_IonEk = b_val
+            glb.model.bmstate.IonEk = np.array([b_val for _ in range(len(glb.model.bmstate.IonEk))])
+        else:
+            glb.model.bmstate.ref_Brho = b_val
+            glb.model.bmstate.Brho = np.array([b_val for _ in range(len(glb.model.bmstate.Brho))])
+
         if var == 'x':
             glb.model.bmstate.xcen = pos_val
             glb.model.bmstate.xpcen = mom_val
@@ -232,7 +184,7 @@ class BeamStateWindow(QWidget):
             val = glb.model.bmstate.xrms
         else:
             val = glb.model.bmstate.xtwsb
-        self.kwrd1_spin.setValue(val)
+        self.kwrd1_line.setText(str(val))
             
 
     def _updateKwrd2(self, text):
@@ -240,4 +192,11 @@ class BeamStateWindow(QWidget):
             val = glb.model.bmstate.xeps
         else:
             val = glb.model.bmstate.xepsn
-        self.kwrd2_spin.setValue(val)
+        self.kwrd2_line.setText(str(val))
+
+    def _updateBmstateKwrd(self, text):
+        if text == 'Energy':
+            val = glb.model.bmstate.ref_IonEk
+        else:
+            val = glb.model.bmstate.ref_Brho
+        self.kwrdB_line.setText(str(val))
