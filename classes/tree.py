@@ -579,19 +579,11 @@ class LatElementConfig(QWidget):
         ]
 
         d = {}
-        for i in range(self.attr_table.rowCount()):
-            for j in range(self.attr_table.columnCount()):
-                cell = self.attr_table.item(i, j)
-                if cell:
-                    text = cell.text()
-
-                    if j == 0:  # index of attribute name
-                        attr_name = text
-                    elif j == 1:  # index of attribute value
-                        if attr_name in units:
-                            attr_val = float(text)
-                        else:
-                            attr_val = text
+        for i in range(self.attr_table.rowCount() - 1):
+            item = self.attr_table.item(i, 0)
+            line_edit = self.attr_table.cellWidget(i, 1)
+            attr_name = item.text()
+            attr_val = float(line_edit.text())
             d[attr_name] = attr_val
 
         d['name'] = self.name_line.text()
@@ -627,7 +619,6 @@ class LatElementConfig(QWidget):
         bottom_item_col1 = self.attr_table.item(row, col - 1)
         bottom_item_col2 = self.attr_table.cellWidget(row, col)
         if bottom_item_col1 is not None:
-            print(bottom_item_col1.text(), bottom_item_col2.text())
             if bottom_item_col1.text() != "" and bottom_item_col2.text() != "":
                 self.attr_table.insertRow(row + 1)
                 line_edit = SigFigTableLineEdit()
