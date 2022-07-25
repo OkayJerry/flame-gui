@@ -139,6 +139,9 @@ class BeamStateWindow(QWidget):
         self.pos_line.setText(str(pos_val))
         self.mom_line.setText(str(mom_val))
 
+        self.pos_line.convertToSciNotation()
+        self.mom_line.convertToSciNotation()
+
     def apply(self):
         var = self.var_box.currentText()
         qa_val = float(self.qa_line.text())
@@ -193,6 +196,7 @@ class BeamStateWindow(QWidget):
         else:
             val = glb.model.bmstate.xtwsb
         self.kwrd1_line.setText(str(val))
+        self.kwrd1_line.convertToSciNotation()
             
 
     def _updateKwrd2(self, text):
@@ -201,6 +205,7 @@ class BeamStateWindow(QWidget):
         else:
             val = glb.model.bmstate.xepsn
         self.kwrd2_line.setText(str(val))
+        self.kwrd2_line.convertToSciNotation()
 
     def _updateBmstateKwrd(self, text):
         if text == 'Energy':
@@ -208,3 +213,4 @@ class BeamStateWindow(QWidget):
         else:
             val = glb.model.bmstate.ref_Brho
         self.kwrdB_line.setText(str(val))
+        self.kwrdB_line.convertToSciNotation()
