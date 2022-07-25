@@ -195,10 +195,15 @@ class PhaseSpaceWindow(QWidget):
         for i in range(self.table_view.rowCount()):
             x_num = x_res[i]
             y_num = y_res[i]
+            
+            f_string = "{:." + str(glb.num_sigfigs - 1) + "e}"
+            x_num = f_string.format(x_num)
+            y_num = f_string.format(y_num)
+    
             x_item = QTableWidgetItem()
             y_item = QTableWidgetItem()
-            x_item.setText(str(x_num))
-            y_item.setText(str(y_num))
+            x_item.setText(x_num)
+            y_item.setText(y_num)
 
             self.table_view.setItem(i, 1, x_item)
             self.table_view.setItem(i, 2, y_item)

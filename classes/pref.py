@@ -111,4 +111,9 @@ class PreferenceWindow(QWidget):
             
         self.menubar.opt_window.fillTables()
 
+        try: # for when there are no elements
+            self.menubar.phase_window.plotCurrentElement()
+        except:
+            pass
+
         self._setSettings()
