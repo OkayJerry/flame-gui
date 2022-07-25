@@ -116,4 +116,6 @@ class PreferenceWindow(QWidget):
         except:
             pass
 
+        self.menubar.main_window.workspace.config_window.handleSigFigs()
+
         self._setSettings()

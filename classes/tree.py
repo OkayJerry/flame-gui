@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import *
 from sigfig import round
 
 import classes.globals as glb
+from classes.utility import SigFigTableLineEdit
 
 
 class DoubleDelegate(QStyledItemDelegate):
@@ -18,7 +19,7 @@ class DoubleDelegate(QStyledItemDelegate):
         validator = QDoubleValidator(line_edit)
         line_edit.setValidator(validator)
         return line_edit
-
+    
 
 class Item(QTreeWidgetItem):
     def __init__(self):
@@ -363,7 +364,7 @@ class LatElementConfig(QWidget):
         top_row_layout.addWidget(self.type_box)
         self.type_box.currentTextChanged.connect(self._setRequiredProperties)
 
-        self.attr_table = QTableWidget(1, 2)
+        self.attr_table = QTableWidget(0, 2)
         self.attr_table.setAlternatingRowColors(True)
         self.attr_table.setHorizontalHeaderLabels(
             ['Attribute', 'Value', 'Unit'])
@@ -372,6 +373,10 @@ class LatElementConfig(QWidget):
         self.attr_table.itemChanged.connect(self.handleBlankRow)
         self.attr_table.setFocusPolicy(Qt.NoFocus)
         self.attr_table.setSelectionMode(QAbstractItemView.NoSelection)
+        self.attr_table.insertRow(0)
+        line_edit = SigFigTableLineEdit()
+        line_edit.editingFinished.connect(self.handleBlankRow)
+        self.attr_table.setCellWidget(0, 1, line_edit)
 
         self.rem_attr_button = QPushButton()
         self.commit_button = QPushButton()
@@ -430,16 +435,18 @@ class LatElementConfig(QWidget):
 
         # top level attribute only
         attr = QTableWidgetItem()
-        val = QTableWidgetItem()
+        val = SigFigTableLineEdit()
+        val.editingFinished.connect(self.handleBlankRow)
 
         attr_text = top_level_item.text(attr_i)
         attr.setText(attr_text)
         val.setText(str(glb.model.get_element(name=elem_name)[0]['properties'][attr_text]))
+        val.convertToSciNotation()
         self.attr_table.setRowCount(0)
         self.attr_table.insertRow(0)
 
         self.attr_table.setItem(0, 0, attr)
-        self.attr_table.setItem(0, 1, val)
+        self.attr_table.setCellWidget(0, 1, val)
 
         # rest of the attributes
         for i in range(top_level_item.childCount()):
@@ -447,17 +454,22 @@ class LatElementConfig(QWidget):
             child = top_level_item.child(i)
 
             attr = QTableWidgetItem()
-            val = QTableWidgetItem()
+            val = SigFigTableLineEdit()
+            val.editingFinished.connect(self.handleBlankRow)
 
             attr_text = child.text(attr_i)
             attr.setText(attr_text)
             val.setText(str(glb.model.get_element(name=elem_name)[0]['properties'][attr_text]))
+            val.convertToSciNotation()
 
             self.attr_table.setItem(i + 1, 0, attr)
-            self.attr_table.setItem(i + 1, 1, val)
+            self.attr_table.setCellWidget(i + 1, 1, val)
 
         # adding blank row at bottom
         self.attr_table.insertRow(self.attr_table.rowCount())
+        line_edit = SigFigTableLineEdit()
+        line_edit.editingFinished.connect(self.handleBlankRow)
+        self.attr_table.setCellWidget(self.attr_table.rowCount() - 1, 1, line_edit)
 
         self.attr_table.blockSignals(False)
 
@@ -547,9 +559,14 @@ class LatElementConfig(QWidget):
             self.attr_table.insertRow(self.attr_table.rowCount())
             self.attr_table.setItem(i, 0, attribute)
             if attribute.text() in defaults.keys():
-                val = QTableWidgetItem()
+                val = SigFigTableLineEdit()
+                val.editingFinished.connect(self.handleBlankRow)
                 val.setText(str(defaults[attribute.text()]))
-                self.attr_table.setItem(i, 1, val)
+                self.attr_table.setCellWidget(i, 1, val)
+            else:
+                line_edit = SigFigTableLineEdit()
+                line_edit.editingFinished.connect(self.handleBlankRow)
+                self.attr_table.setCellWidget(i, 1, line_edit)
 
     def apply(self):
         self.graph.copyModelToHistory()
@@ -608,7 +625,34 @@ class LatElementConfig(QWidget):
         row = self.attr_table.rowCount() - 1
         col = self.attr_table.columnCount() - 1
         bottom_item_col1 = self.attr_table.item(row, col - 1)
-        bottom_item_col2 = self.attr_table.item(row, col)
-        if bottom_item_col1 is not None and bottom_item_col2 is not None:
+        bottom_item_col2 = self.attr_table.cellWidget(row, col)
+        if bottom_item_col1 is not None:
+            print(bottom_item_col1.text(), bottom_item_col2.text())
             if bottom_item_col1.text() != "" and bottom_item_col2.text() != "":
                 self.attr_table.insertRow(row + 1)
+                line_edit = SigFigTableLineEdit()
+                line_edit.editingFinished.connect(self.handleBlankRow)
+                self.attr_table.setCellWidget(row + 1, 1, line_edit)
+
+    def handleSigFigs(self):
+        names = glb.model.get_all_names()[1:]
+        for i in range(self.attr_table.rowCount() - 1):
+            line_edit = self.attr_table.cellWidget(i, 1)
+            if self.name_line.text() in names:
+                element = glb.model.get_element(name=self.name_line.text())[0]
+                attr = self.attr_table.item(i, 0).text()
+                if attr in element['properties']:
+                    val = element['properties'][attr]
+                else:
+                    line_edit.convertToSciNotation()
+                    continue
+
+                line_edit = SigFigTableLineEdit()
+                line_edit.editingFinished.connect(self.handleBlankRow)
+                line_edit.setText(str(val))
+                line_edit.convertToSciNotation()
+                self.attr_table.setCellWidget(i, 1, line_edit)
+                
+            else:
+                line_edit.convertToSciNotation()
+                

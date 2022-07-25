@@ -21,6 +21,7 @@ class ItemWrapper(QTreeWidgetItem):
         self.dashed = False
         self.given_color = None
 
+
 class SigFigLineEdit(QLineEdit):
     def __init__(self):
         super().__init__()
@@ -30,9 +31,19 @@ class SigFigLineEdit(QLineEdit):
         # self.textEdited.connect(self.convertToSciNotation)
 
     def convertToSciNotation(self):
+        if not self.text():
+            return
+
         self.blockSignals(True)
         num = float(self.text())
         f_string = "{:." + str(glb.num_sigfigs - 1) + "e}"
         f_string = f_string.format(num)
         self.setText(f_string)
         self.blockSignals(False)
+        
+
+class SigFigTableLineEdit(SigFigLineEdit):
+    def __init__(self):
+        super().__init__()
+        self.setFrame(False)
+        self.setStyleSheet("* { background-color: rgba(0, 0, 0, 0); }")
