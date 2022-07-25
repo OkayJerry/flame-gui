@@ -88,7 +88,7 @@ class PreferenceWindow(QWidget):
         matplotlib.rc('font', size=self.plt_fsize_spin.value())
         graph.refresh()
 
-        # (LatTree) Sig Figs
+        # Sig Figs
         glb.num_sigfigs = self.sigfig_spin.value()
         lat_editor = self.menubar.main_window.workspace.lat_editor
         filters = self.menubar.main_window.workspace.filters
@@ -108,5 +108,7 @@ class PreferenceWindow(QWidget):
             item = lat_editor.findItems(
                 element, Qt.MatchExactly, name_i)[0]
             item.setExpanded(True)
+            
+        self.menubar.opt_window.fillTables()
 
         self._setSettings()

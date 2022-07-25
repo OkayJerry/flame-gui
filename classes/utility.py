@@ -1,4 +1,7 @@
-from PyQt5.QtWidgets import QTreeWidgetItem
+from PyQt5.QtGui import QDoubleValidator
+from PyQt5.QtWidgets import QLineEdit, QTreeWidgetItem
+
+import classes.globals as glb
 
 
 class ItemWrapper(QTreeWidgetItem):
@@ -17,3 +20,19 @@ class ItemWrapper(QTreeWidgetItem):
         self.text_repr = None  # within QTreeWidget
         self.dashed = False
         self.given_color = None
+
+class SigFigLineEdit(QLineEdit):
+    def __init__(self):
+        super().__init__()
+        self.setValidator(QDoubleValidator())
+        self.editingFinished.connect(self.convertToSciNotation)
+        # self.textChanged.connect(self.convertToSciNotation)
+        # self.textEdited.connect(self.convertToSciNotation)
+
+    def convertToSciNotation(self):
+        self.blockSignals(True)
+        num = float(self.text())
+        f_string = "{:." + str(glb.num_sigfigs - 1) + "e}"
+        f_string = f_string.format(num)
+        self.setText(f_string)
+        self.blockSignals(False)

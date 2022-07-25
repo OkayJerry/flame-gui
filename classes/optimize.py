@@ -1,4 +1,4 @@
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 from PyQt5.QtCore import Qt
@@ -7,10 +7,9 @@ from PyQt5.QtWidgets import *
 from scipy.optimize import differential_evolution, minimize
 
 import classes.globals as glb
+from classes.utility import SigFigLineEdit
 
 
-def _differential_evolution(func, x0, args, workers): # wrapper
-    return differential_evolution(func=_costGeneric, bounds=x0, args=args, workers=workers)
 class DoubleDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -38,7 +37,12 @@ class OptComboBox(QComboBox):
                                    'z-position': glb.model.bmstate.zcen,
                                    'x-momentum': glb.model.bmstate.xpcen,
                                    'y-momentum': glb.model.bmstate.ypcen,
-                                   'z-momentum': glb.model.bmstate.zpcen}
+                                   'z-momentum': glb.model.bmstate.zpcen,
+                                   'beam size [mm]': glb.model.bmstate.xrms,
+                                   'twiss beta [m/rad]': glb.model.bmstate.xtwsb,
+                                   'alpha': glb.model.bmstate.xtwsa,
+                                   'geom. emittance [mm-mrad]': glb.model.bmstate.xeps,
+                                   'norm. emittance [mm-mrad]': glb.model.bmstate.xepsn}
         
         if type(self.element) is str: # is a bmstate element
             self.setEnabled(False)
@@ -59,12 +63,14 @@ class OptComboBox(QComboBox):
             attr = self.element
             val = self.bmstate_components[attr]
 
-        item = QTableWidgetItem()
-        item.setText(str(val))
+        line_edit = SigFigLineEdit()
+        line_edit.setFrame(False)
+        line_edit.setText(str(val))
+        line_edit.convertToSciNotation()
         if attr not in self.original_vals:
             self.original_vals[attr] = str(val)
-        item.setToolTip('Original Value: ' + self.original_vals[attr])
-        self.table.setItem(self.row_num, 2, item)
+        line_edit.setToolTip('Original Value: ' + self.original_vals[attr])
+        self.table.setCellWidget(self.row_num, 2, line_edit)
 
     def setx0Evo(self, attr=''):
         if type(self.element) == dict: # is a model element
@@ -73,32 +79,39 @@ class OptComboBox(QComboBox):
             attr = self.element
             val = self.bmstate_components[attr]
             
-        low_item = QTableWidgetItem()
-        high_item = QTableWidgetItem()
+        low_edit = SigFigLineEdit()
+        high_edit = SigFigLineEdit()
+
+        low_edit.setFrame(False)
+        high_edit.setFrame(False)
         
         if val > 0:
             val = np.floor(val * 10)
-            low_item.setText('0')
-            high_item.setText(str(val))
+            low_edit.setText('0')
+            high_edit.setText(str(val))
             if attr not in self.original_vals:
                 self.original_vals[attr] = ['0', str(val)]
         elif val < 0:
             val = np.ceil(val * 10)
-            low_item.setText(str(val))
-            high_item.setText('0')
+            low_edit.setText(str(val))
+            high_edit.setText('0')
             if attr not in self.original_vals:
                 self.original_vals[attr] = [str(val), '0']
         else:
-            low_item.setText('0')
-            high_item.setText('10')
+            low_edit.setText('0')
+            high_edit.setText('10')
             if attr not in self.original_vals:
                 self.original_vals[attr] = ['0', '10']
 
-        low_item.setToolTip('Original Value: ' + self.original_vals[attr][0])
-        high_item.setToolTip('Original Value: ' + self.original_vals[attr][1])
 
-        self.table.setItem(self.row_num, 2, low_item)
-        self.table.setItem(self.row_num, 3, high_item)
+        low_edit.convertToSciNotation()
+        high_edit.convertToSciNotation()
+
+        low_edit.setToolTip('Original Value: ' + self.original_vals[attr][0])
+        high_edit.setToolTip('Original Value: ' + self.original_vals[attr][1])
+
+        self.table.setCellWidget(self.row_num, 2, low_edit)
+        self.table.setCellWidget(self.row_num, 3, high_edit)
         
         
 
@@ -233,7 +246,12 @@ class OptimizationWindow(QWidget):
                    'z-position': 'zcen',
                    'x-momentum': 'xpcen',
                    'y-momentum': 'ypcen',
-                   'z-momentum': 'zpcen'}
+                   'z-momentum': 'zpcen',
+                   'beam size [mm]': 'xrms',
+                   'twiss beta [m/rad]': 'xtwsb',
+                   'alpha': 'xtwsa',
+                   'geom. emittance [mm-mrad]': 'xeps',
+                   'norm. emittance [mm-mrad]': 'xepsn'}
         obj = {'location': self.select_window.data['target'],
                'target': self.target_params}
         
@@ -265,6 +283,7 @@ class OptimizationWindow(QWidget):
             
             for i, n in enumerate(k.keys()):
                 if n in bmstate.keys():
+                    print(k[n], x[i])
                     setattr(glb.model.bmstate, k[n], x[i]) 
                 else:
                     glb.model.reconfigure(n, {k[n]: x[i]})
@@ -299,8 +318,8 @@ class OptimizationWindow(QWidget):
         else:
             x0 = []
             for i in range(self.evo_table.rowCount()):
-                low = float(self.evo_table.item(i, 2).text())
-                high = float(self.evo_table.item(i, 3).text())
+                low = float(self.evo_table.cellWidget(i, 2).text())
+                high = float(self.evo_table.cellWidget(i, 3).text())
                 x0.append((low, high))
 
             # currently executing on the same thread
@@ -466,7 +485,8 @@ class OptimizationWindow(QWidget):
     def _handleEditsNelderTable(self, item):
         if item.column() != 2:
             return
-        self.nelder_table.editItem(item)
+        # print(item)
+        # self.nelder_table.editItem(item)
 
     def _handleEditsEvoTable(self, item):
         if item.column() != 2 and item.column() != 3:
@@ -745,7 +765,9 @@ class SelectWindow(QWidget):
         names = glb.model.get_all_names()[1:]
         bmstate_components = ['Q/A', 'energy', 'magnetic rigidity', 
                               'x-position', 'y-position', 'z-position',
-                              'x-momentum', 'y-momentum', 'z-momentum']
+                              'x-momentum', 'y-momentum', 'z-momentum',
+                              'beam size [mm]', 'twiss beta [m/rad]', 'alpha',
+                              'geom. emittance [mm-mrad]', 'norm. emittance [mm-mrad]']
         
         # beamstate table
         for i in range(len(bmstate_components)):
