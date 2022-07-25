@@ -115,6 +115,14 @@ class BeamStateWindow(QWidget):
 
         self.alpha_line.setText(str(alpha_val))
 
+        self.qa_line.convertToSciNotation()
+        self.kwrdB_line.convertToSciNotation()
+        self.pos_line.convertToSciNotation()
+        self.mom_line.convertToSciNotation()
+        self.kwrd1_line.convertToSciNotation()
+        self.alpha_line.convertToSciNotation()
+        self.kwrd2_line.convertToSciNotation()
+
     def _updateVariableDependant(self):
         var = self.var_box.currentText()
 
