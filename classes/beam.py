@@ -144,14 +144,36 @@ class BeamStateWindow(QWidget):
 
     def apply(self):
         var = self.var_box.currentText()
-        qa_val = float(self.qa_line.text())
-        b_val = float(self.kwrdB_line.text())
-        pos_val = float(self.pos_line.text())
-        mom_val = float(self.mom_line.text())
-        alpha_val = float(self.alpha_line.text())
-        kwrd1_val = float(self.kwrd1_line.text())
-        kwrd2_val = float(self.kwrd2_line.text())
+        qa_val = self.qa_line.text()
+        b_val = self.kwrdB_line.text()
+        pos_val = self.pos_line.text()
+        mom_val = self.mom_line.text()
+        alpha_val = self.alpha_line.text()
+        kwrd1_val = self.kwrd1_line.text()
+        kwrd2_val = self.kwrd2_line.text()
 
+        values = [qa_val, b_val, pos_val, mom_val, alpha_val, kwrd1_val, kwrd2_val]
+        for val in values:
+            try:
+                val = float(val)
+            except:
+                warning = QMessageBox()
+                warning.setIcon(QMessageBox.Critical)
+                warning.setText("Not all values formatted correctly.")
+                warning.setWindowTitle("ERROR")
+                warning.setStandardButtons(QMessageBox.Ok)
+                if warning.exec() == QMessageBox.Ok:
+                    warning.close()
+                    return
+
+        qa_val = float(qa_val)
+        b_val = float(b_val)
+        pos_val = float(pos_val)
+        mom_val = float(mom_val)
+        alpha_val = float(alpha_val)
+        kwrd1_val = float(kwrd1_val)
+        kwrd2_val = float(kwrd2_val)
+        
         glb.model.bmstate.ref_IonZ = qa_val
         glb.model.bmstate.IonZ = np.array([qa_val for _ in range(len(glb.model.bmstate.IonZ))])
         
