@@ -68,7 +68,7 @@ workspace_one_items = {
         "representation": "x"
     },
     "xrms": {
-        "description": "general rms beam envelope for x]",
+        "description": "general rms beam envelope for x",
         "unit": "mm",
         "representation": "x"
     },
