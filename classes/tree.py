@@ -30,36 +30,19 @@ class Item(QTreeWidgetItem):
         self.sigfig_val = None
         self.sci_val = None
         
-    def setValue(self, column, value, num_sigfigs):
+    def setValue(self, column, value):
         if value == '':
             return
 
         try:
-            self.actual_val = float(value)
+            num = float(value)
         except:
             self.setText(column, value)
             return
 
-        self.sigfig_val = float(round(value, sigfigs=num_sigfigs))
-
-        if num_sigfigs == 1:
-            self.sci_val = "{:.0e}".format(self.sigfig_val)
-        elif num_sigfigs == 2:
-            self.sci_val = "{:.1e}".format(self.sigfig_val)
-        elif num_sigfigs == 3:
-            self.sci_val = "{:.2e}".format(self.sigfig_val)
-        elif num_sigfigs == 4:
-            self.sci_val = "{:.3e}".format(self.sigfig_val)
-        elif num_sigfigs == 5:
-            self.sci_val = "{:.4e}".format(self.sigfig_val)
-        elif num_sigfigs == 6:
-            self.sci_val = "{:.5e}".format(self.sigfig_val)
-        elif num_sigfigs == 7:
-            self.sci_val = "{:.6e}".format(self.sigfig_val)
-        elif num_sigfigs == 8:
-            self.sci_val = "{:.7e}".format(self.sigfig_val)
-            
-        self.setText(column, self.sci_val)
+        f_string = "{:." + str(glb.num_sigfigs - 1) + "e}"
+        f_string = f_string.format(num)
+        self.setText(column, f_string)
 
 
 class LatTree(QTreeWidget):
@@ -112,15 +95,15 @@ class LatTree(QTreeWidget):
                     if item.text(
                             attr_i) == '' and 'L' not in element['properties'].keys():
                         item.setText(attr_i, key)
-                        item.setValue(val_i, val, glb.num_sigfigs)
+                        item.setValue(val_i, val)
                     elif item.text(attr_i) == '' and key == 'L':
                         item.setText(attr_i, key)
-                        item.setValue(val_i, val, glb.num_sigfigs)
+                        item.setValue(val_i, val)
                     else:  # children are just attribute-value-unit tuples
                         child = Item()
                         item.addChild(child)
                         child.setText(attr_i, key)
-                        child.setValue(val_i, val, glb.num_sigfigs)
+                        child.setValue(val_i, val)
                         self._setUnit(child)
                 self._setUnit(item)
             self.addTopLevelItem(item)
