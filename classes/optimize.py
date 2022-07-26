@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import *
 from scipy.optimize import differential_evolution, minimize
 
 import classes.globals as glb
-from classes.utility import SigFigLineEdit
+from classes.utility import SigFigTableLineEdit
 
 
 class DoubleDelegate(QStyledItemDelegate):
@@ -63,8 +63,7 @@ class OptComboBox(QComboBox):
             attr = self.element
             val = self.bmstate_components[attr]
 
-        line_edit = SigFigLineEdit()
-        line_edit.setFrame(False)
+        line_edit = SigFigTableLineEdit()
         line_edit.setText(str(val))
         line_edit.convertToSciNotation()
         if attr not in self.original_vals:
@@ -79,12 +78,9 @@ class OptComboBox(QComboBox):
             attr = self.element
             val = self.bmstate_components[attr]
             
-        low_edit = SigFigLineEdit()
-        high_edit = SigFigLineEdit()
+        low_edit = SigFigTableLineEdit()
+        high_edit = SigFigTableLineEdit()
 
-        low_edit.setFrame(False)
-        high_edit.setFrame(False)
-        
         if val > 0:
             val = np.floor(val * 10)
             low_edit.setText('0')
