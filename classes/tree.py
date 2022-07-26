@@ -34,7 +34,12 @@ class Item(QTreeWidgetItem):
         if value == '':
             return
 
-        self.actual_val = float(value)
+        try:
+            self.actual_val = float(value)
+        except:
+            self.setText(column, value)
+            return
+
         self.sigfig_val = float(round(value, sigfigs=num_sigfigs))
 
         if num_sigfigs == 1:
@@ -356,7 +361,7 @@ class LatElementConfig(QWidget):
         top_row_layout.addWidget(self.name_line)
         top_row_layout.addWidget(type_label)
 
-        types = ['marker', 'stripper', 'tmatrix', 'orbtrim', 'drift',
+        types = ['marker', 'orbtrim', 'drift', # 'stripper', 'tmatrix',
                  'solenoid', 'quadrupole', 'sextupole', 'equad', 'sbend',
                  'edipole', 'rfcavity']
         for t in types:
@@ -371,8 +376,8 @@ class LatElementConfig(QWidget):
         self.attr_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.attr_table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.attr_table.itemChanged.connect(self.handleBlankRow)
-        self.attr_table.setFocusPolicy(Qt.NoFocus)
-        self.attr_table.setSelectionMode(QAbstractItemView.NoSelection)
+        # self.attr_table.setFocusPolicy(Qt.NoFocus)
+        # self.attr_table.setSelectionMode(QAbstractItemView.NoSelection)
         self.attr_table.insertRow(0)
         line_edit = SigFigTableLineEdit()
         line_edit.editingFinished.connect(self.handleBlankRow)
@@ -438,15 +443,17 @@ class LatElementConfig(QWidget):
         val = SigFigTableLineEdit()
         val.editingFinished.connect(self.handleBlankRow)
 
-        attr_text = top_level_item.text(attr_i)
-        attr.setText(attr_text)
-        val.setText(str(glb.model.get_element(name=elem_name)[0]['properties'][attr_text]))
-        val.convertToSciNotation()
         self.attr_table.setRowCount(0)
-        self.attr_table.insertRow(0)
+        attr_text = top_level_item.text(attr_i)
+        if attr_text:
+            attr.setText(attr_text)
+            val.setText(str(glb.model.get_element(name=elem_name)[0]['properties'][attr_text]))
+            val.convertToSciNotation()
 
-        self.attr_table.setItem(0, 0, attr)
-        self.attr_table.setCellWidget(0, 1, val)
+            self.attr_table.insertRow(0)
+
+            self.attr_table.setItem(0, 0, attr)
+            self.attr_table.setCellWidget(0, 1, val)
 
         # rest of the attributes
         for i in range(top_level_item.childCount()):
@@ -562,28 +569,58 @@ class LatElementConfig(QWidget):
                 val = SigFigTableLineEdit()
                 val.editingFinished.connect(self.handleBlankRow)
                 val.setText(str(defaults[attribute.text()]))
+                try:
+                    val.convertToSciNotation()
+                except:
+                    pass
                 self.attr_table.setCellWidget(i, 1, val)
             else:
                 line_edit = SigFigTableLineEdit()
                 line_edit.editingFinished.connect(self.handleBlankRow)
                 self.attr_table.setCellWidget(i, 1, line_edit)
 
+        line_edit = SigFigTableLineEdit()
+        line_edit.editingFinished.connect(self.handleBlankRow)
+        self.attr_table.setCellWidget(self.attr_table.rowCount(), 1, line_edit)
+
     def apply(self):
         self.graph.copyModelToHistory()
 
-        units = [
-            'theta_x', 'theta_y', 'tm_xkick', 'tm_ykick', 'xyrotate',
-            'L', 'B', 'dx', 'dy', 'pitch', 'yaw', 'roll', 'B2', 'B3',
-            'V', 'radius', 'phi', 'phi1', 'phi2', 'fringe_x',
-            'fringe_y', 'f', 'Rm', 'scl_fac'
-        ]
+        # units = [
+        #     'theta_x', 'theta_y', 'tm_xkick', 'tm_ykick', 'xyrotate',
+        #     'L', 'B', 'dx', 'dy', 'pitch', 'yaw', 'roll', 'B2', 'B3',
+        #     'V', 'radius', 'phi', 'phi1', 'phi2', 'fringe_x',
+        #     'fringe_y', 'f', 'Rm', 'scl_fac'
+        # ]
+        
+        if not self.name_line.text():
+            warning = QMessageBox()
+            warning.setIcon(QMessageBox.Critical)
+            warning.setText("Element must have a name.")
+            warning.setWindowTitle("ERROR")
+            warning.setStandardButtons(QMessageBox.Ok)
+            if warning.exec() == QMessageBox.Ok:
+                warning.close()
+                return
+            
 
         d = {}
         for i in range(self.attr_table.rowCount() - 1):
             item = self.attr_table.item(i, 0)
             line_edit = self.attr_table.cellWidget(i, 1)
             attr_name = item.text()
-            attr_val = float(line_edit.text())
+            try:
+                attr_val = float(line_edit.text())
+            except:
+                warning = QMessageBox()
+                warning.setIcon(QMessageBox.Critical)
+                warning.setText("Each attribute must have a value.")
+                warning.setWindowTitle("ERROR")
+                warning.setStandardButtons(QMessageBox.Ok)
+                if warning.exec() == QMessageBox.Ok:
+                    warning.close()
+                    return
+                
             d[attr_name] = attr_val
 
         d['name'] = self.name_line.text()
