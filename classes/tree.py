@@ -258,6 +258,15 @@ class LatTree(QTreeWidget):
             if warning.exec() == QMessageBox.Ok:
                 warning.close()
                 return
+        elif item.parent():
+            warning = QMessageBox()
+            warning.setIcon(QMessageBox.Critical)
+            warning.setText("Must select element, not element attribute.")
+            warning.setWindowTitle("ERROR")
+            warning.setStandardButtons(QMessageBox.Ok)
+            if warning.exec() == QMessageBox.Ok:
+                warning.close()
+                return
         index_i = self.headers.index('Index')
         glb.model.pop_element(int(item.text(index_i)))
         self.workspace.refresh()

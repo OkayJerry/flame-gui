@@ -292,6 +292,10 @@ class Workspace(QWidget):
         for i in range(self.lat_editor.topLevelItemCount()):
             element = self.lat_editor.topLevelItem(i)
             if element.isExpanded():
+                if element.text(name_i) not in glb.model.get_all_names()[1:]:
+                    for i in range(element.childCount()):
+                        element.removeChild(element.child(i))
+                        
                 expanded_elements.append(element.text(name_i))
 
         self.lat_editor.clear()
@@ -300,8 +304,11 @@ class Workspace(QWidget):
         self.filters.nameFilter(self.filters.search_bar.text())
 
         for element in expanded_elements:
-            item = self.lat_editor.findItems(
-                element, Qt.MatchExactly, name_i)[0]
+            try:
+                item = self.lat_editor.findItems(
+                    element, Qt.MatchExactly, name_i)[0]
+            except:
+                continue
             item.setExpanded(True)
 
         # graph
