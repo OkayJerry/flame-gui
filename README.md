@@ -105,7 +105,7 @@ By right-clicking the **Element View**, you will be presented with three options
 ### Element Config Window
 > Accessed by right-clicking the [Element View](#element-view).
 
-![lat-config](https://user-images.githubusercontent.com/70593138/179055270-c81163f4-ccb8-4bf7-865d-fe528b2952c0.JPG)
+![lat-config](https://user-images.githubusercontent.com/70593138/181087161-c365c0f0-f618-4875-b6fe-21cceee7435c.JPG)
 
 Used for inserting new and editing current elements.
 #### Inserting Elements
@@ -117,7 +117,7 @@ After choosing `Edit Selected Element` from [Element View](#element-view)'s righ
 ### Initial Beam State Window
 > Accessed from `Edit` on the menubar.
 
-![bmstate](https://user-images.githubusercontent.com/70593138/180307165-db4de398-a46e-493b-a349-2fe09c73710b.JPG)
+![bmstate](https://user-images.githubusercontent.com/70593138/181087197-4ca9321f-9e28-49d8-809f-273a56b2403b.JPG)
 
 Set values for the initial beam state using this window.
 #### How To Use
@@ -128,7 +128,7 @@ Set values for the initial beam state using this window.
 ### Optimization Window
 > Accessed from `Edit` on the menubar.
 
-![optimize](https://user-images.githubusercontent.com/70593138/179074856-99d45297-1a48-4c3c-ae81-29042b37eebc.JPG)
+![optimize](https://user-images.githubusercontent.com/70593138/181087250-2c5c81a4-71b9-432b-ad46-f9f13a7b38ae.JPG)
 
 Optimize the model using selected knobs and target location.
 
@@ -157,7 +157,7 @@ Used for selecting which parameters to [graph](#canvas) (limited to four). After
 ### Phase Space Window
 > Accessed from `View` on the menubar.
 
-![phase](https://user-images.githubusercontent.com/70593138/179078891-05c49e81-c019-41a3-82e2-03cad5b46f31.JPG)
+![phase](https://user-images.githubusercontent.com/70593138/181087313-d18f3e4b-1678-4e21-812d-c74d5a741b56.JPG)
 
 View the phase space plot for an element.
 #### How To Use
