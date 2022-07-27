@@ -38,6 +38,7 @@ class OptComboBox(QComboBox):
                                    'x-momentum': glb.model.bmstate.xpcen,
                                    'y-momentum': glb.model.bmstate.ypcen,
                                    'z-momentum': glb.model.bmstate.zpcen,
+                                   
                                    'beam size [mm]': glb.model.bmstate.xrms,
                                    'twiss beta [m/rad]': glb.model.bmstate.xtwsb,
                                    'alpha': glb.model.bmstate.xtwsa,
@@ -764,6 +765,7 @@ class SelectWindow(QWidget):
                               'x-momentum', 'y-momentum', 'z-momentum',
                               'beam size [mm]', 'twiss beta [m/rad]', 'alpha',
                               'geom. emittance [mm-mrad]', 'norm. emittance [mm-mrad]']
+        disabled = ['beam size [mm]', 'twiss beta [m/rad]', 'alpha', 'geom. emittance [mm-mrad]', 'norm. emittance [mm-mrad]']
         
         # beamstate table
         for i in range(len(bmstate_components)):
@@ -781,6 +783,9 @@ class SelectWindow(QWidget):
             checkbox.stateChanged.connect(self.handleCheckBox)
 
             item.setText(component)
+            
+            if component in disabled:
+                checkbox.setEnabled(False)
 
             final_row_index = self.bmstate_table.rowCount()
             self.bmstate_table.insertRow(final_row_index)
