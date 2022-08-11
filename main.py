@@ -1,11 +1,10 @@
-from sys import argv
+
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtGui import QIcon
-from classes.window import *
-import classes.globals as glb
+
+import globals as glb
+from classes.windows import MainWindow
 
 if __name__ == '__main__':
-    window = Window()
-    window.setWindowIcon(QIcon('images/frib.jpg'))
+    window = MainWindow()
     window.show()
     glb.app.exec()
