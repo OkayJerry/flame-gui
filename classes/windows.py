@@ -535,10 +535,10 @@ class OptimizationWindow(QWidget):
             
         for i in range(current_table.rowCount()):
             name = current_table.item(i, 0).text()
-            if name not in bmstate.keys():
+            if name not in glb.data['element']['beam state'].keys():
                 attr = current_table.cellWidget(i, 1).currentText()
             else:
-                attr = bmstate[name]
+                attr = glb.data['element']['beam state'][name]
             knobs[name] = attr
             
         if len(knobs) == 0 or obj['location'] == None:
@@ -554,12 +554,28 @@ class OptimizationWindow(QWidget):
         global _costGeneric  # for pickle
         def _costGeneric(x, k, o):
             
-            for i, n in enumerate(k.keys()):
-                if n in bmstate.keys():
-                    print(k[n], x[i])
-                    setattr(glb.model.bmstate, k[n], x[i]) 
+            for i, name in enumerate(k.keys()):
+                if name in glb.data['element']['beam state'].keys():
+                    print(k[name], x[i])
+                    for_set_twiss = ['beam size', 'twiss beta', 'alpha', 'geom. emittance', 'norm. emittance']
+                    if any(ext in name for ext in for_set_twiss):
+                            if 'beam size' in name:
+                                kwargs = {'rmssize': x[i]}
+                            elif 'twiss beta' in name:
+                                kwargs = {'beta': x[i]}
+                            elif 'alpha' in name:
+                                kwargs = {'alpha': x[i]}
+                            elif 'geom. emittance' in name:
+                                kwargs = {'emittance': x[i]}
+                            else:
+                                kwargs = {'nemittance': x[i]}
+                                
+                            glb.model.bmstate.set_twiss(name[:1], **kwargs)   
+                            continue         
+                            
+                    setattr(glb.model.bmstate, k[name]['abbreviation'], x[i]) 
                 else:
-                    glb.model.reconfigure(n, {k[n]: x[i]})
+                    glb.model.reconfigure(n, {k[name]: x[i]})
             r, s = glb.model.run(to_element=o['location'])
             dif = []
             t = o['target']
@@ -580,10 +596,12 @@ class OptimizationWindow(QWidget):
         if current_table is self.tables.nelder:
             array = []
             for n in knobs.keys():
-                if n not in bmstate.keys():
+                if n not in glb.data['element']['beam state'].keys():
+                    print('no beam state:', knobs[n])
                     array.append(glb.model.get_element(name=n)[0]['properties'][knobs[n]])
                 else:
-                    array.append(getattr(glb.model.bmstate, knobs[n]))
+                    print('yes beam state:', knobs[n])
+                    array.append(getattr(glb.model.bmstate, knobs[n]['abbreviation']))
                     
             x0 = np.array(array)
             ans = executor.submit(minimize, fun=_costGeneric, x0=x0, args=(knobs, obj), method='Nelder-Mead')
@@ -689,7 +707,7 @@ class OptimizationSelectElementWindow(QWidget):
         
         # objects
         self.bmstate_table = Table(0, 2)
-        self.element_table = Table(0, 3)
+        self.element_table = Table(0, 3, parent=self)
         self.element_filters = ModelElementFilters(self.element_table)
         confirm_button = QPushButton('Confirm')
 
@@ -898,16 +916,9 @@ class OptimizationSelectElementWindow(QWidget):
         from classes.utility import ElementIndexTableItemWrapper
 
         names = glb.model.get_all_names()[1:]
-        bmstate_components = ['Q/A', 'energy', 'magnetic rigidity', 
-                              'x-position', 'y-position', 'z-position',
-                              'x-momentum', 'y-momentum', 'z-momentum',
-                              'beam size [mm]', 'twiss beta [m/rad]', 'alpha',
-                              'geom. emittance [mm-mrad]', 'norm. emittance [mm-mrad]']
-        disabled = ['beam size [mm]', 'twiss beta [m/rad]', 'alpha', 'geom. emittance [mm-mrad]', 'norm. emittance [mm-mrad]']
         
         # beamstate table
-        for i in range(len(bmstate_components)):
-            component = bmstate_components[i]
+        for component in glb.data['element']['beam state'].keys():
 
             qwidget = QWidget()
             checkbox = QCheckBox(parent=self.bmstate_table)
@@ -922,9 +933,6 @@ class OptimizationSelectElementWindow(QWidget):
 
             item.setText(component)
             
-            if component in disabled:
-                checkbox.setEnabled(False)
-
             final_row_index = self.bmstate_table.rowCount()
             self.bmstate_table.insertRow(final_row_index)
             self.bmstate_table.setCellWidget(final_row_index, 0, qwidget)
