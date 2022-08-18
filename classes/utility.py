@@ -359,30 +359,67 @@ class ModelElementFilters(QWidget):
         self.layout().addWidget(self.search_bar)
 
     def typeFilter(self, filter_text):
-        for i in range(self.to_filter.topLevelItemCount()):
-            item = self.to_filter.topLevelItem(i)
+        from classes.tables import Table
+        
+        if type(self.to_filter) is Table:
+            self.to_filter.parent().refresh()
             if filter_text == 'all':
-                item.setHidden(False)
-                continue
-            elif filter_text == 'magnetic':
-                if item.text(2) == 'drift':
+                return
+            
+            rows_to_remove = []
+            for i in range(self.to_filter.rowCount()):
+                name = self.to_filter.item(i, 2).text()  # only works for select element table for optimization
+                element_type = glb.model.get_element(name=name)[0]['properties']['type']
+                if filter_text == 'magnetic':
+                    if element_type == 'drift':
+                        print(name, element_type)
+                        rows_to_remove.append(i)
+                elif element_type != filter_text:
+                    rows_to_remove.append(i)
+
+            for i, row in enumerate(rows_to_remove):  # enumerate makes it so you have the number of previously removed rows (row indexes change after removal)
+                self.to_filter.removeRow(row - i)
+        
+        else:
+            for i in range(self.to_filter.topLevelItemCount()):
+                item = self.to_filter.topLevelItem(i)
+                if filter_text == 'all':
+                    item.setHidden(False)
+                    continue
+                elif filter_text == 'magnetic':
+                    if item.text(2) == 'drift':
+                        item.setHidden(True)
+                    else:
+                        item.setHidden(False)
+                    continue
+
+                if item.text(2) != filter_text:
                     item.setHidden(True)
                 else:
                     item.setHidden(False)
-                continue
-
-            if item.text(2) != filter_text:
-                item.setHidden(True)
-            else:
-                item.setHidden(False)
 
     def nameFilter(self, filter_text):
-        self.typeFilter(self.type_box.currentText())
-        for i in range(self.to_filter.topLevelItemCount()):
-            item = self.to_filter.topLevelItem(i)
-            if item.isHidden() == False:
-                if filter_text not in item.text(1):
-                    item.setHidden(True)
+        from classes.tables import Table
+        
+        if type(self.to_filter) is Table:
+            self.typeFilter(self.type_box.currentText())
+            
+            rows_to_remove = []
+            for i in range(self.to_filter.rowCount()):
+                name = self.to_filter.item(i, 2).text()  # only works for select element table for optimization
+                if filter_text not in name:
+                    rows_to_remove.append(i)
+                    
+            for i, row in enumerate(rows_to_remove):  # enumerate makes it so you have the number of previously removed rows (row indexes change after removal)
+                self.to_filter.removeRow(row - i)
+                
+        else:
+            self.typeFilter(self.type_box.currentText())
+            for i in range(self.to_filter.topLevelItemCount()):
+                item = self.to_filter.topLevelItem(i)
+                if item.isHidden() == False:
+                    if filter_text not in item.text(1):
+                        item.setHidden(True)
     
 class Line(Line2D):
     def __init__(self, xdata, ydata, param):
@@ -415,11 +452,21 @@ class OptComboBox(QComboBox):
                                    'y-momentum': glb.model.bmstate.ypcen,
                                    'z-momentum': glb.model.bmstate.zpcen,
                                    
-                                   'beam size [mm]': glb.model.bmstate.xrms,
-                                   'twiss beta [m/rad]': glb.model.bmstate.xtwsb,
-                                   'alpha': glb.model.bmstate.xtwsa,
-                                   'geom. emittance [mm-mrad]': glb.model.bmstate.xeps,
-                                   'norm. emittance [mm-mrad]': glb.model.bmstate.xepsn}
+                                   'x beam size [mm]': glb.model.bmstate.xrms,
+                                   'x twiss beta [m/rad]': glb.model.bmstate.xtwsb,
+                                   'x alpha': glb.model.bmstate.xtwsa,
+                                   'x geom. emittance [mm-mrad]': glb.model.bmstate.xeps,
+                                   'x norm. emittance [mm-mrad]': glb.model.bmstate.xepsn,
+                                   'y beam size [mm]': glb.model.bmstate.yrms,
+                                   'y twiss beta [m/rad]': glb.model.bmstate.ytwsb,
+                                   'y alpha': glb.model.bmstate.ytwsa,
+                                   'y geom. emittance [mm-mrad]': glb.model.bmstate.yeps,
+                                   'y norm. emittance [mm-mrad]': glb.model.bmstate.yepsn,
+                                   'z beam size [mm]': glb.model.bmstate.zrms,
+                                   'z twiss beta [m/rad]': glb.model.bmstate.ztwsb,
+                                   'z alpha': glb.model.bmstate.ztwsa,
+                                   'z geom. emittance [mm-mrad]': glb.model.bmstate.zeps,
+                                   'z norm. emittance [mm-mrad]': glb.model.bmstate.zepsn}
         
         if type(self.element) is str: # is a bmstate element
             self.setEnabled(False)
