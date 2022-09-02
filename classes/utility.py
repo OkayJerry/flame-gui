@@ -532,3 +532,15 @@ class OptComboBox(QComboBox):
 
         self.table.setCellWidget(self.row_num, 2, low_edit)
         self.table.setCellWidget(self.row_num, 3, high_edit)
+
+class EditMatrixButton(QPushButton):
+    def __init__(self, element_name, parent=None):
+        from classes.windows import EditMatrixWindow
+        
+        super().__init__(parent=parent)
+        self.window = EditMatrixWindow()
+        self.setText('Edit Matrix')
+        self.clicked.connect(lambda: self.window.open(element_name))
+
+        self.setMaximumSize(100, 50)
+                

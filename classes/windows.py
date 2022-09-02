@@ -1170,3 +1170,27 @@ class ModelElementConfigWindow(QWidget):
 
         self.main_window.refresh()
         self.updateIndexSpinBox()
+
+class EditMatrixWindow(QWidget):
+    def __init__(self, parent=None):
+        from classes.tables import MatrixTable
+        
+        super().__init__(parent=parent)
+        self.setWindowTitle('Edit Matrix')
+        self.setLayout(QVBoxLayout())
+        
+        self.table = MatrixTable(7, 7)
+        self.button = QPushButton('Confirm')
+        self.button.clicked.connect(self.setMatrix)
+        self.layout().addWidget(self.table)
+        self.layout().addWidget(self.button)
+        
+    def open(self, element_name):
+        self.element_name = element_name
+        self.setWindowState(self.windowState() & ~Qt.WindowMinimized | Qt.WindowActive) # restoring to maximized/normal state
+        self.activateWindow()
+        self.table.fill(element_name)
+        self.show()
+        
+    def setMatrix(self):
+        glb.model.reconfigure(self.element_name, {'matrix': self.table.getMatrix()})

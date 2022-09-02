@@ -82,12 +82,16 @@ class ModelElementView(Tree):
         self.itemDoubleClicked.connect(self.handleEdits)
 
     def refresh(self, new_file=False):
+        from classes.utility import EditMatrixButton
+        
         if not new_file:
             expanded_elements = self.getExpandedElements()
             
         self.clear()
 
         elements = glb.model.get_element(name=glb.model.get_all_names())[1:]
+        items_with_matrix = []
+        types_to_ignore_set_value = ['tmatrix']
         
         for element in elements:
             item = QTreeWidgetItem()
@@ -96,7 +100,9 @@ class ModelElementView(Tree):
                 if key == 'name':
                     item.setText(1, val)
                 elif key == 'type':
-                    item.setText(2, val)
+                    if val == 'tmatrix':
+                        items_with_matrix.append(item)
+                    item.setText(2, str(val))
                 else:
                     if item.text(3) == '' and 'L' not in element['properties'].keys():
                         try:
@@ -105,22 +111,28 @@ class ModelElementView(Tree):
                         except:
                             pass
                         item.setText(3, key)
-                        item.setText(4, val)
+                        if item.text(2) not in types_to_ignore_set_value:
+                            item.setText(4, str(val))
                     elif item.text(3) == '' and key == 'L':
                         f_string = "{:." + str(glb.num_sigfigs - 1) + "e}"
                         val = f_string.format(val)
                         item.setText(3, key)
-                        item.setText(4, val)
+                        if item.text(2) not in types_to_ignore_set_value:
+                            item.setText(4, str(val))
                     else:  # children are just attribute-value-unit tuples
                         f_string = "{:." + str(glb.num_sigfigs - 1) + "e}"
                         val = f_string.format(val)
                         child = QTreeWidgetItem()
                         item.addChild(child)
                         child.setText(3, key)
-                        child.setText(4, val)
+                        if item.text(2) not in types_to_ignore_set_value:
+                            child.setText(4, str(val))
                         child.setText(5, glb.model.get_attribute_unit(key))
             item.setText(5, glb.model.get_attribute_unit(item.text(3)))
             self.addTopLevelItem(item)
+            
+            for item in items_with_matrix:
+                self.setItemWidget(item, 4, EditMatrixButton(element_name=item.text(1)))
             
         if not new_file:
             for element in expanded_elements:

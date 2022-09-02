@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
 import globals as glb
+import numpy as np
 
 
 class Table(QTableWidget):
@@ -171,7 +172,7 @@ class ModelElementAttributeTable(Table):
             self.newRow()
 
     def newRow(self):
-        from classes.utility import ElementConfigTableLineEdit, ElementConfigTableLineEdit
+        from classes.utility import ElementConfigTableLineEdit
         
         self.insertRow(self.rowCount())
 
@@ -204,3 +205,35 @@ class ModelElementAttributeTable(Table):
                             warning.close()
                         
                     return
+
+class MatrixTable(Table):
+    def __init__(self, rows, columns, parent=None):
+        from classes.utility import SigFigTableLineEdit
+
+        super().__init__(rows, columns, parent=parent)
+        self.verticalHeader().setSectionResizeMode(QHeaderView.Fixed)
+        self.verticalHeader().show()
+        for i in range(self.rowCount()):
+            for j in range(self.columnCount()):
+                self.setCellWidget(i, j, SigFigTableLineEdit())
+
+    def fill(self, element_name):
+        matrix = glb.model.get_element(name=element_name)[0]['properties']['matrix']
+        
+        row, column = 0, 0
+        for i in range(len(matrix)):
+            if i % self.columnCount() == 0 and i != 0:
+                row += 1
+                column = 0
+            cell = self.cellWidget(row, column)
+            cell.setText(str(matrix[i]))
+            cell.convertToSciNotation()
+            column += 1
+        
+    def getMatrix(self):
+        matrix = []
+        for i in range(self.rowCount()):
+            matrix.append([])
+            for j in range(self.columnCount()):
+                matrix[i].append(np.float64(self.cellWidget(i, j).text()))
+        return np.array(matrix).flatten()
