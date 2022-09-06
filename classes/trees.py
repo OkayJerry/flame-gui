@@ -62,14 +62,13 @@ class Tree(QTreeWidget):
 
 
 class ModelElementView(Tree):
-    def __init__(self, main_window):
+    def __init__(self):
         from classes.windows import ModelElementConfigWindow
         from classes.utility import ElementTreeDelegate
         
         super().__init__()
-        self.main_window = main_window
         self._delegate = ElementTreeDelegate()  # prevents python garbage collection
-        self.config_window = ModelElementConfigWindow(main_window)
+        self.config_window = ModelElementConfigWindow()
         
         headers = ['Index', 'Name', 'Type', 'Attribute', 'Value', 'Unit']
         self.setHeaderLabels(headers)
@@ -163,7 +162,7 @@ class ModelElementView(Tree):
             val = item.text(4)
 
         glb.model.reconfigure(element, {attribute: val})
-        self.main_window.refresh()
+        glb.main_window.refresh()
         
     def contextMenuEvent(self, event):
         menu = QMenu(self)
@@ -240,7 +239,7 @@ class ModelElementView(Tree):
                 return
 
         glb.model.pop_element(int(item.text(0)))
-        self.parent().parent().parent().parent().refresh()
+        glb.main_window.refresh()
 
     def handleEdits(self, item, column):
         if column != 4:

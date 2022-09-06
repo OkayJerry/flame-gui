@@ -35,7 +35,7 @@ class MainWindow(QMainWindow):
         # ws_left
         self.canvas = MainCanvas()
         self.nav_toolbar = NavigationToolbar(self.canvas, ws_left)
-        self.element_view = ModelElementView(self)
+        self.element_view = ModelElementView()
         self.filters = ModelElementFilters(self.element_view)
         
         ws_left.layout().addWidget(self.nav_toolbar)
@@ -98,13 +98,12 @@ class MainWindow(QMainWindow):
         
         
 class BeamStateWindow(QWidget):
-    def __init__(self, main_window, parent=None):
+    def __init__(self, parent=None):
         from classes.utility import SigFigLineEdit
         
         super().__init__(parent=parent)
         self.setWindowTitle('Initial Beam State Editor')
         self.setLayout(QGridLayout())
-        self.main_window = main_window
 
         # beam centroid/envelope
         qa_label = QLabel('Q / A:')
@@ -196,7 +195,7 @@ class BeamStateWindow(QWidget):
         self.alpha_line.convertToSciNotation()
         
     def apply(self):
-        self.main_window.menuBar().copyModelToHistory()
+        glb.main_window.menuBar().copyModelToHistory()
 
         var = self.var_box.currentText()
         qa_val = self.qa_line.text()
@@ -421,7 +420,7 @@ class PhaseSpaceWindow(QWidget):
         
         
 class OptimizationWindow(QWidget):
-    def __init__(self, main_window, parent=None):
+    def __init__(self, parent=None):
         from classes.tables import NelderEvoTables
         from classes.trees import TargetSelect
 
@@ -429,7 +428,6 @@ class OptimizationWindow(QWidget):
         self.setWindowTitle('Optimization')
         self.setLayout(QHBoxLayout())
         
-        self.main_window = main_window
         self.select_window = OptimizationSelectElementWindow(self)
         
         # dividing workspace into parts
@@ -590,7 +588,7 @@ class OptimizationWindow(QWidget):
             dif = np.asarray(dif)
             return sum(dif * dif)
         
-        self.main_window.menuBar().copyModelToHistory()
+        glb.main_window.menuBar().copyModelToHistory()
         executor = ThreadPoolExecutor(max_workers=None)
         
         if current_table is self.tables.nelder:
@@ -618,7 +616,7 @@ class OptimizationWindow(QWidget):
             ans = executor.submit(differential_evolution, func=_costGeneric, bounds=x0, args=(knobs, obj), workers=-1)
             ans = ans.result()
             
-        self.main_window.refresh()
+        glb.main_window.refresh()
 
         popup = QMessageBox()
         popup.setIcon(QMessageBox.Information)
@@ -1021,7 +1019,7 @@ class PreferenceWindow(QWidget):
         # significant figures
         glb.num_sigfigs = self.sigfig_spin.value()
         
-        self.parent().refresh()
+        glb.main_window.refresh()
 
     def setDefault(self):
         self.app_fsize_spin.setValue(9)
@@ -1049,13 +1047,12 @@ class PreferenceWindow(QWidget):
 
 
 class ModelElementConfigWindow(QWidget):
-    def __init__(self, main_window, parent=None):
+    def __init__(self, parent=None):
         from classes.tables import ModelElementAttributeTable
 
         super().__init__(parent=parent)
         self.setWindowTitle('Model Element Config')
         self.setLayout(QVBoxLayout())
-        self.main_window = main_window
 
         top_row = QWidget()
         top_row.setLayout(QHBoxLayout())
@@ -1161,14 +1158,14 @@ class ModelElementConfigWindow(QWidget):
         d['type'] = self.type_box.currentText()
         i = self.index_spin.value()
 
-        self.main_window.menuBar().copyModelToHistory()
+        glb.main_window.menuBar().copyModelToHistory()
 
         if self.type_box.isEnabled() == False:
             glb.model.pop_element(index=i)
 
         glb.model.insert_element(index=i, element=d)
 
-        self.main_window.refresh()
+        glb.main_window.refresh()
         self.updateIndexSpinBox()
 
 class EditMatrixWindow(QWidget):

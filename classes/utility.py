@@ -20,10 +20,10 @@ class MenuBar(QMenuBar):
         self.filename = ''
 
         # objects
-        self.bmstate_window = BeamStateWindow(main_window=parent)
-        self.opt_window = OptimizationWindow(main_window=parent)
+        self.bmstate_window = BeamStateWindow()
+        self.opt_window = OptimizationWindow()
         self.phase_window = PhaseSpaceWindow()
-        self.pref_window = PreferenceWindow(parent=parent)
+        self.pref_window = PreferenceWindow()
         self.model_history = []
         self.undo_history = []
         
@@ -95,7 +95,7 @@ class MenuBar(QMenuBar):
         glb.model = Model()
 
         self.filename = ''
-        self.parent().refresh(new_file=True)
+        glb.main_window.refresh(new_file=True)
         self.clearHistory()
         
         
@@ -123,7 +123,7 @@ class MenuBar(QMenuBar):
                     glb.model = Model(machine=flame.Machine(n_conf))
 
                 self.filename = filename
-                self.parent().refresh(new_file=True)
+                glb.main_window.refresh(new_file=True)
                 self.clearHistory()
             break
         
@@ -318,7 +318,6 @@ class ElementTreeDelegate(QStyledItemDelegate):
 
     def createEditor(self, parent, option, index):
         element_tree = parent.parent()
-        menu_bar = element_tree.main_window.menuBar()
         item = element_tree.itemFromIndex(index)
         attribute = item.text(3)
         if item.parent():
