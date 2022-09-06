@@ -1193,4 +1193,7 @@ class EditMatrixWindow(QWidget):
         self.show()
         
     def setMatrix(self):
+        glb.main_window.menuBar().copyModelToHistory()
         glb.model.reconfigure(self.element_name, {'matrix': self.table.getMatrix()})
+        glb.main_window.refresh()
+        self.close()

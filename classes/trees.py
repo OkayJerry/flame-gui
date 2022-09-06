@@ -91,11 +91,12 @@ class ModelElementView(Tree):
 
         elements = glb.model.get_element(name=glb.model.get_all_names())[1:]
         items_with_matrix = []
-        types_to_ignore_set_value = ['tmatrix']
         
         for element in elements:
             item = QTreeWidgetItem()
             item.setText(0, str(element['index']))
+            if 'tmatrix' == element['properties']['type'] and item not in items_with_matrix:
+                items_with_matrix.append(item)
             for key, val in element['properties'].items():
                 if key == 'name':
                     item.setText(1, val)
@@ -111,13 +112,13 @@ class ModelElementView(Tree):
                         except:
                             pass
                         item.setText(3, key)
-                        if item.text(2) not in types_to_ignore_set_value:
+                        if item not in items_with_matrix:
                             item.setText(4, str(val))
                     elif item.text(3) == '' and key == 'L':
                         f_string = "{:." + str(glb.num_sigfigs - 1) + "e}"
                         val = f_string.format(val)
                         item.setText(3, key)
-                        if item.text(2) not in types_to_ignore_set_value:
+                        if item not in items_with_matrix:
                             item.setText(4, str(val))
                     else:  # children are just attribute-value-unit tuples
                         f_string = "{:." + str(glb.num_sigfigs - 1) + "e}"
@@ -125,14 +126,14 @@ class ModelElementView(Tree):
                         child = QTreeWidgetItem()
                         item.addChild(child)
                         child.setText(3, key)
-                        if item.text(2) not in types_to_ignore_set_value:
-                            child.setText(4, str(val))
+                        if child not in items_with_matrix:
+                            child.setText(3, str(val))
                         child.setText(5, glb.model.get_attribute_unit(key))
             item.setText(5, glb.model.get_attribute_unit(item.text(3)))
             self.addTopLevelItem(item)
             
             for item in items_with_matrix:
-                self.setItemWidget(item, 4, EditMatrixButton(element_name=item.text(1)))
+                self.setItemWidget(item, 4, EditMatrixButton(element_name=item.text(1), parent=self))
             
         if not new_file:
             for element in expanded_elements:

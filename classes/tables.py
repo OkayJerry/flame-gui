@@ -215,7 +215,9 @@ class MatrixTable(Table):
         self.verticalHeader().show()
         for i in range(self.rowCount()):
             for j in range(self.columnCount()):
-                self.setCellWidget(i, j, SigFigTableLineEdit())
+                line_edit = SigFigTableLineEdit()
+                line_edit.setAlignment(Qt.AlignCenter)
+                self.setCellWidget(i, j, line_edit)
 
     def fill(self, element_name):
         matrix = glb.model.get_element(name=element_name)[0]['properties']['matrix']
